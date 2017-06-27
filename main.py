@@ -2,7 +2,9 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
+
 from gi.repository import Gtk
+# from gi.repository import Gdk
 
 
 
@@ -37,24 +39,39 @@ class MyWindow(Gtk.Window):
         for i in issues: combo.append_text(i)
         combo.set_active(0)
 
-
+        
+        self.area = Gtk.DrawingArea()
+        self.area.set_size_request(self.width, self.height)
+        self.fix.put(self.area, 210,0)
+        
+        self.area.connect('draw', self.on_draw , 20 , 20 )
+        
         self.show_all()
+        
+    def on_draw(self, widget, g, x , y):
 
+        print(g)
+        
+        g.set_source_rgb(0, 0.2, 0.2)
+        for n in range(self.width-x):
+            g.move_to(n, 0)
+            g.line_to(n, self.height)
+        g.stroke()
+        
     def new_map_init(self, width, height):
         print(">> new map")
-
+        self.height = height
+        self.width = width
+        
     def load_map_init(self, fname):
         assert False, "Not implemented!" 
 
     def on_changed_combo(self, widget):
         self.button.show()
-
         i = widget.get_active()
-        print("Hello World", i)
 
     def on_clicked_add(self, widget):
         self.button.hide()
-        print("Hello World")
 
 
 
@@ -63,8 +80,5 @@ if len(sys.argv) == 0:
     print ("new empty map")
 
 
-#win = MyWindow()
-win = MyWindow(1, 1)
-# win = MyWindow("hej")
-
+win = MyWindow(400, 300)
 Gtk.main()
