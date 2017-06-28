@@ -26,32 +26,40 @@ class MyWindow(Gtk.Window):
 
         Gtk.Window.__init__(self, title="pg-editor")
         self.connect("delete-event", Gtk.main_quit)
-
         self.fix = Gtk.Fixed()
         self.add(self.fix)
 
-        self.button = Gtk.Button(label="+")
-        self.button.connect("clicked", self.on_clicked_add)
-        self.fix.put(self.button, 150,0)
-
-        combo = Gtk.ComboBoxText()
-        self.fix.put(combo, 0,0)
-
-        combo.connect("changed", self.on_changed_combo)
-        issues = ["PROVINCE", "NATION", "TERRAIN", "GOOD", "CONTROL", "PROCESS"]
-        for i in issues: combo.append_text(i)
-        combo.set_active(0)
+        ebox = Gtk.EventBox ()
+        self.fix.put(ebox, 230,0)
+        ebox.connect ('button-press-event', self.on_clicked_mouse)
 
         self.img = Gtk.Image()
-        self.fix.put(self.img, 210,0)
-        
+        ebox.add(self.img)
         self.refresh()
+
+        self.button_add = Gtk.Button(label="+")
+        self.button_add.connect("clicked", self.on_clicked_add)
+        self.fix.put(self.button_add, 170,40)
+
+        self.button_sub = Gtk.Button(label="-")
+        self.button_sub.connect("clicked", self.on_clicked_sub)
+        self.fix.put(self.button_sub, 170,75)
+
+        combo_main = Gtk.ComboBoxText()
+        self.fix.put(combo_main, 0,0)
+
+        combo_main.connect("changed", self.on_changed_combo_main)
+        issues = ["PROVINCE", "NATION", "TERRAIN", "GOOD", "CONTROL", "PROCESS"]
+        for i in issues: combo_main.append_text(i)
+        combo_main.set_active(0)
+
+        combo_sub = Gtk.ComboBoxText()
+        self.fix.put(combo_sub, 0, 75)
+
+        self.name = Gtk.Entry()
+        self.fix.put(self.name, 0, 40)
+
         self.show_all()
-        
-    def refresh(self):
-        tmp = GLib.Bytes.new(self.diagram)        
-        pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.width, self.height, 3*self.width)
-        self.img.set_from_pixbuf(pbuf)
         
     def new_map_init(self, width, height):
         print(">> new map")
@@ -61,19 +69,35 @@ class MyWindow(Gtk.Window):
 
     def load_map_init(self, fname):
         assert False, "Not implemented!" 
+
+    def refresh(self):
+        tmp = GLib.Bytes.new(self.diagram)        
+        pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.width, self.height, 3*self.width)
+        self.img.set_from_pixbuf(pbuf)
         
-    def on_changed_combo(self, widget):
-        self.button.show()
+    def on_clicked_mouse (self, box, event):
+        print(event.x, event.y)
+        
+    def on_changed_combo_main(self, widget):
+        self.button_add.show()
         i = widget.get_active()
-        print(i)
         
     def on_clicked_add(self, widget):
-        self.button.hide()
+        self.button_add.hide()
+
+    def on_clicked_sub(self, widget):
+        self.button_sub.hide()
+
 
         
 import sys
 if len(sys.argv) == 1:
     print ("new empty map")
 
+import signal
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 win = MyWindow(800, 600)
 Gtk.main()
+
+    
