@@ -44,33 +44,33 @@ class MyWindow(Gtk.Window):
 
         self.img = Gtk.Image()
         self.fix.put(self.img, 210,0)
-        self.diagram = [0, 100, 100]*self.width*self.height
-        self.refresh()
         
+        self.refresh()
         self.show_all()
-
-
+        
     def refresh(self):
         tmp = GLib.Bytes.new(self.diagram)        
         pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.width, self.height, 3*self.width)
         self.img.set_from_pixbuf(pbuf)
-
         
     def new_map_init(self, width, height):
         print(">> new map")
-        self.height = height
         self.width = width
-        
+        self.height = height
+        self.diagram = [0, 100, 100]*self.width*self.height
+
     def load_map_init(self, fname):
         assert False, "Not implemented!" 
-
+        
     def on_changed_combo(self, widget):
         self.button.show()
         i = widget.get_active()
-
+        print(i)
+        
     def on_clicked_add(self, widget):
         self.button.hide()
 
+        
 import sys
 if len(sys.argv) == 1:
     print ("new empty map")
