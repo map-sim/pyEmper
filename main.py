@@ -2,11 +2,14 @@
 
 import gi
 gi.require_version('Gtk', '3.0')
+gi.require_version('GLib', '2.0')
+gi.require_version('GdkPixbuf', '2.0')
 
+from gi.repository import GdkPixbuf as Gpb
+from gi.repository import GLib
 from gi.repository import Gtk
-# from gi.repository import Gdk
 
-
+    
 
 class MyWindow(Gtk.Window):
 
@@ -39,24 +42,19 @@ class MyWindow(Gtk.Window):
         for i in issues: combo.append_text(i)
         combo.set_active(0)
 
-        
-        self.area = Gtk.DrawingArea()
-        self.area.set_size_request(self.width, self.height)
-        self.fix.put(self.area, 210,0)
-        
-        self.area.connect('draw', self.on_draw , 20 , 20 )
+        self.img = Gtk.Image()
+        self.fix.put(self.img, 210,0)
+        self.diagram = [0, 100, 100]*self.width*self.height
+        self.refresh()
         
         self.show_all()
-        
-    def on_draw(self, widget, g, x , y):
 
-        print(g)
-        
-        g.set_source_rgb(0, 0.2, 0.2)
-        for n in range(self.width-x):
-            g.move_to(n, 0)
-            g.line_to(n, self.height)
-        g.stroke()
+
+    def refresh(self):
+        tmp = GLib.Bytes.new(self.diagram)        
+        pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.width, self.height, 3*self.width)
+        self.img.set_from_pixbuf(pbuf)
+
         
     def new_map_init(self, width, height):
         print(">> new map")
@@ -73,12 +71,9 @@ class MyWindow(Gtk.Window):
     def on_clicked_add(self, widget):
         self.button.hide()
 
-
-
 import sys
-if len(sys.argv) == 0:
+if len(sys.argv) == 1:
     print ("new empty map")
 
-
-win = MyWindow(400, 300)
+win = MyWindow(800, 600)
 Gtk.main()
