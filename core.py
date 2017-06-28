@@ -22,7 +22,7 @@ class EmpCore:
     
     def add_terrain(self, name, rgb, con_in, con_out):
         try: nt = EmpTerrain(name, rgb, con_in, con_out)
-        except AssertError: return -1
+        except AssertionError: return -1
 
         for t in self.terrains:
             if name==t.name or rgb==t.rgb: return -1
