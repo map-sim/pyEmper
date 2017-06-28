@@ -9,62 +9,76 @@ from gi.repository import GdkPixbuf as Gpb
 from gi.repository import GLib
 from gi.repository import Gtk
 
+import core
     
-class editor(Gtk.Window):
+class GtkEditor(Gtk.Window):
+
+    main_issues = ["PROVINCE", "NATION", "TERRAIN", "GOOD", "CONTROL", "PROCESS"]
 
     def multiconstructor(init):
-        def magic(self, *args):
+        def internal(self, *args):
             if len(args)==2: self.new_map_init(*map(int, args))
             elif len(args)==1: self.load_map_init(str(args[0]))
             else: assert False, "Wrong arguments number!"                 
             init(self)
-        return magic
+        return internal
 
     @multiconstructor
     def __init__(self, *args):
 
-        Gtk.Window.__init__(self, title="pg-editor")
+        Gtk.Window.__init__(self, title="gtk-editor")
         self.connect("delete-event", Gtk.main_quit)
-        self.fix = Gtk.Fixed()
-        self.add(self.fix)
-
-        ebox = Gtk.EventBox ()
-        self.fix.put(ebox, 230,0)
+        fix = Gtk.Fixed()
+        self.add(fix)
+        
+        ebox = Gtk.EventBox()
         ebox.connect ('button-press-event', self.on_clicked_mouse)
+        fix.put(ebox, 230,0)
 
         self.img = Gtk.Image()
         ebox.add(self.img)
         self.refresh()
 
-        self.button_add = Gtk.Button(label="+")
-        self.button_add.connect("clicked", self.on_clicked_add)
-        self.fix.put(self.button_add, 170,40)
+        self.abut = Gtk.Button(label="+")
+        self.abut.connect("clicked", self.on_clicked_add)
+        fix.put(self.abut, 170, 110)
 
-        self.button_sub = Gtk.Button(label="-")
-        self.button_sub.connect("clicked", self.on_clicked_sub)
-        self.fix.put(self.button_sub, 170,75)
+        self.sbut = Gtk.Button(label="-")
+        self.sbut.connect("clicked", self.on_clicked_sub)
+        fix.put(self.sbut, 170, 75)
 
-        combo_main = Gtk.ComboBoxText()
-        self.fix.put(combo_main, 0,0)
+        self.mcombo = Gtk.ComboBoxText()
+        # self.mcombo.connect("changed", self.on_changed_mcombo)
+        fix.put(self.mcombo, 0, 0)
 
-        combo_main.connect("changed", self.on_changed_combo_main)
-        issues = ["PROVINCE", "NATION", "TERRAIN", "GOOD", "CONTROL", "PROCESS"]
-        for i in issues: combo_main.append_text(i)
-        combo_main.set_active(0)
+        for i in self.main_issues: 
+            self.mcombo.append_text(i)
+        self.mcombo.set_active(0)
 
-        combo_sub = Gtk.ComboBoxText()
-        self.fix.put(combo_sub, 0, 75)
+        self.scombo = Gtk.ComboBoxText()
+        fix.put(self.scombo, 0, 75)
 
-        self.name = Gtk.Entry()
-        self.fix.put(self.name, 0, 40)
+        #  =========================================================
 
         self.show_all()
+
+        self.name = Gtk.Entry()
+        self.name.set_size_request(100,45)
+        fix.put(self.name, 0, 110)
+
+        self.rgb = (Gtk.Entry(), Gtk.Entry(), Gtk.Entry())
+        for i,c in enumerate(self.rgb):
+            c.set_size_request(245, 45)
+            fix.put(c, i*45, 145+i*)
+
+
         
     def new_map_init(self, width, height):
         print(">> new map")
         self.width = width
         self.height = height
         self.diagram = [0, 100, 100]*self.width*self.height
+        self.core = core.EmpCore()
 
     def load_map_init(self, fname):
         assert False, "Not implemented!" 
@@ -77,14 +91,26 @@ class editor(Gtk.Window):
     def on_clicked_mouse (self, box, event):
         print(event.x, event.y)
         
-    def on_changed_combo_main(self, widget):
-        self.button_add.show()
-        i = widget.get_active()
+    # def on_changed_mcombo(self, widget):
+
+    def clean_edit(self):
+        self.name.set_text("")
+        self.name.hide()
+        for c in self.rgb:
+            c.set_text("")
+            c.hide()
+
         
     def on_clicked_add(self, widget):
-        self.button_add.hide()
+        n = self.mcombo.get_active()
+        if not self.name.is_visible():
+            self.name.show()
+            if self.main_issues[n] == "TERRAIN":
+                for c in self.rgb: c.show()
+        else: 
+            self.clean_edit();
 
     def on_clicked_sub(self, widget):
-        self.button_sub.hide()
+        self.sbut.hide()
 
 
