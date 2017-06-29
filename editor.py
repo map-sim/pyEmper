@@ -26,25 +26,28 @@ class GtkEditor(Gtk.Window):
 
     @multiconstructor
     def __init__(self, *args):
-
+        
+        # window and fixer
         Gtk.Window.__init__(self, title="gtk-editor")
         self.connect("delete-event", Gtk.main_quit)
         fix = Gtk.Fixed()
         self.add(fix)
         
+        # event box for mouse clicks
         ebox = Gtk.EventBox()
         ebox.connect ('button-press-event', self.on_clicked_mouse)
         fix.put(ebox, 230,0)
 
+        # image for map presenting
         self.img = Gtk.Image()
         ebox.add(self.img)
         self.refresh()
 
-        #  =========================================================
-
+        # side panel - name entry
         self.name = Gtk.Entry()
         fix.put(self.name, 0, 110)
-
+ 
+        # side panel - spins
         self.rspin = Gtk.SpinButton()
         adj = Gtk.Adjustment(0, 0, 255, 1, 10, 0)
         self.rspin.set_adjustment(adj)
@@ -70,8 +73,10 @@ class GtkEditor(Gtk.Window):
         self.ospin.set_adjustment(adj)
         fix.put(self.ospin, 0, 285)
 
-        # =============================================================
+        # list of spins
+        self.spins = [self.rspin, self.gspin, self.bspin, self.ispin, self.ospin]
 
+        # side panel - buttons
         self.abut = Gtk.Button(label="+")
         self.abut.connect("clicked", self.on_clicked_add)
         fix.put(self.abut, 170, 110)
@@ -80,7 +85,9 @@ class GtkEditor(Gtk.Window):
         self.sbut.connect("clicked", self.on_clicked_sub)
         fix.put(self.sbut, 170, 75)
 
+        # side panel - combos
         self.scombo = Gtk.ComboBoxText()
+        self.scombo.connect("changed", self.on_changed_scombo)
         fix.put(self.scombo, 0, 70)
 
         self.mcombo = Gtk.ComboBoxText()
@@ -89,25 +96,18 @@ class GtkEditor(Gtk.Window):
 
         for i in self.main_issues: 
             self.mcombo.append_text(i)
-        self.mcombo.set_active(0)
-        self.refill_scombo()
         
-        # =============================================================
+        # endig
+        self.idic = {}
+        for i in self.main_issues: 
+            self.idic[i] = -1 
 
         self.show_all()
         self.clean_panel()
+        self.mcombo.set_active(0)
+        self.refill_scombo()
+        self.scam_mode = "input"
 
-    def refill_scombo(self):
-        self.scombo.remove_all()        
-        nr = self.mcombo.get_active()
-        if self.main_issues[nr] == "TERRAIN":
-            for i in self.core.terrains: 
-                self.scombo.append_text(i.name)
-        else: pass
-         
-    def on_enter(self, width):
-        print("enter")
-        
     def new_map_init(self, width, height):
         print(">> new map")
         self.width = width
@@ -118,6 +118,16 @@ class GtkEditor(Gtk.Window):
     def load_map_init(self, fname):
         assert False, "Not implemented!" 
 
+    def refill_scombo(self):
+        self.scombo.remove_all()        
+        nr = self.mcombo.get_active()
+        if self.main_issues[nr] == "PROVINCE": [self.scombo.append_text(i.name) for i in self.core.provinces]
+        elif self.main_issues[nr] == "TERRAIN": [self.scombo.append_text(i.name) for i in self.core.terrains]
+        elif self.main_issues[nr] == "NATION": [self.scombo.append_text(i.name)for i in self.core.nations]
+        else: pass
+        self.scombo.set_active(self.idic[self.main_issues[nr]])                
+
+
     def refresh(self):
         tmp = GLib.Bytes.new(self.diagram)        
         pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.width, self.height, 3*self.width)
@@ -127,39 +137,59 @@ class GtkEditor(Gtk.Window):
         print(event.x, event.y)
         
     def on_changed_mcombo(self, widget):
+        self.scam_mode="output"
         self.refill_scombo()
         self.clean_panel()
+        self.scam_mode="input"
+
+    def on_changed_scombo(self, widget):
+        self.clean_panel()
+        if self.scam_mode=="input":
+            i = widget.get_active()
+            nr = self.mcombo.get_active()
+            self.idic[self.main_issues[nr]] = i
+        else:
+            pass
 
     def clean_panel(self):
-        self.name.set_text("")
         self.name.hide()
-        self.ispin.hide()
-        self.ospin.hide()
-        self.rspin.hide()
-        self.gspin.hide()
-        self.bspin.hide()
+        self.name.set_text("")
+        for s in self.spins: s.hide()
         
     def on_clicked_add(self, widget):
-        nr = self.mcombo.get_active()
+        nr,res = self.mcombo.get_active(),-1
         if not self.name.is_visible() :            
             if self.main_issues[nr] == "TERRAIN":
-                spins = (self.rspin, self.gspin, self.bspin, self.ispin, self.ospin)
-                for i in spins: i.show()                 
+                for i in self.spins: i.show()                 
+            elif self.main_issues[nr] == "NATION": pass
+            elif self.main_issues[nr] == "PROVINCE": pass
             self.name.show()
         else:
             if self.main_issues[nr] == "TERRAIN":
                 name = self.name.get_text()
-                r = self.rspin.get_value()
-                g = self.gspin.get_value()
-                b = self.bspin.get_value()
-                i = self.ispin.get_value()
-                o = self.ospin.get_value()                
+                r,g,b,i,o = [i.get_value() for i in self.spins]                
                 res = self.core.add_terrain(name, (r,g,b), i, o)
                 print("add terain (%d)" % res)
+
+            elif self.main_issues[nr] == "PROVINCE":
+                res = self.core.add_province(self.name.get_text())
+                print("add province (%d)" % res)
+
+            elif self.main_issues[nr] == "NATION":
+                res = self.core.add_nation(self.name.get_text())
+                print("add nation (%d)" % res)
+
+            if res >= 0:
+                self.scam_mode="output"
+                self.idic[self.main_issues[nr]] = res
                 self.refill_scombo()
+                self.scam_mode="input"
+
+                
             self.clean_panel()
+        self.abut.show()
 
     def on_clicked_sub(self, widget):
-        self.sbut.hide()
+        self.clean_panel()
 
 
