@@ -29,12 +29,24 @@ class EmpControl:
         assert len(name)>=3 and len(name)<=14, "too long string"
         self.name = str(name)
 
+class EmpGood:
+    def __init__(self, name):
+        assert len(name)>=3 and len(name)<=14, "too long string"
+        self.name = str(name)
+
+class EmpProcess:
+    def __init__(self, name):
+        assert len(name)>=3 and len(name)<=14, "too long string"
+        self.name = str(name)
+
 class EmpCore:
     def __init__(self):
-        self.nations = []
         self.terrains = []
         self.provinces = []
+        self.nations = []
         self.controls = []
+        self.goods = []
+        self.processes = []
     
     def add_terrain(self, name, rgb, con_in, con_out):
         try: nt = EmpTerrain(name, rgb, con_in, con_out)
@@ -71,3 +83,21 @@ class EmpCore:
             if name==c.name: return -1 
         self.controls.append(nc)
         return len(self.controls)-1 
+
+    def add_good(self, name):
+        try: ng = EmpGood(name)
+        except AssertionError: return -1
+
+        for g in self.goods:
+            if name==g.name: return -1 
+        self.goods.append(ng)
+        return len(self.goods)-1 
+
+    def add_process(self, name):
+        try: np = EmpProcess(name)
+        except AssertionError: return -1
+
+        for p in self.processes:
+            if name==p.name: return -1 
+        self.processes.append(np)
+        return len(self.processes)-1 

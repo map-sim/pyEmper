@@ -22,10 +22,12 @@ class EmpSave():
             self.cur = self.con.cursor()
                         
             self.__save_general_info(str(author))
-            self.__save_provinces()
             self.__save_terrains()
+            self.__save_provinces()
             self.__save_nations()
             self.__save_controls()
+            self.__save_processes()
+            self.__save_goods()
 
         finally:    
             if self.con:
@@ -65,5 +67,17 @@ class EmpSave():
         self.cur.execute("CREATE TABLE controls(name TEXT)")
         for c in self.core.controls:
             self.cur.execute("INSERT INTO controls VALUES('%s')" % c.name)
+        self.con.commit()
+
+    def __save_goods(self):
+        self.cur.execute("CREATE TABLE goods(name TEXT)")
+        for g in self.core.controls:
+            self.cur.execute("INSERT INTO goods VALUES('%s')" % g.name)
+        self.con.commit()
+
+    def __save_processes(self):
+        self.cur.execute("CREATE TABLE processes(name TEXT)")
+        for p in self.core.processes:
+            self.cur.execute("INSERT INTO processes VALUES('%s')" % p.name)
         self.con.commit()
 

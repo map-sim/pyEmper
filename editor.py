@@ -126,11 +126,12 @@ class EmpEditor(Gtk.Window):
     def refill_scombo(self):
         self.scombo.remove_all()        
         nr = self.mcombo.get_active()
-        if self.main_issues[nr] == "PROVINCE": [self.scombo.append_text(i.name) for i in self.core.provinces]
-        elif self.main_issues[nr] == "TERRAIN": [self.scombo.append_text(i.name) for i in self.core.terrains]
+        if self.main_issues[nr] == "TERRAIN": [self.scombo.append_text(i.name) for i in self.core.terrains]
+        elif self.main_issues[nr] == "PROVINCE": [self.scombo.append_text(i.name) for i in self.core.provinces]
         elif self.main_issues[nr] == "NATION": [self.scombo.append_text(i.name)for i in self.core.nations]
         elif self.main_issues[nr] == "CONTROL": [self.scombo.append_text(i.name)for i in self.core.controls]
-        else: pass
+        elif self.main_issues[nr] == "GOOD": [self.scombo.append_text(i.name)for i in self.core.goods]
+        elif self.main_issues[nr] == "PROCESS": [self.scombo.append_text(i.name)for i in self.core.processes]
         self.scombo.set_active(self.idic[self.main_issues[nr]])                
 
 
@@ -170,9 +171,11 @@ class EmpEditor(Gtk.Window):
         if not self.name.is_visible() :            
             if self.main_issues[nr] == "TERRAIN":
                 for i in self.spins: i.show()                 
-            elif self.main_issues[nr] == "NATION": pass
             elif self.main_issues[nr] == "PROVINCE": pass
+            elif self.main_issues[nr] == "NATION": pass
             elif self.main_issues[nr] == "CONTROL": pass
+            elif self.main_issues[nr] == "GOOD": pass
+            elif self.main_issues[nr] == "PROCESS": pass
             self.name.show()
         else:
             if self.main_issues[nr] == "TERRAIN":
@@ -193,12 +196,19 @@ class EmpEditor(Gtk.Window):
                 res = self.core.add_control(self.name.get_text())
                 print("add control (%d)" % res)
 
+            elif self.main_issues[nr] == "GOOD":
+                res = self.core.add_good(self.name.get_text())
+                print("add good (%d)" % res)
+
+            elif self.main_issues[nr] == "PROCESS":
+                res = self.core.add_process(self.name.get_text())
+                print("add process (%d)" % res)
+
             if res >= 0:
                 self.scam_mode="output"
                 self.idic[self.main_issues[nr]] = res
                 self.refill_scombo()
                 self.scam_mode="input"
-
                 
             self.clean_panel()
         self.abut.show()
