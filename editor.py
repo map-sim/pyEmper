@@ -10,8 +10,9 @@ from gi.repository import GLib
 from gi.repository import Gtk
 
 import sys
-import core
-import save
+from core import EmpCore
+from save import EmpSave
+from rainbow import EmpRainbow
     
 class EmpEditor(Gtk.Window):
 
@@ -49,33 +50,18 @@ class EmpEditor(Gtk.Window):
         fix.put(self.name, 0, 110)
  
         # side panel - spins
-        self.rspin = Gtk.SpinButton()
-        adj = Gtk.Adjustment(0, 0, 255, 1, 10, 0)
-        self.rspin.set_adjustment(adj)
-        fix.put(self.rspin, 0, 145)
-
-        self.gspin = Gtk.SpinButton()
-        adj = Gtk.Adjustment(0, 0, 255, 1, 10, 0)
-        self.gspin.set_adjustment(adj)
-        fix.put(self.gspin, 0, 180)
-        
-        self.bspin = Gtk.SpinButton()
-        adj = Gtk.Adjustment(0, 0, 255, 1, 10, 0)
-        self.bspin.set_adjustment(adj)
-        fix.put(self.bspin, 0, 215)
-
         self.ispin = Gtk.SpinButton()
         adj = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
         self.ispin.set_adjustment(adj)
-        fix.put(self.ispin, 0, 250)
+        fix.put(self.ispin, 0, 145)
 
         self.ospin = Gtk.SpinButton()
         adj = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
         self.ospin.set_adjustment(adj)
-        fix.put(self.ospin, 0, 285)
+        fix.put(self.ospin, 0, 180)
 
         # list of spins
-        self.spins = [self.rspin, self.gspin, self.bspin, self.ispin, self.ospin]
+        self.spins = [self.ispin, self.ospin]
 
         # side panel - buttons
         self.abut = Gtk.Button(label="+")
@@ -113,12 +99,20 @@ class EmpEditor(Gtk.Window):
         self.refill_scombo()
         self.scam_mode = "input"
 
+        self.rainbow = EmpRainbow(self.width, self.height)
+        self.last_click = (0,0)
+        
     def new_map_init(self, width, height):
         print(">> new map")
+        if width<2 or height<2:
+            sys.stderr.write("width or height < 2")
+            sys.exit(-1)
+
         self.width = width
         self.height = height
-        self.diagram = [0, 100, 100]*self.width*self.height
-        self.core = core.EmpCore()
+        self.core = EmpCore(self.width, self.height)
+        self.screen_mode = "topo-map"
+        self.diagram = self.core.diagram
 
     def load_map_init(self, fname):
         assert False, "Not implemented!" 
@@ -141,7 +135,8 @@ class EmpEditor(Gtk.Window):
         self.img.set_from_pixbuf(pbuf)
         
     def on_clicked_mouse (self, box, event):
-        print(event.x, event.y)
+        self.last_click = (int(event.x), int(event.y))
+        print("click", *self.last_click)
         
     def on_changed_mcombo(self, widget):
         self.scam_mode="output"
@@ -152,25 +147,32 @@ class EmpEditor(Gtk.Window):
     def on_changed_scombo(self, widget):
         self.clean_panel()
         if self.scam_mode=="input":
-            i = widget.get_active()
+            i = self.scombo.get_active()
             nr = self.mcombo.get_active()
             self.idic[self.main_issues[nr]] = i
-        else:
-            pass
+        else: pass
 
     def clean_panel(self):
         self.name.hide()
         self.name.set_text("")
         for s in self.spins: s.hide()
+        if self.screen_mode == "rainbow":
+            self.screen_mode = "topo-map"
+            self.diagram = self.core.diagram
+            self.refresh()
         
     def on_clicked_save(self, widget):        
-        s = save.EmpSave(self.core)
+        s = EmpSave(self.core)
         
     def on_clicked_add(self, widget):
         nr,res = self.mcombo.get_active(),-1
         if not self.name.is_visible() :            
             if self.main_issues[nr] == "TERRAIN":
-                for i in self.spins: i.show()                 
+                for i in self.spins: i.show()
+                self.diagram = self.rainbow.diagram
+                self.screen_mode = "rainbow"
+                self.refresh()
+
             elif self.main_issues[nr] == "PROVINCE": pass
             elif self.main_issues[nr] == "NATION": pass
             elif self.main_issues[nr] == "CONTROL": pass
@@ -179,37 +181,50 @@ class EmpEditor(Gtk.Window):
             self.name.show()
         else:
             if self.main_issues[nr] == "TERRAIN":
+                i,o = [i.get_value() for i in self.spins]                
                 name = self.name.get_text()
-                r,g,b,i,o = [i.get_value() for i in self.spins]                
-                res = self.core.add_terrain(name, (r,g,b), 0.01*i, 0.01*o)
-                print("add terain (%d)" % res)
+                r,g,b = self.rainbow.get_rgb_color(*self.last_click)
 
+                scombo_index = self.scombo.get_active()
+                if not name and scombo_index>=0:
+                    t = self.core.terrains[scombo_index].rgb = (r,g,b)
+                    print("mod", str(t))
+                else:
+                    res = self.core.add_terrain(name, (r,g,b), 0.01*i, 0.01*o)
+                    if res>=0: print("add", str(self.core.terrains[res]))
+                    else: print("cannot add terain")
+                        
             elif self.main_issues[nr] == "PROVINCE":
                 res = self.core.add_province(self.name.get_text())
-                print("add province (%d)" % res)
+                if res>=0: print("add", str(self.core.provinces[res]))
+                else: print("cannot add province")
 
             elif self.main_issues[nr] == "NATION":
                 res = self.core.add_nation(self.name.get_text())
-                print("add nation (%d)" % res)
+                if res>=0: print("add", str(self.core.nations[res]))
+                else: print("cannot add nation")
 
             elif self.main_issues[nr] == "CONTROL":
                 res = self.core.add_control(self.name.get_text())
-                print("add control (%d)" % res)
+                if res>=0: print("add", str(self.core.controls[res]))
+                else: print("cannot add control")
 
             elif self.main_issues[nr] == "GOOD":
                 res = self.core.add_good(self.name.get_text())
-                print("add good (%d)" % res)
+                if res>=0: print("add", str(self.core.goods[res]))
+                else: print("cannot add good")
 
             elif self.main_issues[nr] == "PROCESS":
                 res = self.core.add_process(self.name.get_text())
-                print("add process (%d)" % res)
+                if res>=0: print("add", str(self.core.processes[res]))
+                else: print("cannot add process")
 
             if res >= 0:
                 self.scam_mode="output"
                 self.idic[self.main_issues[nr]] = res
                 self.refill_scombo()
                 self.scam_mode="input"
-                
+
             self.clean_panel()
         self.abut.show()
 
