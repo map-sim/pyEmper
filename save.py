@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sqlite3 as lite
+import os, os.path
 import core, sys
 import datetime
 
@@ -12,21 +13,23 @@ class EmpSave():
             sys.exit(-1)
         else: self.core = arg
 
+        if os.path.isfile(fname):
+            os.remove(fname)
+        
         self.con = None
         try:
             self.con = lite.connect(fname)
             self.cur = self.con.cursor()
                         
             self.__save_general_info(str(author))
+            self.__save_provinces()
+            self.__save_terrains()
+            self.__save_nations()
+            self.__save_controls()
 
-        except lite.Error:
-            sys.stderr.write("error: %s" % e.args[0])
-            sys.exit(-1)
-    
         finally:    
             if self.con:
                 self.con.close()
-
 
     def __save_general_info(self, author):
         self.cur.execute("CREATE TABLE general_info(key TEXT, value TEXT)")
@@ -39,5 +42,28 @@ class EmpSave():
         self.cur.execute("INSERT INTO general_info VALUES('date format', '%s')" % date_format)
         self.cur.execute("INSERT INTO general_info VALUES('date', '%s')" % date)
         self.con.commit()
-        
-s = EmpSave(core.EmpCore())
+
+    def __save_terrains(self):
+        self.cur.execute("CREATE TABLE terrains(name TEXT, r INT,  g INT,  b INT, con_in REAL, con_out REAL)")
+        for t in self.core.terrains:
+            self.cur.execute("INSERT INTO terrains VALUES('%s', %d, %d, %d, %g, %g)" % (t.name, *t.rgb, t.con_in, t.con_out))
+        self.con.commit()
+
+    def __save_provinces(self):
+        self.cur.execute("CREATE TABLE provinces(name TEXT)")
+        for p in self.core.provinces:
+            self.cur.execute("INSERT INTO provinces VALUES('%s')" % p.name)
+        self.con.commit()
+
+    def __save_nations(self):
+        self.cur.execute("CREATE TABLE nations(name TEXT)")
+        for n in self.core.nations:
+            self.cur.execute("INSERT INTO nations VALUES('%s')" % n.name)
+        self.con.commit()
+
+    def __save_controls(self):
+        self.cur.execute("CREATE TABLE controls(name TEXT)")
+        for c in self.core.controls:
+            self.cur.execute("INSERT INTO controls VALUES('%s')" % c.name)
+        self.con.commit()
+

@@ -11,10 +11,11 @@ from gi.repository import Gtk
 
 import sys
 import core
+import save
     
-class GtkEditor(Gtk.Window):
+class EmpEditor(Gtk.Window):
 
-    main_issues = ["PROVINCE", "NATION", "TERRAIN", "GOOD", "CONTROL", "PROCESS"]
+    main_issues = ["TERRAIN", "PROVINCE", "NATION", "CONTROL", "GOOD", "PROCESS"]
 
     def multiconstructor(init):
         def internal(self, *args):
@@ -85,6 +86,10 @@ class GtkEditor(Gtk.Window):
         self.sbut.connect("clicked", self.on_clicked_sub)
         fix.put(self.sbut, 170, 75)
 
+        self.svbut = Gtk.Button(label="SAVE")
+        self.svbut.connect("clicked", self.on_clicked_save)
+        fix.put(self.svbut, 0, self.height-35)
+
         # side panel - combos
         self.scombo = Gtk.ComboBoxText()
         self.scombo.connect("changed", self.on_changed_scombo)
@@ -124,6 +129,7 @@ class GtkEditor(Gtk.Window):
         if self.main_issues[nr] == "PROVINCE": [self.scombo.append_text(i.name) for i in self.core.provinces]
         elif self.main_issues[nr] == "TERRAIN": [self.scombo.append_text(i.name) for i in self.core.terrains]
         elif self.main_issues[nr] == "NATION": [self.scombo.append_text(i.name)for i in self.core.nations]
+        elif self.main_issues[nr] == "CONTROL": [self.scombo.append_text(i.name)for i in self.core.controls]
         else: pass
         self.scombo.set_active(self.idic[self.main_issues[nr]])                
 
@@ -156,6 +162,9 @@ class GtkEditor(Gtk.Window):
         self.name.set_text("")
         for s in self.spins: s.hide()
         
+    def on_clicked_save(self, widget):        
+        s = save.EmpSave(self.core)
+        
     def on_clicked_add(self, widget):
         nr,res = self.mcombo.get_active(),-1
         if not self.name.is_visible() :            
@@ -163,12 +172,13 @@ class GtkEditor(Gtk.Window):
                 for i in self.spins: i.show()                 
             elif self.main_issues[nr] == "NATION": pass
             elif self.main_issues[nr] == "PROVINCE": pass
+            elif self.main_issues[nr] == "CONTROL": pass
             self.name.show()
         else:
             if self.main_issues[nr] == "TERRAIN":
                 name = self.name.get_text()
                 r,g,b,i,o = [i.get_value() for i in self.spins]                
-                res = self.core.add_terrain(name, (r,g,b), i, o)
+                res = self.core.add_terrain(name, (r,g,b), 0.01*i, 0.01*o)
                 print("add terain (%d)" % res)
 
             elif self.main_issues[nr] == "PROVINCE":
@@ -178,6 +188,10 @@ class GtkEditor(Gtk.Window):
             elif self.main_issues[nr] == "NATION":
                 res = self.core.add_nation(self.name.get_text())
                 print("add nation (%d)" % res)
+
+            elif self.main_issues[nr] == "CONTROL":
+                res = self.core.add_control(self.name.get_text())
+                print("add control (%d)" % res)
 
             if res >= 0:
                 self.scam_mode="output"

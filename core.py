@@ -24,11 +24,17 @@ class EmpNation:
         assert len(name)>=3 and len(name)<=14, "too long string"
         self.name = str(name)
 
+class EmpControl:
+    def __init__(self, name):
+        assert len(name)>=3 and len(name)<=14, "too long string"
+        self.name = str(name)
+
 class EmpCore:
     def __init__(self):
         self.nations = []
         self.terrains = []
         self.provinces = []
+        self.controls = []
     
     def add_terrain(self, name, rgb, con_in, con_out):
         try: nt = EmpTerrain(name, rgb, con_in, con_out)
@@ -56,3 +62,12 @@ class EmpCore:
             if name==n.name: return -1 
         self.nations.append(nn)
         return len(self.nations)-1 
+
+    def add_control(self, name):
+        try: nc = EmpControl(name)
+        except AssertionError: return -1
+
+        for c in self.controls:
+            if name==c.name: return -1 
+        self.controls.append(nc)
+        return len(self.controls)-1 
