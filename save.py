@@ -8,7 +8,7 @@ import datetime
 class EmpSave():
 
     def __init__(self, arg, fname="output.db", author="anonymous"):
-        if type(arg) != type(core.EmpCore()):
+        if type(arg) != type(core.EmpCore(10, 10)):
             sys.stderr.write("arg has wrong type!")
             sys.exit(-1)
         else: self.core = arg
@@ -43,6 +43,8 @@ class EmpSave():
         
         self.cur.execute("INSERT INTO general_info VALUES('date format', '%s')" % date_format)
         self.cur.execute("INSERT INTO general_info VALUES('date', '%s')" % date)
+        self.cur.execute("INSERT INTO general_info VALUES('width', '%d')" % self.core.width)
+        self.cur.execute("INSERT INTO general_info VALUES('height', '%d')" % self.core.height)
         self.con.commit()
 
     def __save_terrains(self):

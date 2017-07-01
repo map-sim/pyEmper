@@ -10,46 +10,59 @@ from gi.repository import GLib
 from gi.repository import Gtk
 
 import sys
+import tools
 from core import EmpCore
 from save import EmpSave
+from load import EmpLoad
 from rainbow import EmpRainbow
     
 class EmpEditor(Gtk.Window):
-
-    main_issues = ["TERRAIN", "PROVINCE", "NATION", "CONTROL", "GOOD", "PROCESS"]
 
     def multiconstructor(init):
         def internal(self, *args):
             if len(args)==2: self.new_map_init(*map(int, args))
             elif len(args)==1: self.load_map_init(str(args[0]))
-            else: assert False, "Wrong arguments number!"                 
+            else: tools.error(True, "wrong arguments number")                 
             init(self)
         return internal
 
+    main_issues = ["TERRAIN", "PROVINCE", "NATION", "CONTROL", "GOOD", "PROCESS"]
+
+    def new_map_init(self, width, height): self.core = EmpCore(width, height)
+    def load_map_init(self, fname): self.core = EmpLoad(fname).load_core()
+
     @multiconstructor
     def __init__(self, *args):
+
+        # set section ################################################################
+        self.idic = dict((i, -1) for i in self.main_issues)
+        self.width,self.height = self.core.width, self.core.height
+        self.diagram = self.core.diagram
+        self.screen_mode = "topo-map"
+        self.scam_mode = "input"
         
-        # window and fixer
-        Gtk.Window.__init__(self, title="gtk-editor")
+        self.rainbow = EmpRainbow(self.width, self.height)
+        self.last_click = (0,0)
+
+        # window and main panel ################################################################
+        Gtk.Window.__init__(self, title="py-emper")
         self.connect("delete-event", Gtk.main_quit)
         fix = Gtk.Fixed()
         self.add(fix)
         
-        # event box for mouse clicks
         ebox = Gtk.EventBox()
         ebox.connect ('button-press-event', self.on_clicked_mouse)
         fix.put(ebox, 230,0)
-
-        # image for map presenting
+        
         self.img = Gtk.Image()
         ebox.add(self.img)
         self.refresh()
 
-        # side panel - name entry
+        # side panel ################################################################
         self.name = Gtk.Entry()
         fix.put(self.name, 0, 110)
  
-        # side panel - spins
+        # side panel - spins ################################################################
         self.ispin = Gtk.SpinButton()
         adj = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
         self.ispin.set_adjustment(adj)
@@ -60,10 +73,9 @@ class EmpEditor(Gtk.Window):
         self.ospin.set_adjustment(adj)
         fix.put(self.ospin, 0, 180)
 
-        # list of spins
         self.spins = [self.ispin, self.ospin]
 
-        # side panel - buttons
+        # side panel - buttons ################################################################
         self.abut = Gtk.Button(label="+")
         self.abut.connect("clicked", self.on_clicked_add)
         fix.put(self.abut, 170, 110)
@@ -76,7 +88,7 @@ class EmpEditor(Gtk.Window):
         self.svbut.connect("clicked", self.on_clicked_save)
         fix.put(self.svbut, 0, self.height-35)
 
-        # side panel - combos
+        # side panel - combos ################################################################
         self.scombo = Gtk.ComboBoxText()
         self.scombo.connect("changed", self.on_changed_scombo)
         fix.put(self.scombo, 0, 70)
@@ -84,39 +96,15 @@ class EmpEditor(Gtk.Window):
         self.mcombo = Gtk.ComboBoxText()
         self.mcombo.connect("changed", self.on_changed_mcombo)
         fix.put(self.mcombo, 0, 0)
+        for i in self.main_issues: self.mcombo.append_text(i)
 
-        for i in self.main_issues: 
-            self.mcombo.append_text(i)
-        
-        # endig
-        self.idic = {}
-        for i in self.main_issues: 
-            self.idic[i] = -1 
-
-        self.show_all()
-        self.clean_panel()
         self.mcombo.set_active(0)
         self.refill_scombo()
-        self.scam_mode = "input"
 
-        self.rainbow = EmpRainbow(self.width, self.height)
-        self.last_click = (0,0)
-        
-    def new_map_init(self, width, height):
-        print(">> new map")
-        if width<2 or height<2:
-            sys.stderr.write("width or height < 2")
-            sys.exit(-1)
-
-        self.width = width
-        self.height = height
-        self.core = EmpCore(self.width, self.height)
-        self.screen_mode = "topo-map"
-        self.diagram = self.core.diagram
-
-    def load_map_init(self, fname):
-        assert False, "Not implemented!" 
-
+        # endig ################################################################   
+        self.show_all()
+        self.clean_panel()        
+                
     def refill_scombo(self):
         self.scombo.remove_all()        
         nr = self.mcombo.get_active()
@@ -127,7 +115,6 @@ class EmpEditor(Gtk.Window):
         elif self.main_issues[nr] == "GOOD": [self.scombo.append_text(i.name)for i in self.core.goods]
         elif self.main_issues[nr] == "PROCESS": [self.scombo.append_text(i.name)for i in self.core.processes]
         self.scombo.set_active(self.idic[self.main_issues[nr]])                
-
 
     def refresh(self):
         tmp = GLib.Bytes.new(self.diagram)        
@@ -161,8 +148,9 @@ class EmpEditor(Gtk.Window):
             self.diagram = self.core.diagram
             self.refresh()
         
-    def on_clicked_save(self, widget):        
-        s = EmpSave(self.core)
+    def on_clicked_save(self, widget):
+        print("save as output.db")
+        EmpSave(self.core)
         
     def on_clicked_add(self, widget):
         nr,res = self.mcombo.get_active(),-1
@@ -181,8 +169,8 @@ class EmpEditor(Gtk.Window):
             self.name.show()
         else:
             if self.main_issues[nr] == "TERRAIN":
-                i,o = [i.get_value() for i in self.spins]                
                 name = self.name.get_text()
+                i,o = [i.get_value() for i in self.spins]                
                 r,g,b = self.rainbow.get_rgb_color(*self.last_click)
 
                 scombo_index = self.scombo.get_active()
@@ -229,6 +217,22 @@ class EmpEditor(Gtk.Window):
         self.abut.show()
 
     def on_clicked_sub(self, widget):
+        scombo_index = self.scombo.get_active()
+        if scombo_index==-1: return
+
+        res, nr = True, self.mcombo.get_active()
+        if self.main_issues[nr] == "TERRAIN": res = self.core.rm_terrain(scombo_index)
+        elif self.main_issues[nr] == "PROVINCE": res = self.core.rm_province(scombo_index)
+        elif self.main_issues[nr] == "NATION": res = self.core.rm_nation(scombo_index)
+        elif self.main_issues[nr] == "CONTROL": res = self.core.rm_control(scombo_index)
+        elif self.main_issues[nr] == "GOOD": res = self.core.rm_good(scombo_index)
+        elif self.main_issues[nr] == "PROCESS": res = self.core.rm_process(scombo_index)
+        
+        if res: return
+        self.scam_mode="output"
+        if self.core.terrains:
+            self.idic[self.main_issues[nr]] = 0
+        else: self.idic[self.main_issues[nr]] = -1
+        self.refill_scombo()
+        self.scam_mode="input"
         self.clean_panel()
-
-
