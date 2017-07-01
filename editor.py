@@ -124,6 +124,10 @@ class EmpEditor(Gtk.Window):
     def on_clicked_mouse (self, box, event):
         self.last_click = (int(event.x), int(event.y))
         print("click", *self.last_click)
+        if self.screen_mode == "topo-map" and self.idic["TERRAIN"]!=-1 and self.idic["PROVINCE"]!=-1:
+            self.core.set_cross_color(*self.last_click, self.idic["TERRAIN"])
+            self.diagram = self.core.diagram
+            self.refresh()
         
     def on_changed_mcombo(self, widget):
         self.scam_mode="output"

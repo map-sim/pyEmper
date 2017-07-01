@@ -115,14 +115,26 @@ class EmpCore:
         self.provinces = []
         self.nations = []
         self.controls = []
-        self.goods = []
         self.processes = []
+        self.goods = []
         
         tools.call_error(width<10 or height<10, "width or height < 2")
         self.diagram = [0, 100, 100] * width * height
         self.height = height
         self.width = width
 
+    def set_pixel_color(self, x, y, rgb):
+        i = 3 * (x + self.width * y)
+        self.diagram[i:i+2] = rgb[0:2]
+
+    def set_cross_color(self, x, y, n):
+        rgb = self.terrains[n].rgb
+        self.set_pixel_color(x, y, rgb)
+        if x>0: self.set_pixel_color(x-1, y, rgb)
+        if y>0: self.set_pixel_color(x, y-1, rgb)
+        if x<self.width-1: self.set_pixel_color(x+1, y, rgb)
+        if y<self.height-1: self.set_pixel_color(x, y+1, rgb)
+    
     def add_terrain(self, name, rgb, con_in, con_out):
         try: nt = EmpTerrain(name, rgb, con_in, con_out)
         except AssertionError: return -1
