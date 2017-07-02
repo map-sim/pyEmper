@@ -60,51 +60,59 @@ class EmpEditor(Gtk.Window):
 
         # side panel ################################################################
         self.name = Gtk.Entry()
-        fix.put(self.name, 0, 110)
+        fix.put(self.name, 61, 82)
  
         # side panel - spins ################################################################
         self.ispin = Gtk.SpinButton()
         adj = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
         self.ispin.set_adjustment(adj)
-        fix.put(self.ispin, 0, 145)
+        fix.put(self.ispin, 0, 119)
 
         self.ospin = Gtk.SpinButton()
         adj = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
         self.ospin.set_adjustment(adj)
-        fix.put(self.ospin, 0, 180)
+        fix.put(self.ospin, 115, 119)
 
         self.spins = [self.ispin, self.ospin]
 
         # side panel - buttons ################################################################
         self.abut = Gtk.Button(label="+")
         self.abut.connect("clicked", self.on_clicked_add)
-        fix.put(self.abut, 170, 110)
+        fix.put(self.abut, 0, 82)
 
         self.sbut = Gtk.Button(label="-")
         self.sbut.connect("clicked", self.on_clicked_sub)
-        fix.put(self.sbut, 170, 75)
+        fix.put(self.sbut, 179, 45)
 
         self.svbut = Gtk.Button(label="SAVE")
         self.svbut.connect("clicked", self.on_clicked_save)
-        fix.put(self.svbut, 0, self.height-35)
+        fix.put(self.svbut, 160, self.height-35)
 
         # side panel - combos ################################################################
         self.scombo = Gtk.ComboBoxText()
         self.scombo.connect("changed", self.on_changed_scombo)
-        fix.put(self.scombo, 0, 70)
+        fix.put(self.scombo, 0, 45)
 
         self.mcombo = Gtk.ComboBoxText()
         self.mcombo.connect("changed", self.on_changed_mcombo)
         fix.put(self.mcombo, 0, 0)
         for i in self.main_issues: self.mcombo.append_text(i)
 
+        self.dcombo = Gtk.ComboBoxText()
+        #self.dcombo.connect("changed", self.on_changed_dcombo)
+        fix.put(self.dcombo, 0, self.height-35)
+        for i in ["cross"]:
+            self.dcombo.append_text(i)
+
         self.mcombo.set_active(0)
         self.refill_scombo()
 
+        
+        
         # endig ################################################################   
         self.show_all()
         self.clean_panel()        
-                
+
     def refill_scombo(self):
         self.scombo.remove_all()        
         nr = self.mcombo.get_active()
@@ -125,8 +133,8 @@ class EmpEditor(Gtk.Window):
         self.last_click = (int(event.x), int(event.y))
         print("click", *self.last_click)
         if self.screen_mode == "topo-map" and self.idic["TERRAIN"]!=-1 and self.idic["PROVINCE"]!=-1:
-            self.core.set_cross_color(*self.last_click, self.idic["TERRAIN"])
-            self.diagram = self.core.diagram
+            nr = self.dcombo.get_active()
+            if nr==0: self.core.set_cross_color(*self.last_click, self.idic["TERRAIN"])
             self.refresh()
         
     def on_changed_mcombo(self, widget):
@@ -141,6 +149,12 @@ class EmpEditor(Gtk.Window):
             i = self.scombo.get_active()
             nr = self.mcombo.get_active()
             self.idic[self.main_issues[nr]] = i
+            if self.main_issues[nr] == "TERRAIN": print(self.core.terrains[i])
+            elif self.main_issues[nr] == "PROVINCE": print(self.core.provinces[i])
+            elif self.main_issues[nr] == "NATION": print(self.core.nations[i])
+            elif self.main_issues[nr] == "CONTROL": print(self.core.controls[i])
+            elif self.main_issues[nr] == "PROCESS": print(self.core.processes[i])
+            elif self.main_issues[nr] == "GOOD": print(self.core.goods[i])
         else: pass
 
     def clean_panel(self):
