@@ -43,8 +43,8 @@ class EmpSave():
         
         self.cur.execute("INSERT INTO general_info VALUES('date format', '%s')" % date_format)
         self.cur.execute("INSERT INTO general_info VALUES('date', '%s')" % date)
-        self.cur.execute("INSERT INTO general_info VALUES('width', '%d')" % self.core.width)
-        self.cur.execute("INSERT INTO general_info VALUES('height', '%d')" % self.core.height)
+        self.cur.execute("INSERT INTO general_info VALUES('width', '%d')" % self.core.diagram.width)
+        self.cur.execute("INSERT INTO general_info VALUES('height', '%d')" % self.core.diagram.height)
         self.con.commit()
 
     def __save_terrains(self):

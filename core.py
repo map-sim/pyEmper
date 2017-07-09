@@ -109,8 +109,59 @@ class EmpProcess:
     def __repr__(self):
         return "x%d:%s" % (self.get_my_id(), self.name)
 
+class EmpAtom:
+    def __init__(self, x, y, province, terrain):
+        self.province = province
+        self.terrain = terrain
+        self.x,self.y = x,y
+
+class EmpDiagram:
+    def __init__(self, core, width, height):
+        self.rgb = [0, 100, 100] * width * height
+        self.atoms = [None] * width * height
+        self.height = height
+        self.width = width
+        self.core = core
+
+    def get_atom(self, x, y):
+        tools.call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
+        return self.atoms[x+self.width*y]        
+        
+    def set_area(self, pixels, p, t):
+        for x,y in pixels:
+            if x<0 or y<0 or x>=self.width or y>=self.height: return
+
+            i = 3*(x+self.width*y)
+            self.rgb[i:i+2] = self.core.terrains[t].rgb[0:2]
+            self.atoms[x+self.width*y] = EmpAtom(x, y, self.core.provinces[p], self.core.terrains[t])
+
+    def set_border(self, pixel, p, t):
+        atom = self.get_atom(*pixel)
+        if atom == None: return
+        if not atom.terrain is self.core.terrains[t]: return
+        if not atom.province is self.core.provinces[p]: return
+        checked = [False] * self.width * self.height
+        to_check,to_change = [pixel],[]
+        
+        while to_check:
+            xy = to_check.pop()
+            checked[xy[0] + xy[1]*self.width] = True
+            for x,y in [(0,1), (0,-1), (1,0), (-1,0)]:
+                nxy = (xy[0]+x,xy[1]+y)
+                if checked[nxy[0] + nxy[1]*self.width]: continue
+                natom = self.get_atom(*nxy)
+                if natom==None: to_change.append(nxy)
+                elif not(atom.province is natom.province): to_change.append(nxy)
+                elif not(atom.terrain is natom.terrain): to_change.append(nxy)
+                else: to_check.append(nxy)
+                
+        self.set_area(to_change, p, t)
+        
 class EmpCore:
     def __init__(self, width, height):
+        tools.call_error(width<10 or height<10, "width or height < 2")
+        self.diagram = EmpDiagram(self, width, height)
+        
         self.terrains = []
         self.provinces = []
         self.nations = []
@@ -118,23 +169,6 @@ class EmpCore:
         self.processes = []
         self.goods = []
         
-        tools.call_error(width<10 or height<10, "width or height < 2")
-        self.diagram = [0, 100, 100] * width * height
-        self.height = height
-        self.width = width
-
-    def set_pixel_color(self, x, y, rgb):
-        i = 3 * (x + self.width * y)
-        self.diagram[i:i+2] = rgb[0:2]
-
-    def set_cross_color(self, x, y, n):
-        rgb = self.terrains[n].rgb
-        self.set_pixel_color(x, y, rgb)
-        if x>0: self.set_pixel_color(x-1, y, rgb)
-        if y>0: self.set_pixel_color(x, y-1, rgb)
-        if x<self.width-1: self.set_pixel_color(x+1, y, rgb)
-        if y<self.height-1: self.set_pixel_color(x, y+1, rgb)
-    
     def add_terrain(self, name, rgb, con_in, con_out):
         try: nt = EmpTerrain(name, rgb, con_in, con_out)
         except AssertionError: return -1

@@ -36,8 +36,8 @@ class EmpEditor(Gtk.Window):
 
         # set section ################################################################
         self.idic = dict((i, -1) for i in self.main_issues)
-        self.width,self.height = self.core.width, self.core.height
-        self.diagram = self.core.diagram
+        self.width,self.height = self.core.diagram.width, self.core.diagram.height
+        self.diagram_rgb = self.core.diagram.rgb
         self.screen_mode = "topo-map"
         self.scam_mode = "input"
         
@@ -101,7 +101,7 @@ class EmpEditor(Gtk.Window):
         self.dcombo = Gtk.ComboBoxText()
         #self.dcombo.connect("changed", self.on_changed_dcombo)
         fix.put(self.dcombo, 0, self.height-35)
-        for i in ["cross"]:
+        for i in ["cross", "square", "border"]:
             self.dcombo.append_text(i)
 
         self.mcombo.set_active(0)
@@ -125,7 +125,7 @@ class EmpEditor(Gtk.Window):
         self.scombo.set_active(self.idic[self.main_issues[nr]])                
 
     def refresh(self):
-        tmp = GLib.Bytes.new(self.diagram)        
+        tmp = GLib.Bytes.new(self.diagram_rgb)        
         pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.width, self.height, 3*self.width)
         self.img.set_from_pixbuf(pbuf)
         
@@ -134,7 +134,15 @@ class EmpEditor(Gtk.Window):
         print("click", *self.last_click)
         if self.screen_mode == "topo-map" and self.idic["TERRAIN"]!=-1 and self.idic["PROVINCE"]!=-1:
             nr = self.dcombo.get_active()
-            if nr==0: self.core.set_cross_color(*self.last_click, self.idic["TERRAIN"])
+            x,y = self.last_click
+            if nr==0:
+                a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
+                self.core.diagram.set_area(a, self.idic["PROVINCE"], self.idic["TERRAIN"])
+            elif nr==1:
+                a = [(x+a-2,y+b-2) for a in range(5) for b in range(5)]
+                self.core.diagram.set_area(a, self.idic["PROVINCE"], self.idic["TERRAIN"])
+            elif nr==2:
+                self.core.diagram.set_border(self.last_click, self.idic["PROVINCE"], self.idic["TERRAIN"])
             self.refresh()
         
     def on_changed_mcombo(self, widget):
@@ -163,7 +171,7 @@ class EmpEditor(Gtk.Window):
         for s in self.spins: s.hide()
         if self.screen_mode == "rainbow":
             self.screen_mode = "topo-map"
-            self.diagram = self.core.diagram
+            self.diagram_rgb = self.core.diagram.rgb
             self.refresh()
         
     def on_clicked_save(self, widget):
@@ -175,7 +183,7 @@ class EmpEditor(Gtk.Window):
         if not self.name.is_visible() :            
             if self.main_issues[nr] == "TERRAIN":
                 for i in self.spins: i.show()
-                self.diagram = self.rainbow.diagram
+                self.diagram_rgb = self.rainbow.rgb
                 self.screen_mode = "rainbow"
                 self.refresh()
 

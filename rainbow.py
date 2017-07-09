@@ -11,7 +11,7 @@ class EmpRainbow:
 
         self.width = width
         self.height = height
-        self.diagram = [0, 0, 0]*self.width*self.height
+        self.rgb = [0, 0, 0]*self.width*self.height
 
         width2 = self.width/2
         height2 = self.height/2
@@ -40,9 +40,9 @@ class EmpRainbow:
                     nb = b + float(255.0-b) * n
                 
                 i = 3 * (x + self.width * y)
-                self.diagram[i] = int(nr)
-                self.diagram[i+1] = int(ng)
-                self.diagram[i+2] = int(nb)
+                self.rgb[i] = int(nr)
+                self.rgb[i+1] = int(ng)
+                self.rgb[i+2] = int(nb)
 
     # only one sample can be taken
     def get_rgb_color(self, x, y):
@@ -54,5 +54,5 @@ class EmpRainbow:
             sys.exit(-1)
 
         i = 3 * (x + self.width * y)
-        return (self.diagram[i], self.diagram[i+1], self.diagram[i+2])
+        return (self.rgb[i], self.rgb[i+1], self.rgb[i+2])
                 
