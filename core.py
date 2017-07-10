@@ -2,117 +2,62 @@
 
 from tools import  call_error
 
-class EmpTerrain:
-    def __init__(self, name, rgb, con_in, con_out):
-        assert len(rgb) == 3, "3 times char is excpected"
-        assert con_in>=0 and con_in<=1, "con_in out of range"
-        assert con_out>=0 and con_out<=1, "con_out out of range"
-        assert len(name)>=3 and len(name)<=16, "too long string"
-        for c in rgb: 
-            assert int(c)>=0 and int(c)<256, "3 chars are excpected"
+class EmpIder:
+    def __init__(self, core, name, tab):
+        self.core = core
+        self.table = tab
         
-        self.con_out = float(con_out)
-        self.con_in = float(con_in)
+        assert len(name)>=3 and len(name)<=16, "too long string"
         self.name = str(name)
-        self.rgb = tuple(rgb)
-        self.core = None
-
-    def set_parameters(self, rgb, con_in, con_out):
-        self.con_out = float(con_out)
-        self.con_in = float(con_in)
-        self.rgb = tuple(rgb)
         
     def get_my_id(self):
-        if self.core:
-            for i,t in enumerate(self.core.terrains):
-                if t.name == self.name: return i
-            return -1
-        else: return -1
-                    
+        for i,t in enumerate(self.table):
+            if t.name == self.name: return i
+        return -1
+
+class EmpTerrain(EmpIder):
     def __repr__(self):
         k = self.get_my_id(), self.name, self.con_in, self.con_out, *self.rgb
         return "t%d:%s %g %g (%d,%d,%d)" % k
-        
-class EmpProvince:
-    def __init__(self, name):
-        assert len(name)>=3 and len(name)<=16, "too long string"
-        self.name = str(name)
-        self.core = None
 
-    def get_my_id(self):
-        if self.core:
-            for i,p in enumerate(self.core.provinces):
-                if p.name == self.name: return i
-            return -1
-        else: return -1
-    
-    def __repr__(self):
-        return "p%d:%s" % (self.get_my_id(), self.name)
+    def __init__(self, core, name, rgb, con_in, con_out):
+        super().__init__(core, name, core.terrains)        
+        self.set_parameters(rgb, con_in, con_out)
 
-        
-class EmpNation:
-    def __init__(self, name):
-        assert len(name)>=3 and len(name)<=16, "too long string"
-        self.name = str(name)
-        self.core = None
+    def set_parameters(self, rgb, con_in, con_out):
+        assert len(rgb) == 3, "3 times char is excpected"
+        assert con_in>=0 and con_in<=1, "con_in out of range"
+        assert con_out>=0 and con_out<=1, "con_out out of range"
+        for c in rgb: assert int(c)>=0 and int(c)<256, "3 chars are excpected"
+        self.con_out = float(con_out)
+        self.con_in = float(con_in)
+        self.rgb = tuple(rgb)
+            
+class EmpProvince(EmpIder):
+    def __repr__(self): return "p%d:%s" % (self.get_my_id(), self.name)
+    def __init__(self, core, name):
+        super().__init__(core, name, core.provinces)        
+            
+class EmpNation(EmpIder):
+    def __repr__(self): return "n%d:%s" % (self.get_my_id(), self.name)
+    def __init__(self, core, name):
+        super().__init__(core, name, core.provinces)        
 
-    def get_my_id(self):
-        if self.core:
-            for i,n in enumerate(self.core.nations):
-                if n.name == self.name: return i
-            return -1
-        else: return -1
+class EmpControl(EmpIder):
+    def __repr__(self): return "c%d:%s" % (self.get_my_id(), self.name)
+    def __init__(self, core, name):
+        super().__init__(core, name, core.controls)        
 
-    def __repr__(self):
-        return "n%d:%s" % (self.get_my_id(), self.name)
+class EmpGood(EmpIder):
+    def __repr__(self): return "g%d:%s" % (self.get_my_id(), self.name)
+    def __init__(self, core, name):
+        super().__init__(core, name, core.goods)        
 
-class EmpControl:
-    def __init__(self, name):
-        assert len(name)>=3 and len(name)<=16, "too long string"
-        self.name = str(name)
-        self.core = None
+class EmpProcess(EmpIder):
+    def __repr__(self): return "x%d:%s" % (self.get_my_id(), self.name)
+    def __init__(self, core, name):
+        super().__init__(core, name, core.goods)        
 
-    def get_my_id(self):
-        if self.core:
-            for i,c in enumerate(self.core.controls):
-                if c.name == self.name: return i
-            return -1
-        else: return -1
-
-    def __repr__(self):
-        return "c%d:%s" % (self.get_my_id(), self.name)
-
-class EmpGood:
-    def __init__(self, name):
-        assert len(name)>=3 and len(name)<=16, "too long string"
-        self.name = str(name)
-        self.core = None
-
-    def get_my_id(self):
-        if self.core:
-            for i,g in enumerate(self.core.goods):
-                if g.name == self.name: return i
-            return -1
-        else: return -1
-
-    def __repr__(self):
-        return "g%d:%s" % (self.get_my_id(), self.name)
-
-class EmpProcess:
-    def __init__(self, name):
-        assert len(name)>=3 and len(name)<=16, "too long string"
-        self.name = str(name)
-        self.core = None
-
-    def get_my_id(self):
-        if self.core:
-            for i,x in enumerate(self.core.processes):
-                if x.name == self.name: return i
-            return -1
-        else: return -1
-
-    def __repr__(self):
-        return "x%d:%s" % (self.get_my_id(), self.name)
 
 class EmpAtom:
     def __init__(self, diagram, x, y, province, terrain):
@@ -135,6 +80,11 @@ class EmpDiagram:
         self.width = width
         self.core = core
 
+    def refresh(self):
+        for n,a in enumerate(self.atoms):
+            if a==None: self.rgb[3*n:3*n+3] = (0, 100, 100)
+            else: self.rgb[3*n:3*n+3] = a.terrain.rgb
+        
     def get_atom(self, x, y):
         call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
         return self.atoms[x+self.width*y]
@@ -155,11 +105,6 @@ class EmpDiagram:
         except AssertionError: return True
         return False
         
-    def refresh(self):
-        for n,a in enumerate(self.atoms):
-            if a==None: self.rgb[3*n:3*n+3] = (0, 100, 100)
-            else: self.rgb[3*n:3*n+3] = a.terrain.rgb
-        
     def draw_lines(self):
         g1 = (a for a in self.atoms if self.__check_border(a))        
         for a in g1: self.rgb[3*a.n:3*a.n+3] = (0,0,0)
@@ -172,8 +117,7 @@ class EmpDiagram:
             i,i3 = x+self.width*y, 3*(x+self.width*y)
             self.atoms[i] = EmpAtom(self, x, y, prov, self.core.terrains[t])
             self.rgb[i3:i3+3] = self.core.terrains[t].rgb[0:3]
-            
-            
+                        
     def set_border(self, pixel, p, t):
         atom = self.get_atom(*pixel)
         if atom == None: return
@@ -206,7 +150,6 @@ class EmpDiagram:
                 pixels.append((pixel[0]+(x-radius), pixel[1]+(y-radius)))
         self.set_area(pixels, p, t)
 
-
 class EmpCore:
     def __init__(self, width, height):
         call_error(width<10 or height<10, "width or height < 2")
@@ -220,7 +163,7 @@ class EmpCore:
         self.goods = []
         
     def add_terrain(self, name, rgb, con_in, con_out):
-        try: nt = EmpTerrain(name, rgb, con_in, con_out)
+        try: nt = EmpTerrain(self, name, rgb, con_in, con_out)
         except AssertionError: return -1
 
         for t in self.terrains:
@@ -235,7 +178,7 @@ class EmpCore:
         return 0
     
     def add_province(self, name):
-        try: np = EmpProvince(name)
+        try: np = EmpProvince(self, name)
         except AssertionError: return -1
 
         for p in self.provinces:
@@ -250,7 +193,7 @@ class EmpCore:
         return 0
     
     def add_nation(self, name):
-        try: nn = EmpNation(name)
+        try: nn = EmpNation(self, name)
         except AssertionError: return -1
 
         for n in self.nations:
@@ -265,7 +208,7 @@ class EmpCore:
         return 0
     
     def add_control(self, name):
-        try: nc = EmpControl(name)
+        try: nc = EmpControl(self, name)
         except AssertionError: return -1
 
         for c in self.controls:
@@ -280,7 +223,7 @@ class EmpCore:
         return 0
     
     def add_good(self, name):
-        try: ng = EmpGood(name)
+        try: ng = EmpGood(self, name)
         except AssertionError: return -1
 
         for g in self.goods:
@@ -295,7 +238,7 @@ class EmpCore:
         return 0
     
     def add_process(self, name):
-        try: np = EmpProcess(name)
+        try: np = EmpProcess(self, name)
         except AssertionError: return -1
 
         for p in self.processes:

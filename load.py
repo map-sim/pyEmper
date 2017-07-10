@@ -51,6 +51,12 @@ class EmpLoad:
             rows = self.cur.fetchall()
             for x in rows: self.core.add_process(x['name'])
 
+            self.cur.execute("SELECT * FROM diagram")
+            rows = self.cur.fetchall()
+            for a in rows:
+                xy = [(int(a['x']), int(a['y']))]
+                self.core.diagram.set_area(xy, int(a['t']), int(a['p']))
+            
         finally:    
             if self.con:
                 self.con.close()

@@ -26,6 +26,8 @@ class EmpSave():
             self.__save_processes()
             self.__save_goods()
 
+            self.__save_diagram()
+
         finally:    
             if self.con:
                 self.con.close()
@@ -78,6 +80,12 @@ class EmpSave():
         self.cur.execute("CREATE TABLE processes(name TEXT)")
         for p in self.core.processes:
             self.cur.execute("INSERT INTO processes VALUES('%s')" % p.name)
+        self.con.commit()
+
+    def __save_diagram(self):
+        self.cur.execute("CREATE TABLE diagram(x INT, y INT, t INT, p INT)")
+        g = (a for a in self.core.diagram.atoms if a)
+        for a in g: self.cur.execute("INSERT INTO diagram VALUES(%d, %d, %d, %d)" % (a.x, a.y, a.terrain.get_my_id(), a.province.get_my_id()))
         self.con.commit()
 
     def expotr_to_html(self):
