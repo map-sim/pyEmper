@@ -10,11 +10,11 @@ from gi.repository import GLib
 from gi.repository import Gtk
 
 import sys
-import tools
 from core import EmpCore
 from save import EmpSave
 from load import EmpLoad
 from rainbow import EmpRainbow
+from tools import  call_error
     
 class EmpEditor(Gtk.Window):
 
@@ -22,7 +22,7 @@ class EmpEditor(Gtk.Window):
         def internal(self, *args):
             if len(args)==2: self.new_map_init(*map(int, args))
             elif len(args)==1: self.load_map_init(str(args[0]))
-            else: tools.call_error(True, "wrong arguments number")                 
+            else: call_error(True, "wrong arguments number")
             init(self)
         return internal
 
@@ -175,7 +175,7 @@ class EmpEditor(Gtk.Window):
             self.refresh()
         
     def on_clicked_save(self, widget):
-        print("save as output.db")
+        print("save as save.db")
         EmpSave(self.core)
         
     def on_clicked_add(self, widget):
@@ -198,6 +198,7 @@ class EmpEditor(Gtk.Window):
                 name = self.name.get_text()
                 i,o = [i.get_value() for i in self.spins]                
                 r,g,b = self.rainbow.get_rgb_color(*self.last_click)
+                # print(r,g,b)
 
                 scombo_index = self.scombo.get_active()
                 if not name and scombo_index>=0:

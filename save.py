@@ -4,12 +4,12 @@ import sqlite3 as lite
 import os, os.path
 import core, sys
 import datetime
-import tools
+from tools import call_error
 
 class EmpSave():
 
     def __init__(self, arg, fname="save.db", author="anonymous"):
-        tools.error(type(arg) != type(core.EmpCore(10, 10)), "arg has wrong type!")
+        call_error(type(arg) != type(core.EmpCore(10, 10)), "arg has wrong type!")
         if os.path.isfile(fname): os.remove(fname)
 
         self.core = arg        

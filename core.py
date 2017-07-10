@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import tools
+from tools import  call_error
 
 class EmpTerrain:
     def __init__(self, name, rgb, con_in, con_out):
@@ -124,7 +124,7 @@ class EmpDiagram:
         self.core = core
 
     def get_atom(self, x, y):
-        tools.call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
+        call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
         return self.atoms[x+self.width*y]        
         
     def set_area(self, pixels, p, t):
@@ -167,7 +167,7 @@ class EmpDiagram:
 
 class EmpCore:
     def __init__(self, width, height):
-        tools.call_error(width<10 or height<10, "width or height < 2")
+        call_error(width<10 or height<10, "width or height < 2")
         self.diagram = EmpDiagram(self, width, height)
         
         self.terrains = []

@@ -3,12 +3,12 @@
 import sys, os, os.path
 import sqlite3 as lite
 from core import EmpCore
-import tools
+from tools import call_error
 
 class EmpLoad:
 
     def __init__(self, fname="save.db"):
-        tools.call_error(not os.path.isfile(fname), "file does not exist!")                 
+        call_error(not os.path.isfile(fname), "file does not exist!")
 
         self.con = None
         try:
