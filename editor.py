@@ -106,6 +106,7 @@ class EmpEditor(Gtk.Window):
 
         self.mcombo.connect("changed", self.on_changed_mcombo)
         self.scombo.connect("changed", self.on_changed_scombo)
+        self.dcombo.connect("changed", self.on_changed_dcombo)
                 
         # endig ################################################################   
         self.show_all()
@@ -123,6 +124,7 @@ class EmpEditor(Gtk.Window):
         self.scombo.set_active(self.idic[self.main_issues[nr]])                
 
     def refresh(self):
+        self.core.diagram.draw_lines()
         tmp = GLib.Bytes.new(self.diagram_rgb)        
         pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.width, self.height, 3*self.width)
         self.img.set_from_pixbuf(pbuf)
@@ -148,7 +150,7 @@ class EmpEditor(Gtk.Window):
         self.refill_scombo()
         self.clean_panel()
         self.scam_mode="input"
-
+        
     def on_changed_scombo(self, widget):
         self.clean_panel()
         if self.scam_mode=="input":
@@ -163,6 +165,11 @@ class EmpEditor(Gtk.Window):
             elif self.main_issues[nr] == "GOOD": print(self.core.goods[i])
         else: pass
 
+    def on_changed_dcombo(self, widget):
+        self.core.diagram.refresh()
+        self.refresh()
+
+        
     def clean_panel(self):
         self.name.hide()
         self.name.set_text("")

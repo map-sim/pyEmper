@@ -115,10 +115,17 @@ class EmpProcess:
         return "x%d:%s" % (self.get_my_id(), self.name)
 
 class EmpAtom:
-    def __init__(self, x, y, province, terrain):
+    def __init__(self, diagram, x, y, province, terrain):
         self.province = province
         self.terrain = terrain
+        self.diagram = diagram
+        
+        self.n = x + y*self.diagram.width
         self.x,self.y = x,y
+        
+    def __repr__(self):
+        return "x%d:y%d" % (self.x, self.y)
+    
 
 class EmpDiagram:
     def __init__(self, core, width, height):
@@ -130,16 +137,43 @@ class EmpDiagram:
 
     def get_atom(self, x, y):
         call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
-        return self.atoms[x+self.width*y]        
+        return self.atoms[x+self.width*y]
+
+    def __cmp_provinces(self, a1, a2):
+        if a1==None and a2==None: return True
+        if a1==None or a2==None: return False
+        if a1.province is a2.province: return True
+        else: return False
+    
+    def __check_border(self, atom):
+        if atom==None: return False
+        try:
+            if not self.__cmp_provinces(atom, self.get_atom(atom.x+1, atom.y)): return True
+            if not self.__cmp_provinces(atom, self.get_atom(atom.x-1, atom.y)): return True
+            if not self.__cmp_provinces(atom, self.get_atom(atom.x, atom.y+1)): return True
+            if not self.__cmp_provinces(atom, self.get_atom(atom.x, atom.y-1)): return True
+        except AssertionError: return True
+        return False
         
+    def refresh(self):
+        for n,a in enumerate(self.atoms):
+            if a==None: self.rgb[3*n:3*n+3] = (0, 100, 100)
+            else: self.rgb[3*n:3*n+3] = a.terrain.rgb
+        
+    def draw_lines(self):
+        g1 = (a for a in self.atoms if self.__check_border(a))        
+        for a in g1: self.rgb[3*a.n:3*a.n+3] = (0,0,0)
+                    
     def set_area(self, pixels, p, t):
         for x,y in pixels:
             if x<0 or y<0 or x>=self.width or y>=self.height: return
 
-            i = 3*(x+self.width*y)
-            self.rgb[i:i+3] = self.core.terrains[t].rgb[0:3]
-            self.atoms[x+self.width*y] = EmpAtom(x, y, self.core.provinces[p], self.core.terrains[t])
-
+            prov = self.core.provinces[p]
+            i,i3 = x+self.width*y, 3*(x+self.width*y)
+            self.atoms[i] = EmpAtom(self, x, y, prov, self.core.terrains[t])
+            self.rgb[i3:i3+3] = self.core.terrains[t].rgb[0:3]
+            
+            
     def set_border(self, pixel, p, t):
         atom = self.get_atom(*pixel)
         if atom == None: return
@@ -153,8 +187,11 @@ class EmpDiagram:
             checked[xy[0] + xy[1]*self.width] = True
             for x,y in [(0,1), (0,-1), (1,0), (-1,0)]:
                 nxy = (xy[0]+x,xy[1]+y)
-                if checked[nxy[0] + nxy[1]*self.width]: continue
-                natom = self.get_atom(*nxy)
+                try:
+                    if checked[nxy[0] + nxy[1]*self.width]: continue
+                except IndexError: continue
+                try: natom = self.get_atom(*nxy)
+                except AssertionError: continue
                 if natom==None: to_change.append(nxy)
                 elif not(atom.province is natom.province): to_change.append(nxy)
                 elif not(atom.terrain is natom.terrain): to_change.append(nxy)
