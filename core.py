@@ -17,6 +17,11 @@ class EmpTerrain:
         self.rgb = tuple(rgb)
         self.core = None
 
+    def set_parameters(rgb, con_in, con_out):
+        self.con_out = float(con_out)
+        self.con_in = float(con_in)
+        self.rgb = tuple(rgb)
+        
     def get_my_id(self):
         if self.core:
             for i,t in enumerate(self.core.terrains):
@@ -132,7 +137,7 @@ class EmpDiagram:
             if x<0 or y<0 or x>=self.width or y>=self.height: return
 
             i = 3*(x+self.width*y)
-            self.rgb[i:i+2] = self.core.terrains[t].rgb[0:2]
+            self.rgb[i:i+3] = self.core.terrains[t].rgb[0:3]
             self.atoms[x+self.width*y] = EmpAtom(x, y, self.core.provinces[p], self.core.terrains[t])
 
     def set_border(self, pixel, p, t):

@@ -80,3 +80,9 @@ class EmpSave():
             self.cur.execute("INSERT INTO processes VALUES('%s')" % p.name)
         self.con.commit()
 
+    def expotr_to_html(self):
+        with open("save.html", "w") as fd:
+            for t in self.core.terrains:                
+                fd.write("%1.2f %1.2f " % (t.con_in, t.con_out))
+                fd.write("<canvas width='10' height='10' style='border:1px solid #000000; background: #%02x%02x%02x'></canvas>" % t.rgb)
+                fd.write(" <b>%s</b><br>\n " % t.name)

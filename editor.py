@@ -90,16 +90,13 @@ class EmpEditor(Gtk.Window):
 
         # side panel - combos ################################################################
         self.scombo = Gtk.ComboBoxText()
-        self.scombo.connect("changed", self.on_changed_scombo)
         fix.put(self.scombo, 0, 45)
 
         self.mcombo = Gtk.ComboBoxText()
-        self.mcombo.connect("changed", self.on_changed_mcombo)
         fix.put(self.mcombo, 0, 0)
         for i in self.main_issues: self.mcombo.append_text(i)
 
         self.dcombo = Gtk.ComboBoxText()
-        #self.dcombo.connect("changed", self.on_changed_dcombo)
         fix.put(self.dcombo, 0, self.height-35)
         for i in ["cross", "square", "circle", "border"]:
             self.dcombo.append_text(i)
@@ -107,8 +104,9 @@ class EmpEditor(Gtk.Window):
         self.mcombo.set_active(0)
         self.refill_scombo()
 
-        
-        
+        self.mcombo.connect("changed", self.on_changed_mcombo)
+        self.scombo.connect("changed", self.on_changed_scombo)
+                
         # endig ################################################################   
         self.show_all()
         self.clean_panel()        
@@ -176,7 +174,8 @@ class EmpEditor(Gtk.Window):
         
     def on_clicked_save(self, widget):
         print("save as save.db")
-        EmpSave(self.core)
+        s = EmpSave(self.core)
+        s.expotr_to_html()
         
     def on_clicked_add(self, widget):
         nr,res = self.mcombo.get_active(),-1
@@ -198,12 +197,11 @@ class EmpEditor(Gtk.Window):
                 name = self.name.get_text()
                 i,o = [i.get_value() for i in self.spins]                
                 r,g,b = self.rainbow.get_rgb_color(*self.last_click)
-                # print(r,g,b)
 
                 scombo_index = self.scombo.get_active()
                 if not name and scombo_index>=0:
-                    t = self.core.terrains[scombo_index].rgb = (r,g,b)
-                    print("mod", str(t))
+                    self.core.terrains[scombo_index].set_parameters((r,g,b), 0.01*i, 0.01*o)
+                    print("mod", str(self.core.terrains[scombo_index]))
                 else:
                     res = self.core.add_terrain(name, (r,g,b), 0.01*i, 0.01*o)
                     if res>=0: print("add", str(self.core.terrains[res]))
