@@ -7,7 +7,7 @@ class EmpTerrain:
         assert len(rgb) == 3, "3 times char is excpected"
         assert con_in>=0 and con_in<=1, "con_in out of range"
         assert con_out>=0 and con_out<=1, "con_out out of range"
-        assert len(name)>=3 and len(name)<=14, "too long string"
+        assert len(name)>=3 and len(name)<=16, "too long string"
         for c in rgb: 
             assert int(c)>=0 and int(c)<256, "3 chars are excpected"
         
@@ -17,7 +17,7 @@ class EmpTerrain:
         self.rgb = tuple(rgb)
         self.core = None
 
-    def set_parameters(rgb, con_in, con_out):
+    def set_parameters(self, rgb, con_in, con_out):
         self.con_out = float(con_out)
         self.con_in = float(con_in)
         self.rgb = tuple(rgb)
@@ -35,7 +35,7 @@ class EmpTerrain:
         
 class EmpProvince:
     def __init__(self, name):
-        assert len(name)>=3 and len(name)<=14, "too long string"
+        assert len(name)>=3 and len(name)<=16, "too long string"
         self.name = str(name)
         self.core = None
 
@@ -52,7 +52,7 @@ class EmpProvince:
         
 class EmpNation:
     def __init__(self, name):
-        assert len(name)>=3 and len(name)<=14, "too long string"
+        assert len(name)>=3 and len(name)<=16, "too long string"
         self.name = str(name)
         self.core = None
 
@@ -68,7 +68,7 @@ class EmpNation:
 
 class EmpControl:
     def __init__(self, name):
-        assert len(name)>=3 and len(name)<=14, "too long string"
+        assert len(name)>=3 and len(name)<=16, "too long string"
         self.name = str(name)
         self.core = None
 
@@ -84,7 +84,7 @@ class EmpControl:
 
 class EmpGood:
     def __init__(self, name):
-        assert len(name)>=3 and len(name)<=14, "too long string"
+        assert len(name)>=3 and len(name)<=16, "too long string"
         self.name = str(name)
         self.core = None
 
@@ -100,7 +100,7 @@ class EmpGood:
 
 class EmpProcess:
     def __init__(self, name):
-        assert len(name)>=3 and len(name)<=14, "too long string"
+        assert len(name)>=3 and len(name)<=16, "too long string"
         self.name = str(name)
         self.core = None
 
