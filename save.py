@@ -4,18 +4,15 @@ import sqlite3 as lite
 import os, os.path
 import core, sys
 import datetime
+import tools
 
 class EmpSave():
 
-    def __init__(self, arg, fname="output.db", author="anonymous"):
-        if type(arg) != type(core.EmpCore(10, 10)):
-            sys.stderr.write("arg has wrong type!")
-            sys.exit(-1)
-        else: self.core = arg
+    def __init__(self, arg, fname="save.db", author="anonymous"):
+        tools.error(type(arg) != type(core.EmpCore(10, 10)), "arg has wrong type!")
+        if os.path.isfile(fname): os.remove(fname)
 
-        if os.path.isfile(fname):
-            os.remove(fname)
-        
+        self.core = arg        
         self.con = None
         try:
             self.con = lite.connect(fname)

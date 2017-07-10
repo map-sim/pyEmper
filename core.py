@@ -153,10 +153,18 @@ class EmpDiagram:
                 if natom==None: to_change.append(nxy)
                 elif not(atom.province is natom.province): to_change.append(nxy)
                 elif not(atom.terrain is natom.terrain): to_change.append(nxy)
-                else: to_check.append(nxy)
-                
+                else: to_check.append(nxy)        
         self.set_area(to_change, p, t)
-        
+
+    def set_circle(self, pixel, p, t):
+        radius, pixels = 6, []
+        for x in range(2*radius+1):
+            for y in range(2*radius+1):
+                if (x-radius)**2 + (y-radius)**2 > radius**2: continue
+                pixels.append((pixel[0]+(x-radius), pixel[1]+(y-radius)))
+        self.set_area(pixels, p, t)
+
+
 class EmpCore:
     def __init__(self, width, height):
         tools.call_error(width<10 or height<10, "width or height < 2")

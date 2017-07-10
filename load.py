@@ -1,15 +1,14 @@
 #!/usr/bin/python3
 
-import os, os.path
+import sys, os, os.path
 import sqlite3 as lite
 from core import EmpCore
+import tools
 
 class EmpLoad:
 
-    def __init__(self, fname="input.db"):
-        if not os.path.isfile(fname):
-            sys.stderr.write("file does not exist!")
-            sys.exit(-1)
+    def __init__(self, fname="save.db"):
+        tools.call_error(not os.path.isfile(fname), "file does not exist!")                 
 
         self.con = None
         try:

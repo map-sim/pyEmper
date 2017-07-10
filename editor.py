@@ -22,7 +22,7 @@ class EmpEditor(Gtk.Window):
         def internal(self, *args):
             if len(args)==2: self.new_map_init(*map(int, args))
             elif len(args)==1: self.load_map_init(str(args[0]))
-            else: tools.error(True, "wrong arguments number")                 
+            else: tools.call_error(True, "wrong arguments number")                 
             init(self)
         return internal
 
@@ -101,7 +101,7 @@ class EmpEditor(Gtk.Window):
         self.dcombo = Gtk.ComboBoxText()
         #self.dcombo.connect("changed", self.on_changed_dcombo)
         fix.put(self.dcombo, 0, self.height-35)
-        for i in ["cross", "square", "border"]:
+        for i in ["cross", "square", "circle", "border"]:
             self.dcombo.append_text(i)
 
         self.mcombo.set_active(0)
@@ -141,8 +141,8 @@ class EmpEditor(Gtk.Window):
             elif nr==1:
                 a = [(x+a-2,y+b-2) for a in range(5) for b in range(5)]
                 self.core.diagram.set_area(a, self.idic["PROVINCE"], self.idic["TERRAIN"])
-            elif nr==2:
-                self.core.diagram.set_border(self.last_click, self.idic["PROVINCE"], self.idic["TERRAIN"])
+            elif nr==2: self.core.diagram.set_circle(self.last_click, self.idic["PROVINCE"], self.idic["TERRAIN"])
+            elif nr==3: self.core.diagram.set_border(self.last_click, self.idic["PROVINCE"], self.idic["TERRAIN"])
             self.refresh()
         
     def on_changed_mcombo(self, widget):
