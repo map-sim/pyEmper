@@ -124,7 +124,6 @@ class EmpEditor(Gtk.Window):
         self.scombo.set_active(self.idic[self.main_issues[nr]])                
 
     def refresh(self):
-        self.core.diagram.draw_lines()
         tmp = GLib.Bytes.new(self.diagram_rgb)        
         pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.width, self.height, 3*self.width)
         self.img.set_from_pixbuf(pbuf)
@@ -167,6 +166,7 @@ class EmpEditor(Gtk.Window):
 
     def on_changed_dcombo(self, widget):
         self.core.diagram.refresh()
+        self.core.diagram.draw_lines()        
         self.refresh()
 
         
