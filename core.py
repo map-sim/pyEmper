@@ -68,6 +68,42 @@ class EmpAtom:
         self.n = x + y*self.diagram.width
         self.x,self.y = x,y
         
+    def check_border(self):        
+        try:
+            try:
+                if not self.province is self.diagram.get_atom(self.x+1, self.y).province: return True
+            except AttributeError:  return True
+            try:
+                if not self.province is self.diagram.get_atom(self.x-1, self.y).province: return True
+            except AttributeError:  return True
+            try:
+                if not self.province is self.diagram.get_atom(self.x, self.y+1).province: return True
+            except AttributeError:  return True
+            try:
+                if not self.province is self.diagram.get_atom(self.x, self.y-1).province: return True
+            except AttributeError: return True
+        except AssertionError: return True
+        return False
+
+    def check_coast(self):
+        if self.terrain.con_out<=0.5: return False
+        try:
+            a = self.diagram.get_atom(self.x+1, self.y)
+            if a.terrain.con_out<=0.5: return True
+        except AttributeError: pass
+        try:
+            a = self.diagram.get_atom(self.x-1, self.y)
+            if a.terrain.con_out<=0.5: return True
+        except AttributeError: pass
+        try:
+            a = self.diagram.get_atom(self.x, self.y+1)
+            if a.terrain.con_out<=0.5: return True
+        except AttributeError: pass
+        try:
+            a = self.diagram.get_atom(self.x, self.y-1)
+            if a.terrain.con_out<=0.5: return True
+        except AttributeError: pass
+
     def __repr__(self):
         return "x%d:y%d" % (self.x, self.y)
     
@@ -88,26 +124,13 @@ class EmpDiagram:
     def get_atom(self, x, y):
         call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
         return self.atoms[x+self.width*y]
-
-    def __cmp_provinces(self, a1, a2):
-        if a1==None and a2==None: return True
-        if a1==None or a2==None: return False
-        if a1.province is a2.province: return True
-        else: return False
     
-    def __check_border(self, atom):
-        if atom==None: return False
-        try:
-            if not self.__cmp_provinces(atom, self.get_atom(atom.x+1, atom.y)): return True
-            if not self.__cmp_provinces(atom, self.get_atom(atom.x-1, atom.y)): return True
-            if not self.__cmp_provinces(atom, self.get_atom(atom.x, atom.y+1)): return True
-            if not self.__cmp_provinces(atom, self.get_atom(atom.x, atom.y-1)): return True
-        except AssertionError: return True
-        return False
-        
     def draw_lines(self):
-        g1 = (a for a in self.atoms if self.__check_border(a))        
-        for a in g1: self.rgb[3*a.n:3*a.n+3] = (0,0,0)
+        g = (a for a in self.atoms if a!=None and a.check_coast())        
+        for a in g: self.rgb[3*a.n:3*a.n+3] = (0,64,128)
+        g = (a for a in self.atoms if a!=None and a.check_border())        
+        for a in g: self.rgb[3*a.n:3*a.n+3] = (0,0,0)
+
                     
     def set_area(self, pixels, p, t):
         for x,y in pixels:
