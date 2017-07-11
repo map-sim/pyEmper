@@ -35,6 +35,7 @@ class EmpEditor(Gtk.Window):
     def __init__(self, *args):
 
         # set section ################################################################
+        self.key_flags = {}
         self.idic = dict((i, -1) for i in self.main_issues)
         self.width,self.height = self.core.diagram.width, self.core.diagram.height
         self.diagram_rgb = self.core.diagram.rgb
@@ -47,6 +48,7 @@ class EmpEditor(Gtk.Window):
         # window and main panel ################################################################
         Gtk.Window.__init__(self, title="py-emper")
         self.connect("delete-event", Gtk.main_quit)
+        self.connect('key_press_event', self.on_press_key)
         fix = Gtk.Fixed()
         self.add(fix)
         
@@ -106,11 +108,30 @@ class EmpEditor(Gtk.Window):
 
         self.mcombo.connect("changed", self.on_changed_mcombo)
         self.scombo.connect("changed", self.on_changed_scombo)
-        self.dcombo.connect("changed", self.on_changed_dcombo)
-                
+        
         # endig ################################################################   
         self.show_all()
         self.clean_panel()        
+
+    def on_press_key(self, widget, event):
+        print("key (%d) was pressed" % event.keyval)
+        if event.keyval==98:
+            self.core.diagram.refresh()
+            try:
+                if self.key_flags["b"]:
+                    self.core.diagram.draw_lines()        
+                    self.key_flags["b"] = False
+                else: self.key_flags["b"] = True
+            except KeyError: 
+                self.key_flags["b"] = True
+                self.core.diagram.draw_lines()        
+
+            self.refresh()
+        elif event.keyval==49: self.dcombo.set_active(0)
+        elif event.keyval==50: self.dcombo.set_active(1)
+        elif event.keyval==51: self.dcombo.set_active(2)
+        elif event.keyval==52: self.dcombo.set_active(3)
+
 
     def refill_scombo(self):
         self.scombo.remove_all()        
@@ -164,12 +185,6 @@ class EmpEditor(Gtk.Window):
             elif self.main_issues[nr] == "GOOD": print(self.core.goods[i])
         else: pass
 
-    def on_changed_dcombo(self, widget):
-        self.core.diagram.refresh()
-        self.core.diagram.draw_lines()        
-        self.refresh()
-
-        
     def clean_panel(self):
         self.name.hide()
         self.name.set_text("")
