@@ -55,7 +55,9 @@ class EmpLoad:
             rows = self.cur.fetchall()
             for a in rows:
                 xy = [(int(a['x']), int(a['y']))]
-                self.core.diagram.set_area(xy, int(a['p']), int(a['t']))
+                province = self.core.provinces[int(a['p'])]
+                terrain = self.core.terrains[int(a['t'])]
+                self.core.diagram.set_area(xy, province, terrain)
             
         finally:    
             if self.con:

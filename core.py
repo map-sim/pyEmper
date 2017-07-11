@@ -22,15 +22,18 @@ class EmpTerrain(EmpIder):
 
     def __init__(self, core, name, rgb, con_in, con_out):
         super().__init__(core, name, core.terrains)        
-        self.set_parameters(rgb, con_in, con_out)
+        self.set_con(con_in, con_out)
+        self.set_rgb(rgb)
 
-    def set_parameters(self, rgb, con_in, con_out):
-        assert len(rgb) == 3, "3 times char is excpected"
+    def set_con(self, con_in, con_out):
         assert con_in>=0 and con_in<=1, "con_in out of range"
         assert con_out>=0 and con_out<=1, "con_out out of range"
-        for c in rgb: assert int(c)>=0 and int(c)<256, "3 chars are excpected"
         self.con_out = float(con_out)
         self.con_in = float(con_in)
+        
+    def set_rgb(self, rgb):
+        assert len(rgb) == 3, "3 times char is excpected"
+        for c in rgb: assert int(c)>=0 and int(c)<256, "3 chars are excpected"
         self.rgb = tuple(rgb)
             
 class EmpProvince(EmpIder):
@@ -41,7 +44,7 @@ class EmpProvince(EmpIder):
 class EmpNation(EmpIder):
     def __repr__(self): return "n%d:%s" % (self.get_my_id(), self.name)
     def __init__(self, core, name):
-        super().__init__(core, name, core.provinces)        
+        super().__init__(core, name, core.nations)        
 
 class EmpControl(EmpIder):
     def __repr__(self): return "c%d:%s" % (self.get_my_id(), self.name)
@@ -56,7 +59,7 @@ class EmpGood(EmpIder):
 class EmpProcess(EmpIder):
     def __repr__(self): return "x%d:%s" % (self.get_my_id(), self.name)
     def __init__(self, core, name):
-        super().__init__(core, name, core.goods)        
+        super().__init__(core, name, core.processes)        
 
 
 class EmpAtom:
@@ -136,16 +139,15 @@ class EmpDiagram:
         for x,y in pixels:
             if x<0 or y<0 or x>=self.width or y>=self.height: return
 
-            prov = self.core.provinces[p]
             i,i3 = x+self.width*y, 3*(x+self.width*y)
-            self.atoms[i] = EmpAtom(self, x, y, prov, self.core.terrains[t])
-            self.rgb[i3:i3+3] = self.core.terrains[t].rgb[0:3]
+            self.atoms[i] = EmpAtom(self, x, y, p, t)
+            self.rgb[i3:i3+3] = t.rgb[0:3]
                         
-    def set_border(self, pixel, p, t):
+    def dilation(self, pixel, p, t):
         atom = self.get_atom(*pixel)
         if atom == None: return
-        if not atom.terrain is self.core.terrains[t]: return
-        if not atom.province is self.core.provinces[p]: return
+        if not atom.terrain is t: return
+        if not atom.province is p: return
         checked = [False] * self.width * self.height
         to_check,to_change = [pixel],[]
         
@@ -185,92 +187,76 @@ class EmpCore:
         self.processes = []
         self.goods = []
         
+    def rm_terrain(self, n):
+        del self.terrains[n]
     def add_terrain(self, name, rgb, con_in, con_out):
         try: nt = EmpTerrain(self, name, rgb, con_in, con_out)
-        except AssertionError: return -1
+        except AssertionError: return None
+        nt.core = self
 
         for t in self.terrains:
-            if name==t.name: return -1
-        nt.core = self
+            if name==t.name: None
         self.terrains.append(nt)
-        return len(self.terrains)-1 
-
-    def rm_terrain(self, n):
-        if n!=len(self.terrains)-1: return 1
-        else: del self.terrains[n]
-        return 0
-    
-    def add_province(self, name):
-        try: np = EmpProvince(self, name)
-        except AssertionError: return -1
-
-        for p in self.provinces:
-            if name==p.name: return -1
-        np.core = self
-        self.provinces.append(np)
-        return len(self.provinces)-1 
+        return nt 
 
     def rm_province(self, n):
-        if n!=len(self.provinces)-1: return 1
-        else: del self.provinces[n]
-        return 0
+        del self.provinces[n]
+    def add_province(self, name):
+        try: np = EmpProvince(self, name)
+        except AssertionError: return None
+        np.core = self
+
+        for p in self.provinces:
+            if name==p.name: return None
+        self.provinces.append(np)
+        return np
     
+    def rm_nation(self, n):
+        del self.nations[n]
     def add_nation(self, name):
         try: nn = EmpNation(self, name)
-        except AssertionError: return -1
-
-        for n in self.nations:
-            if name==n.name: return -1
+        except AssertionError: return None
         nn.core = self
+        
+        for n in self.nations:
+            if name==n.name: return None
         self.nations.append(nn)
-        return len(self.nations)-1 
-
-    def rm_nation(self, n):
-        if n!=len(self.nations)-1: return 1
-        else: del self.nations[n]
-        return 0
+        return nn
     
+    def rm_control(self, n):
+        del self.controls[n]
     def add_control(self, name):
         try: nc = EmpControl(self, name)
-        except AssertionError: return -1
+        except AssertionError: return None
+        nc.core = self
 
         for c in self.controls:
-            if name==c.name: return -1
-        nc.core = self
+            if name==c.name: return None
         self.controls.append(nc)
-        return len(self.controls)-1 
-
-    def rm_control(self, n):
-        if n!=len(self.controls)-1: return 1
-        else: del self.controls[n]
-        return 0
+        return nc
     
+    def rm_good(self, n):        
+        del self.goods[n]
     def add_good(self, name):
         try: ng = EmpGood(self, name)
-        except AssertionError: return -1
+        except AssertionError: return None
+        ng.core = self
 
         for g in self.goods:
-            if name==g.name: return -1
-        ng.core = self
+            if name==g.name: return None
         self.goods.append(ng)
-        return len(self.goods)-1 
-
-    def rm_good(self, n):
-        if n!=len(self.goods)-1: return 1
-        else: del self.goods[n]
-        return 0
-    
-    def add_process(self, name):
-        try: np = EmpProcess(self, name)
-        except AssertionError: return -1
-
-        for p in self.processes:
-            if name==p.name: return -1
-        np.core = self
-        self.processes.append(np)
-        return len(self.processes)-1
+        return ng
     
     def rm_process(self, n):
-        if n!=len(self.processes)-1: return 1
-        else: del self.processes[n]
-        return 0
+        del self.processes[n]
+    def add_process(self, name):
+        try: ns = EmpProcess(self, name)
+        except AssertionError: return None
+        ns.core = self
+
+        for p in self.processes:
+            if name==p.name: return None
+        self.processes.append(ns)
+        return ns
+    
+        

@@ -27,11 +27,13 @@ class EmpSave():
             self.__save_goods()
 
             self.__save_diagram()
-
+            print("save as", fname)
+            
         finally:    
             if self.con:
                 self.con.close()
-
+        
+                
     def __save_general_info(self, author):
         self.cur.execute("CREATE TABLE general_info(key TEXT, value TEXT)")
         self.cur.execute("INSERT INTO general_info VALUES('author', '%s')" % author)
@@ -78,8 +80,8 @@ class EmpSave():
 
     def __save_processes(self):
         self.cur.execute("CREATE TABLE processes(name TEXT)")
-        for p in self.core.processes:
-            self.cur.execute("INSERT INTO processes VALUES('%s')" % p.name)
+        for x in self.core.processes:
+            self.cur.execute("INSERT INTO processes VALUES('%s')" % x.name)
         self.con.commit()
 
     def __save_diagram(self):
