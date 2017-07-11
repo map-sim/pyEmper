@@ -58,11 +58,11 @@ class EmpEditor(Gtk.Window):
         self.labels = {}
         self.tables = {}
         self.objects = {}
-        symbols = ["p", "t", "n", "c", "s", "g", "d"]
+        symbols = ["p", "t", "n", "c", "g", "s", "d"]
         for n,s in enumerate(symbols):
             self.objects[s] = None
             self.labels[s] = Gtk.Label(s+":")
-            fix.put(self.labels[s], 0, 5+n*18)
+            fix.put(self.labels[s], 5, 5+n*21)
         self.tables["p"] = self.core.provinces
         self.tables["t"] = self.core.terrains
         self.tables["n"] = self.core.nations
@@ -88,6 +88,9 @@ class EmpEditor(Gtk.Window):
 
     def on_clicked_mouse (self, box, event):
         self.last_click = (int(event.x), int(event.y))
+        if self.objects["t"] == None: return    
+        if self.objects["p"] == None: return
+        
         x,y = self.last_click
         if self.pens[self.objects["d"]] == "cross":
             a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]

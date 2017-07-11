@@ -50,7 +50,6 @@ class EmpInterpreter:
             self.editor.set_object("s", s_id)
             print(self.editor.objects["s"])
 
-
         ###########################################################################
         # print all objs
 
@@ -118,36 +117,42 @@ class EmpInterpreter:
             p_id = int(re.findall("[0-9]+", line)[0])
             if self.editor.objects["p"] is self.editor.core.provinces[p_id]:
                 self.editor.core.rm_province(p_id)
+                self.editor.set_object("p", 0)
                 print("rm:", p_id)
 
         elif re.match("\At-[0-9]+\Z", line):
             t_id = int(re.findall("[0-9]+", line)[0])
             if self.editor.objects["t"] is self.editor.core.terrains[t_id]:
                 self.editor.core.rm_terrain(t_id)
+                self.editor.set_object("t", 0)
                 print("rm:", t_id)
 
         elif re.match("\An-[0-9]+\Z", line):
             n_id = int(re.findall("[0-9]+", line)[0])
             if self.editor.objects["n"] is self.editor.core.nations[n_id]:
                 self.editor.core.rm_nation(n_id)
+                self.editor.set_object("n", 0)
                 print("rm:", n_id)
 
         elif re.match("\Ac-[0-9]+\Z", line):
             c_id = int(re.findall("[0-9]+", line)[0])
             if self.editor.objects["c"] is self.editor.core.controls[c_id]:
                 self.editor.core.rm_control(c_id)
+                self.editor.set_object("c", 0)
                 print("rm:", c_id)
 
         elif re.match("\Ag-[0-9]+\Z", line):
             g_id = int(re.findall("[0-9]+", line)[0])
             if self.editor.objects["g"] is self.editor.core.goods[g_id]:
                 self.editor.core.rm_good(g_id)
+                self.editor.set_object("g", 0)
                 print("rm:", g_id)
 
         elif re.match("\As-[0-9]+\Z", line):
             s_id = int(re.findall("[0-9]+", line)[0])
             if self.editor.objects["s"] is self.editor.core.processes[s_id]:
                 self.editor.core.rm_process(s_id)
+                self.editor.set_object("s", 0)
                 print("rm:", s_id)
             
         ###########################################################################
@@ -214,5 +219,10 @@ class EmpInterpreter:
             name = re.findall("[a-zA-Z0-9_-]+", line)[1]
             s = EmpSave(self.editor.core, name+".db")
             s.expotr_to_html()
+
+        elif re.match("\Ainfo\Z", line):           
+            print("Author: Krzysztof Czarnecki, Gdansk, Poland")
+            print("Email: czarnecki.krzysiek@gmail.com")
+            print("If you like my work, please send me an email.")
 
         else: print("command not matched:", line)

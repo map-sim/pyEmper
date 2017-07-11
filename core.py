@@ -200,6 +200,9 @@ class EmpCore:
         return nt 
 
     def rm_province(self, n):
+        for i,a in enumerate(self.diagram.atoms):
+            if a and a.province.get_my_id() == n:
+                self.diagram.atoms[i] = None
         del self.provinces[n]
     def add_province(self, name):
         try: np = EmpProvince(self, name)
