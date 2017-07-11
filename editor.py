@@ -118,10 +118,10 @@ class EmpEditor(Gtk.Window):
         if event.keyval==98:
             self.core.diagram.refresh()
             try:
-                if self.key_flags["b"]:
+                if self.key_flags["b"]: self.key_flags["b"] = False
+                else: 
+                    self.key_flags["b"] = True
                     self.core.diagram.draw_lines()        
-                    self.key_flags["b"] = False
-                else: self.key_flags["b"] = True
             except KeyError: 
                 self.key_flags["b"] = True
                 self.core.diagram.draw_lines()        
