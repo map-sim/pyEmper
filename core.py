@@ -94,6 +94,13 @@ class EmpCore:
             if name==t.name: None
         self.terrains.append(nt)
         return nt 
+    def swap_terrains(self, n1, n2):
+        if n1==n2: return
+        t1 = self.terrains[n1]
+        t2 = self.terrains[n2]
+        self.terrains[n1] = t2
+        self.terrains[n2] = t1
+        
 
     def rm_province(self, n):
         for i,a in enumerate(self.diagram.atoms):

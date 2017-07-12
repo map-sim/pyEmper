@@ -86,10 +86,16 @@ class EmpEditor(Gtk.Window):
 
     def on_clicked_mouse (self, box, event):
         self.last_click = (int(event.x), int(event.y))
+        x,y = self.last_click        
+        if self.pens[self.objects["d"]] == "none":
+            atom = self.core.diagram.get_atom(x,y)
+            try:
+                print(atom.terrain)
+                print(atom.province)
+            except AttributeError: pass
         if self.objects["t"] == None: return    
         if self.objects["p"] == None: return
         
-        x,y = self.last_click
         if self.pens[self.objects["d"]] == "cross":
             a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
             self.core.diagram.set_area(a, self.objects["p"], self.objects["t"])

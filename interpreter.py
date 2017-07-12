@@ -188,6 +188,16 @@ class EmpInterpreter:
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
                 
+        elif re.match("\At\s*swap\s*[0-9]+\Z", line):
+            if self.editor.objects["t"]:                
+                n1 = int(re.findall("[0-9]+", line)[0])
+                n2 = self.editor.objects["t"].get_my_id()
+                try: 
+                    self.editor.core.swap_terrains(n1, n2)
+                    print("swap")
+                except IndexError: print("not swap")
+            else: print("not swap")
+            
         ###########################################################################
         # pen
 
@@ -199,6 +209,12 @@ class EmpInterpreter:
             self.editor.labels["d"].set_text("d:"+label)
             print("pen:", label)
 
+        elif re.match("\Adn\Z", line):
+            self.editor.objects["d"]=0
+            label = self.editor.pens[self.editor.objects["d"]]
+            self.editor.labels["d"].set_text("d:"+label)
+            print("pen:", label)
+        
         elif re.match("\Ap\s*aa\Z", line):           
             self.editor.core.diagram.smooth_by_province()
             print("aa")
@@ -238,11 +254,12 @@ class EmpInterpreter:
         elif re.match("\Ahelp\Z", line):           
             print("All possible commands:")
             print("p\tp[int]\tp*\tp+[str]\tp-[str]")
-            print("t\tt[int]\tt*\tt+[str]\tt-[str]\ttrgb\ttcon[num]\ttship[num]")
+            print("t\tt[int]\tt*\tt+[str]\tt-[str]")
             print("n\tn[int]\tn*\tp+[str]\tn-[str]")
             print("c\tc[int]\tc*\tc+[str]\tc-[str]")
             print("g\tg[int]\tg*\tp+[str]\tg-[str]")
             print("s\ts[int]\ts*\ts+[str]\ts-[str]")
+            print("trgb\ttcon[num]\ttship[num]\ttswap[int]")
             print("d\tr\trl\trr\txy\trgb")
             print("help\tinfo\tsave [str]")
 
