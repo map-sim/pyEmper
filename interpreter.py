@@ -181,7 +181,7 @@ class EmpInterpreter:
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
 
-        elif re.match("\Atdiff\s*[0-9]+[.]?[0-9]?\Z", line):
+        elif re.match("\Atship\s*[0-9]+[.]?[0-9]?\Z", line):
             if self.editor.objects["t"]:
                 ship = re.findall("[0-9]+[.]?[0-9]?", line)[0]
                 self.editor.objects["t"].set_ship(float(ship))
@@ -234,7 +234,7 @@ class EmpInterpreter:
         elif re.match("\Ahelp\Z", line):           
             print("All possible commands:")
             print("p\tp[int]\tp*\tp+[str]\tp-[str]")
-            print("t\tt[int]\tt*\tt+[str]\tt-[str]\t\ttrgb\tt[num] [num]")
+            print("t\tt[int]\tt*\tt+[str]\tt-[str]\ttrgb\ttcon[num]\ttship[num]")
             print("n\tn[int]\tn*\tp+[str]\tn-[str]")
             print("c\tc[int]\tc*\tc+[str]\tc-[str]")
             print("g\tg[int]\tg*\tp+[str]\tg-[str]")

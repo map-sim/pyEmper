@@ -92,22 +92,22 @@ class EmpAtom:
         return False
 
     def check_coast(self):
-        if self.terrain.con_out<=0.5: return False
+        if self.terrain.ship<=0.5: return False
         try:
             a = self.diagram.get_atom(self.x+1, self.y)
-            if a.terrain.con_out<=0.5: return True
+            if a.terrain.ship<=0.5: return True
         except AttributeError: pass
         try:
             a = self.diagram.get_atom(self.x-1, self.y)
-            if a.terrain.con_out<=0.5: return True
+            if a.terrain.ship<=0.5: return True
         except AttributeError: pass
         try:
             a = self.diagram.get_atom(self.x, self.y+1)
-            if a.terrain.con_out<=0.5: return True
+            if a.terrain.ship<=0.5: return True
         except AttributeError: pass
         try:
             a = self.diagram.get_atom(self.x, self.y-1)
-            if a.terrain.con_out<=0.5: return True
+            if a.terrain.ship<=0.5: return True
         except AttributeError: pass
 
     def __repr__(self):
@@ -195,8 +195,8 @@ class EmpCore:
             if a and a.terrain.get_my_id() == n:
                 self.diagram.atoms[i] = None
         del self.terrains[n]
-    def add_terrain(self, name, rgb, con_in, con_out):
-        try: nt = EmpTerrain(self, name, rgb, con_in, con_out)
+    def add_terrain(self, name, rgb, con, ship):
+        try: nt = EmpTerrain(self, name, rgb, con, ship)
         except AssertionError: return None
         nt.core = self
 
