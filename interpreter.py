@@ -198,6 +198,10 @@ class EmpInterpreter:
             label = self.editor.pens[self.editor.objects["d"]]
             self.editor.labels["d"].set_text("d:"+label)
             print("pen:", label)
+
+        elif re.match("\Ap\s*aa\Z", line):           
+            self.editor.core.diagram.smooth_by_province()
+            print("aa")
             
         ###########################################################################
         # screen
