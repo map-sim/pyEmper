@@ -82,8 +82,6 @@ class EmpEditor(Gtk.Window):
         self.img.set_from_pixbuf(pbuf)
 
     def on_press_key(self, widget, event):
-        print(chr(event.keyval), end="")
-        sys.stdout.flush()
         self.interpreter.put(event.keyval)
 
     def on_clicked_mouse (self, box, event):

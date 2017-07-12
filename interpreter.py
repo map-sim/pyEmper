@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import re
+import sys
 from save import EmpSave
 
 class EmpInterpreter:
@@ -16,7 +17,9 @@ class EmpInterpreter:
             if self.inbuf: self.exe()
             self.inbuf = []
         else:            
-            if re.match("[a-zA-Z0-9.* _+-]", str(chr(c))):
+            if re.match("[a-zA-Z0-9.* +-_]", str(chr(c))):
+                print(chr(c), end="")
+                sys.stdout.flush()
                 self.inbuf.append(chr(c))
         
     def exe(self):
@@ -85,87 +88,93 @@ class EmpInterpreter:
         ###########################################################################
         # add
 
-        elif re.match("\Ap[+]\s*[a-zA-Z]+[ ]*[a-zA-Z]*\Z", line):
-            name = re.findall("[a-zA-Z ]+", line)[1]
+        elif re.match("\Ap[+]\s*[a-zA-Z_]+\Z", line):
+            name = re.findall("[a-zA-Z_]+", line)[1]
             print(self.editor.core.add_province(name))
             
-        elif re.match("\At[+]\s*[a-zA-Z]+[ ]*[a-zA-Z]*\Z", line):
-            name = re.findall("[a-zA-Z ]+", line)[1]
+        elif re.match("\At[+]\s*[a-zA-Z_]+\Z", line):
+            name = re.findall("[a-zA-Z_]+", line)[1]
             rgb = self.editor.rainbow.get_rgb_color(*self.editor.last_click)
             print(self.editor.core.add_terrain(name, rgb, 0.0, 0.0))
 
-        elif re.match("\An[+]\s*[a-zA-Z]+[ ]*[a-zA-Z]*\Z", line):
-            name = re.findall("[a-zA-Z ]+", line)[1]
+        elif re.match("\An[+]\s*[a-zA-Z_]+\Z", line):
+            name = re.findall("[a-zA-Z_]+", line)[1]
             print(self.editor.core.add_nation(name))
 
-        elif re.match("\Ac[+]\s*[a-zA-Z]+[ ]*[a-zA-Z]*\Z", line):
-            name = re.findall("[a-zA-Z ]+", line)[1]
+        elif re.match("\Ac[+]\s*[a-zA-Z_]+\Z", line):
+            name = re.findall("[a-zA-Z_]+", line)[1]
             print(self.editor.core.add_control(name))
 
-        elif re.match("\Ag[+]\s*[a-zA-Z]+[ ]*[a-zA-Z]*\Z", line):
-            name = re.findall("[a-zA-Z ]+", line)[1]
+        elif re.match("\Ag[+]\s*[a-zA-Z_]+\Z", line):
+            name = re.findall("[a-zA-Z_]+", line)[1]
             print(self.editor.core.add_good(name))
 
-        elif re.match("\As[+]\s*[a-zA-Z]+[ ]*[a-zA-Z]*\Z", line):
-            name = re.findall("[a-zA-Z ]+", line)[1]
+        elif re.match("\As[+]\s*[a-zA-Z_]*\Z", line):
+            name = re.findall("[a-zA-Z_]+", line)[1]
             print(self.editor.core.add_process(name))
 
         ###########################################################################
         # sub
         
-        elif re.match("\Ap-[0-9]+\Z", line):
-            p_id = int(re.findall("[0-9]+", line)[0])
-            if self.editor.objects["p"] is self.editor.core.provinces[p_id]:
-                self.editor.core.rm_province(p_id)
+        elif re.match("\Ap-\s*[a-zA-Z_]+\Z", line):
+            p_name = str(re.findall("[a-zA-Z_]+", line)[1])
+            if self.editor.objects["p"] and self.editor.objects["p"].name == p_name:
+                self.editor.core.rm_province(self.editor.objects["p"].get_my_id())
                 self.editor.set_object("p", 0)
-                print("rm:", p_id)
+                print("rm:", p_name)
+            else: print("refuse rm")
 
-        elif re.match("\At-[0-9]+\Z", line):
-            t_id = int(re.findall("[0-9]+", line)[0])
-            if self.editor.objects["t"] is self.editor.core.terrains[t_id]:
-                self.editor.core.rm_terrain(t_id)
+        elif re.match("\At-\s*[a-zA-Z_]+\Z", line):
+            t_name = str(re.findall("[a-zA-Z_]+", line)[1])
+            if self.editor.objects["t"] and self.editor.objects["t"].name == t_name:
+                self.editor.core.rm_terrain(self.editor.objects["t"].get_my_id())
                 self.editor.set_object("t", 0)
-                print("rm:", t_id)
+                print("rm:", t_name)
+            else: print("refuse rm")
 
-        elif re.match("\An-[0-9]+\Z", line):
-            n_id = int(re.findall("[0-9]+", line)[0])
-            if self.editor.objects["n"] is self.editor.core.nations[n_id]:
-                self.editor.core.rm_nation(n_id)
+        elif re.match("\An-\s*[a-zA-Z_]+\Z", line):
+            n_name = str(re.findall("[a-zA-Z_]+", line)[1])
+            if self.editor.objects["n"] and self.editor.objects["n"].name == n_name:
+                self.editor.core.rm_nation(self.editor.objects["n"].get_my_id())
                 self.editor.set_object("n", 0)
-                print("rm:", n_id)
+                print("rm:", n_name)
+            else: print("refuse rm")
 
-        elif re.match("\Ac-[0-9]+\Z", line):
-            c_id = int(re.findall("[0-9]+", line)[0])
-            if self.editor.objects["c"] is self.editor.core.controls[c_id]:
-                self.editor.core.rm_control(c_id)
+        elif re.match("\Ac-\s*[a-zA-Z_]+\Z", line):
+            c_name = str(re.findall("[a-zA-Z_]+", line)[1])
+            if self.editor.objects["c"] and self.editor.objects["c"].name == c_name:
+                self.editor.core.rm_control(self.editor.objects["c"].get_my_id())
                 self.editor.set_object("c", 0)
-                print("rm:", c_id)
+                print("rm:", c_name)
+            else: print("refuse rm")
 
-        elif re.match("\Ag-[0-9]+\Z", line):
-            g_id = int(re.findall("[0-9]+", line)[0])
-            if self.editor.objects["g"] is self.editor.core.goods[g_id]:
-                self.editor.core.rm_good(g_id)
+        elif re.match("\Ag-\s*[a-zA-Z_]+\Z", line):
+            g_name = int(re.findall("[a-zA-Z_]+", line)[1])
+            if self.editor.objects["g"] and self.editor.objects["g"].name == g_name:
+                self.editor.core.rm_good(self.editor.objects["g"].get_my_id())
                 self.editor.set_object("g", 0)
-                print("rm:", g_id)
+                print("rm:", g_name)
+            else: print("refuse rm")
 
-        elif re.match("\As-[0-9]+\Z", line):
-            s_id = int(re.findall("[0-9]+", line)[0])
-            if self.editor.objects["s"] is self.editor.core.processes[s_id]:
-                self.editor.core.rm_process(s_id)
+        elif re.match("\As-\s*[a-zA-Z_]+\Z", line):
+            s_name = str(re.findall("[a-zA-Z_]+", line)[1])
+            if self.editor.objects["s"] and self.editor.objects["s"].name == s_name:
+                self.editor.core.rm_process(self.editor.objects["s"].get_my_id())
                 self.editor.set_object("s", 0)
-                print("rm:", s_id)
+                print("rm:", s_name)
+            else: print("refuse rm")
             
         ###########################################################################
         # mod
         
-        elif re.match("\At_\s*rgb\Z", line):
+        elif re.match("\At\s*rgb\Z", line):
             if self.editor.objects["t"]:
                 rgb = self.editor.rainbow.get_rgb_color(*self.editor.last_click)
                 self.editor.objects["t"].set_rgb(rgb)
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
                 
-        elif re.match("\At_\s*[0-9]+[.]?[0-9]?\s+[0-9]+[.]?[0-9]?\Z", line):
+        elif re.match("\At\s*[0-9]+[.]?[0-9]?\s+[0-9]+[.]?[0-9]?\Z", line):
             if self.editor.objects["t"]:
                 con_in, con_out = re.findall("[0-9]+[.]?[0-9]?", line)
                 self.editor.objects["t"].set_con(float(con_in), float(con_out))
@@ -204,11 +213,11 @@ class EmpInterpreter:
         ###########################################################################
         # print settings
 
-        elif re.match("\A.rgb\Z", line):
+        elif re.match("\Argb\Z", line):
             r,g,b = self.editor.rainbow.get_rgb_color(*self.editor.last_click)
             print("rgb:", r, g, b)
 
-        elif re.match("\A.xy\Z", line):           
+        elif re.match("\Axy\Z", line):           
             print("xy:", *self.editor.last_click)
 
 
