@@ -17,19 +17,22 @@ class EmpIder:
 
 class EmpTerrain(EmpIder):
     def __repr__(self):
-        k = self.get_my_id(), self.name, self.con_in, self.con_out, *self.rgb
+        k = self.get_my_id(), self.name, self.con, self.ship, *self.rgb
         return "t%d:%s %g %g (%d,%d,%d)" % k
 
-    def __init__(self, core, name, rgb, con_in, con_out):
+    def __init__(self, core, name, rgb, con, ship):
         super().__init__(core, name, core.terrains)        
-        self.set_con(con_in, con_out)
+        self.set_ship(ship)
+        self.set_con(con)
         self.set_rgb(rgb)
 
-    def set_con(self, con_in, con_out):
-        assert con_in>=0 and con_in<=1, "con_in out of range"
-        assert con_out>=0 and con_out<=1, "con_out out of range"
-        self.con_out = float(con_out)
-        self.con_in = float(con_in)
+    def set_con(self, con):
+        assert con>=0 and con<=1, "con out of range"
+        self.con = float(con)
+
+    def set_ship(self, ship):
+        assert ship>=0 and ship<=1, "ship out of range"
+        self.ship = float(ship)
         
     def set_rgb(self, rgb):
         assert len(rgb) == 3, "3 times char is excpected"
@@ -188,6 +191,9 @@ class EmpCore:
         self.goods = []
         
     def rm_terrain(self, n):
+        for i,a in enumerate(self.diagram.atoms):
+            if a and a.terrain.get_my_id() == n:
+                self.diagram.atoms[i] = None
         del self.terrains[n]
     def add_terrain(self, name, rgb, con_in, con_out):
         try: nt = EmpTerrain(self, name, rgb, con_in, con_out)

@@ -28,8 +28,8 @@ class EmpLoad:
             rows = self.cur.fetchall()
             for t in rows:
                 rgb = (int(t['r']), int(t['g']), int(t['b']))
-                con_in,con_out = float(t['con_in']),float(t['con_out'])
-                self.core.add_terrain(t['name'], rgb, con_in, con_out)
+                con,ship = float(t['con']),float(t['ship'])
+                self.core.add_terrain(t['name'], rgb, con, ship)
 
             self.cur.execute("SELECT * FROM provinces")
             rows = self.cur.fetchall()

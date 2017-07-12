@@ -174,10 +174,17 @@ class EmpInterpreter:
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
                 
-        elif re.match("\At\s*[0-9]+[.]?[0-9]?\s+[0-9]+[.]?[0-9]?\Z", line):
+        elif re.match("\Atcon\s*[0-9]+[.]?[0-9]?\Z", line):
             if self.editor.objects["t"]:
-                con_in, con_out = re.findall("[0-9]+[.]?[0-9]?", line)
-                self.editor.objects["t"].set_con(float(con_in), float(con_out))
+                con = re.findall("[0-9]+[.]?[0-9]?", line)[0]
+                self.editor.objects["t"].set_con(float(con))
+                print("mod:", self.editor.objects["t"])
+            else: print("not set")
+
+        elif re.match("\Atdiff\s*[0-9]+[.]?[0-9]?\Z", line):
+            if self.editor.objects["t"]:
+                ship = re.findall("[0-9]+[.]?[0-9]?", line)[0]
+                self.editor.objects["t"].set_ship(float(ship))
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
                 
@@ -223,6 +230,17 @@ class EmpInterpreter:
 
         ###########################################################################
         # other
+
+        elif re.match("\Ahelp\Z", line):           
+            print("All possible commands:")
+            print("p\tp[int]\tp*\tp+[str]\tp-[str]")
+            print("t\tt[int]\tt*\tt+[str]\tt-[str]\t\ttrgb\tt[num] [num]")
+            print("n\tn[int]\tn*\tp+[str]\tn-[str]")
+            print("c\tc[int]\tc*\tc+[str]\tc-[str]")
+            print("g\tg[int]\tg*\tp+[str]\tg-[str]")
+            print("s\ts[int]\ts*\ts+[str]\ts-[str]")
+            print("d\tr\trl\trr\txy\trgb")
+            print("help\tinfo\tsave [str]")
 
         elif re.match("\Asave [a-zA-Z0-9_-]+\Z", line):           
             name = re.findall("[a-zA-Z0-9_-]+", line)[1]

@@ -48,16 +48,16 @@ class EmpSave():
         self.cur.execute("INSERT INTO general_info VALUES('height', '%d')" % self.core.diagram.height)
         self.con.commit()
 
-    def __save_terrains(self):
-        self.cur.execute("CREATE TABLE terrains(name TEXT, r INT,  g INT,  b INT, con_in REAL, con_out REAL)")
-        for t in self.core.terrains:
-            self.cur.execute("INSERT INTO terrains VALUES('%s', %d, %d, %d, %g, %g)" % (t.name, *t.rgb, t.con_in, t.con_out))
-        self.con.commit()
-
     def __save_provinces(self):
         self.cur.execute("CREATE TABLE provinces(name TEXT)")
         for p in self.core.provinces:
             self.cur.execute("INSERT INTO provinces VALUES('%s')" % p.name)
+        self.con.commit()
+
+    def __save_terrains(self):
+        self.cur.execute("CREATE TABLE terrains(name TEXT, r INT,  g INT,  b INT, con REAL, ship REAL)")
+        for t in self.core.terrains:
+            self.cur.execute("INSERT INTO terrains VALUES('%s', %d, %d, %d, %g, %g)" % (t.name, *t.rgb, t.con, t.ship))
         self.con.commit()
 
     def __save_nations(self):
@@ -93,6 +93,6 @@ class EmpSave():
     def expotr_to_html(self):
         with open("save.html", "w") as fd:
             for t in self.core.terrains:                
-                fd.write("%1.2f %1.2f " % (t.con_in, t.con_out))
+                fd.write("%1.2f %1.2f " % (t.con, t.ship))
                 fd.write("<canvas width='10' height='10' style='border:1px solid #000000; background: #%02x%02x%02x'></canvas>" % t.rgb)
                 fd.write(" <b>%s</b><br>\n " % t.name)
