@@ -8,6 +8,7 @@ gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf as Gpb
 from gi.repository import GLib
 from gi.repository import Gtk
+from gi.repository import Gdk
 
 import sys
 from tools import  call_error
@@ -32,7 +33,6 @@ class EmpEditor(Gtk.Window):
 
     @multiconstructor
     def __init__(self, *args):
-
         self.width,self.height = self.core.diagram.width, self.core.diagram.height
         self.rainbow = EmpRainbow(self.width, self.height)
         self.diagram_rgb = self.core.diagram.rgb
@@ -41,8 +41,8 @@ class EmpEditor(Gtk.Window):
 
         # main window ################################################################
         Gtk.Window.__init__(self, title="py-emper")
-        self.connect("delete-event", Gtk.main_quit)
         self.connect('key_press_event', self.on_press_key)
+        self.connect("delete-event", self.on_quit)
         fix = Gtk.Fixed()
         self.add(fix)
         
@@ -52,6 +52,7 @@ class EmpEditor(Gtk.Window):
         
         self.img = Gtk.Image()
         ebox.add(self.img)
+        self.core.diagram.draw_lines()        
         self.refresh()
 
         # labels ################################################################
@@ -84,6 +85,12 @@ class EmpEditor(Gtk.Window):
     def on_press_key(self, widget, event):
         self.interpreter.put(event.keyval)
 
+    def on_quit(self, widget, event):
+        cursor = Gdk.Cursor(Gdk.CursorType.DOT)
+        gdk_window = self.get_root_window()
+        gdk_window.set_cursor(cursor)
+        Gtk.main_quit()
+
     def on_clicked_mouse (self, box, event):
         self.last_click = (int(event.x), int(event.y))
         x,y = self.last_click        
@@ -92,6 +99,8 @@ class EmpEditor(Gtk.Window):
             try:
                 print(atom.terrain)
                 print(atom.province)
+                self.set_object("t", atom.terrain.get_my_id())
+                self.set_object("p", atom.province.get_my_id())
             except AttributeError: pass
         if self.objects["t"] == None: return    
         if self.objects["p"] == None: return
