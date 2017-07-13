@@ -71,9 +71,8 @@ class EmpEditor(Gtk.Window):
         self.tables["s"] = self.core.processes
         self.tables["g"] = self.core.goods
 
-        self.objects["d"] = 0
         self.pens = ["none", "cross", "quad", "circle", "dilation", "filling"]
-        self.labels["d"].set_text("d:"+self.pens[self.objects["d"]])
+        self.set_pen(0)
         
         self.show_all()
 
@@ -102,6 +101,11 @@ class EmpEditor(Gtk.Window):
                 self.set_object("t", atom.terrain.get_my_id())
                 self.set_object("p", atom.province.get_my_id())
             except AttributeError: pass
+            
+        elif self.pens[self.objects["d"]] == "filling":
+            self.core.diagram.filling(self.last_click, self.objects["p"], self.objects["t"])
+            self.refresh()
+
         if self.objects["t"] == None: return    
         if self.objects["p"] == None: return
         
@@ -123,10 +127,6 @@ class EmpEditor(Gtk.Window):
             self.core.diagram.dilation(self.last_click, self.objects["p"], self.objects["t"])
             self.refresh()
 
-        elif self.pens[self.objects["d"]] == "filling":
-            self.core.diagram.filling(self.last_click, self.objects["p"], self.objects["t"])
-            self.refresh()
-
 
     def set_object(self, symbol, number):
         try:
@@ -136,3 +136,7 @@ class EmpEditor(Gtk.Window):
             self.labels[symbol].set_text(symbol+":")
             self.objects[symbol] = None
 
+    def set_pen(self, n):
+        self.objects["d"] = n
+        label = self.pens[self.objects["d"]]
+        self.labels["d"].set_text("d:"+label)

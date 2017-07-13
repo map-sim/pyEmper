@@ -334,10 +334,8 @@ class EmpInterpreter:
 
         elif re.match("\Ad[0-5]\Z", line):
             n = int(re.findall("[0-5]", line)[0])
-            self.editor.objects["d"]=n
-            label = self.editor.pens[self.editor.objects["d"]]
-            self.editor.labels["d"].set_text("d:"+label)
-            print("pen:", label)
+            self.editor.set_pen(n)
+            print("pen:", n)
 
             if n==5: cursor = Gdk.Cursor(Gdk.CursorType.BOX_SPIRAL)
             elif n in [1,2,3]: cursor = Gdk.Cursor(Gdk.CursorType.CROSS)
@@ -347,10 +345,8 @@ class EmpInterpreter:
             gdk_window.set_cursor(cursor)
 
         elif re.match("\Ad\Z", line):
-            self.editor.objects["d"]=0
-            label = self.editor.pens[self.editor.objects["d"]]
-            self.editor.labels["d"].set_text("d:"+label)
-            print("pen:", label)
+            self.editor.set_pen(0)
+            print("pen:", 0)
 
             cursor = Gdk.Cursor(Gdk.CursorType.DOT)
             gdk_window = self.editor.get_root_window()
@@ -371,6 +367,7 @@ class EmpInterpreter:
         elif re.match("\Arr\Z", line):
             self.editor.diagram_rgb = self.editor.rainbow.rgb
             self.editor.refresh()
+            self.editor.set_pen(0)
 
         elif re.match("\Arl\Z", line):
             self.editor.diagram_rgb = self.editor.core.diagram.rgb

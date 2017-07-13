@@ -67,6 +67,10 @@ class EmpDiagram:
     def get_atom(self, x, y):
         call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
         return self.atoms[x+self.width*y]
+
+    def set_atom(self, x, y, atom):
+        call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
+        self.atoms[x+self.width*y] = None
     
     def draw_lines(self):
         g = (a for a in self.atoms if a!=None and a.check_coast())        
@@ -116,6 +120,9 @@ class EmpDiagram:
         print("dilatation")
 
     def filling(self, pixel, p, t):
+        if p==None and t==None:
+            self.set_atom(*pixel, None)
+            
         atom = self.get_atom(*pixel)
         if atom == None: return
         old_p = atom.province
