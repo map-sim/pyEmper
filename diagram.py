@@ -73,7 +73,6 @@ class EmpDiagram:
         for a in g: self.rgb[3*a.n:3*a.n+3] = (0,64,128)
         g = (a for a in self.atoms if a!=None and a.check_border())        
         for a in g: self.rgb[3*a.n:3*a.n+3] = (0,0,0)
-
                     
     def set_area(self, pixels, p, t):
         for x,y in pixels:
@@ -83,6 +82,14 @@ class EmpDiagram:
             self.atoms[i] = EmpAtom(self, x, y, p, t)
             self.rgb[i3:i3+3] = t.rgb[0:3]
                         
+    def set_circle(self, pixel, p, t):
+        radius, pixels = 6, []
+        for x in range(2*radius+1):
+            for y in range(2*radius+1):
+                if (x-radius)**2 + (y-radius)**2 > radius**2: continue
+                pixels.append((pixel[0]+(x-radius), pixel[1]+(y-radius)))
+        self.set_area(pixels, p, t)
+
     def dilation(self, pixel, p, t):
         atom = self.get_atom(*pixel)
         if atom == None: return
@@ -106,15 +113,30 @@ class EmpDiagram:
                 elif not(atom.terrain is natom.terrain): to_change.append(nxy)
                 else: to_check.append(nxy)        
         self.set_area(to_change, p, t)
+        print("dilatation")
 
-    def set_circle(self, pixel, p, t):
-        radius, pixels = 6, []
-        for x in range(2*radius+1):
-            for y in range(2*radius+1):
-                if (x-radius)**2 + (y-radius)**2 > radius**2: continue
-                pixels.append((pixel[0]+(x-radius), pixel[1]+(y-radius)))
-        self.set_area(pixels, p, t)
+    def filling(self, pixel, p, t):
+        atom = self.get_atom(*pixel)
+        if atom == None: return
+        old_p = atom.province
+        old_t = atom.terrain
 
+        to_check = [atom]
+        checked = []
+ 
+        while to_check:
+            a = to_check.pop()
+            checked.append(a)
+            a.province,a.terrain = p,t
+
+            for x,y in [(0,1), (0,-1), (1,0), (-1,0)]:
+                an = self.get_atom(a.x+x,a.y+y)
+                if an == None: continue
+                elif an in checked: continue
+                elif an.province is old_p and an.terrain is old_t:
+                    to_check.append(an)
+        print("filling")
+       
     def smooth_by_province(self):
         for a in self.atoms:
             if a==None:  continue                
@@ -138,3 +160,4 @@ class EmpDiagram:
 
             for p in dp.keys():
                 if dp[p]>2: a.province = p
+        print("smooth")

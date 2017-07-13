@@ -71,7 +71,7 @@ class EmpEditor(Gtk.Window):
         self.tables["g"] = self.core.goods
 
         self.objects["d"] = 0
-        self.pens = ["none", "cross", "quad", "circle", "dilation"]
+        self.pens = ["none", "cross", "quad", "circle", "dilation", "filling"]
         self.labels["d"].set_text("d:"+self.pens[self.objects["d"]])
         
         self.show_all()
@@ -113,6 +113,11 @@ class EmpEditor(Gtk.Window):
         elif self.pens[self.objects["d"]] == "dilation":
             self.core.diagram.dilation(self.last_click, self.objects["p"], self.objects["t"])
             self.refresh()
+
+        elif self.pens[self.objects["d"]] == "filling":
+            self.core.diagram.filling(self.last_click, self.objects["p"], self.objects["t"])
+            self.refresh()
+
 
     def set_object(self, symbol, number):
         try:

@@ -226,8 +226,8 @@ class EmpInterpreter:
         ###########################################################################
         # pen
 
-        elif re.match("\Ad[0-4]\Z", line):
-            n = int(re.findall("[0-4]", line)[0])
+        elif re.match("\Ad[0-5]\Z", line):
+            n = int(re.findall("[0-5]", line)[0])
             self.editor.objects["d"]=n
             label = self.editor.pens[self.editor.objects["d"]]
             self.editor.labels["d"].set_text("d:"+label)
