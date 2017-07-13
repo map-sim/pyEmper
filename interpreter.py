@@ -17,7 +17,7 @@ class EmpInterpreter:
             if self.inbuf: self.exe()
             self.inbuf = []
         else:            
-            if re.match("[a-zA-Z0-9.* +-_]", str(chr(c))):
+            if re.match("[a-zA-Z0-9.* +-_?]", str(chr(c))):
                 print(chr(c), end="")
                 sys.stdout.flush()
                 self.inbuf.append(chr(c))
@@ -165,6 +165,31 @@ class EmpInterpreter:
             else: print("refuse rm")
             
         ###########################################################################
+        # get
+
+        elif re.match("\A[?]\Z", line):
+            atom = self.editor.core.diagram.get_atom(*self.editor.last_click)
+            if atom==None: print("not get")
+            else:
+                self.editor.set_object("p", atom.province.get_my_id())
+                self.editor.set_object("t", atom.terrain.get_my_id())
+                if atom==None: print("get")
+
+        elif re.match("\Ap[?]\Z", line):
+            atom = self.editor.core.diagram.get_atom(*self.editor.last_click)
+            if atom==None: print("not get")
+            else:
+                self.editor.set_object("p", atom.province.get_my_id())
+                if atom==None: print("get")
+                
+        elif re.match("\At[?]\Z", line):
+            atom = self.editor.core.diagram.get_atom(*self.editor.last_click)
+            if atom==None: print("not get")
+            else:
+                self.editor.set_object("t", atom.terrain.get_my_id())
+                if atom==None: print("get")
+            
+        ###########################################################################
         # mod
         
         elif re.match("\At\s*rgb\Z", line):
@@ -201,15 +226,14 @@ class EmpInterpreter:
         ###########################################################################
         # pen
 
-        elif re.match("\Ad\Z", line):
-            self.editor.objects["d"]+=1
-            if self.editor.objects["d"]>=len(self.editor.pens):
-                self.editor.objects["d"]-=len(self.editor.pens)
+        elif re.match("\Ad[0-4]\Z", line):
+            n = int(re.findall("[0-4]", line)[0])
+            self.editor.objects["d"]=n
             label = self.editor.pens[self.editor.objects["d"]]
             self.editor.labels["d"].set_text("d:"+label)
             print("pen:", label)
 
-        elif re.match("\Adn\Z", line):
+        elif re.match("\Ad\Z", line):
             self.editor.objects["d"]=0
             label = self.editor.pens[self.editor.objects["d"]]
             self.editor.labels["d"].set_text("d:"+label)
@@ -238,7 +262,7 @@ class EmpInterpreter:
             self.editor.refresh()
 
         ###########################################################################
-        # print settings
+        # settings
 
         elif re.match("\Argb\Z", line):
             r,g,b = self.editor.rainbow.get_rgb_color(*self.editor.last_click)
@@ -247,20 +271,19 @@ class EmpInterpreter:
         elif re.match("\Axy\Z", line):           
             print("xy:", *self.editor.last_click)
 
-
         ###########################################################################
         # other
 
         elif re.match("\Ahelp\Z", line):           
             print("All possible commands:")
-            print("p\tp[int]\tp*\tp+[str]\tp-[str]")
-            print("t\tt[int]\tt*\tt+[str]\tt-[str]")
+            print("p\tp[int]\tp*\tp+[str]\tp-[str]\tp?")
+            print("t\tt[int]\tt*\tt+[str]\tt-[str]\tt?")
             print("n\tn[int]\tn*\tp+[str]\tn-[str]")
             print("c\tc[int]\tc*\tc+[str]\tc-[str]")
             print("g\tg[int]\tg*\tp+[str]\tg-[str]")
             print("s\ts[int]\ts*\ts+[str]\ts-[str]")
             print("trgb\ttcon[num]\ttship[num]\ttswap[int]")
-            print("d\tr\trl\trr\txy\trgb")
+            print("d\td[int]\tr\trl\trr\txy\trgb\t?")
             print("help\tinfo\tsave [str]")
 
         elif re.match("\Asave [a-zA-Z0-9_-]+\Z", line):           
