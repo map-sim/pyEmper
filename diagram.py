@@ -13,19 +13,21 @@ class EmpAtom:
         
     def check_border(self):        
         try:
-            try:
-                if not self.province is self.diagram.get_atom(self.x+1, self.y).province: return True
-            except AttributeError:  return True
-            try:
-                if not self.province is self.diagram.get_atom(self.x-1, self.y).province: return True
-            except AttributeError:  return True
-            try:
-                if not self.province is self.diagram.get_atom(self.x, self.y+1).province: return True
-            except AttributeError:  return True
-            try:
-                if not self.province is self.diagram.get_atom(self.x, self.y-1).province: return True
-            except AttributeError: return True
-        except AssertionError: return True
+            if not self.province is self.diagram.get_atom(self.x+1, self.y).province: return True
+        except AttributeError: return True     
+        except AssertionError: pass
+        try:
+            if not self.province is self.diagram.get_atom(self.x-1, self.y).province: return True
+        except AttributeError: return True
+        except AssertionError: pass
+        try:
+            if not self.province is self.diagram.get_atom(self.x, self.y+1).province: return True
+        except AttributeError: return True
+        except AssertionError: pass
+        try:
+            if not self.province is self.diagram.get_atom(self.x, self.y-1).province: return True
+        except AttributeError: return True
+        except AssertionError: pass
         return False
 
     def check_coast(self):
@@ -33,19 +35,25 @@ class EmpAtom:
         try:
             a = self.diagram.get_atom(self.x+1, self.y)
             if a.terrain.ship<=0.5: return True
-        except AttributeError: pass
+        except AttributeError: return True
+        except AssertionError: pass
+
         try:
             a = self.diagram.get_atom(self.x-1, self.y)
             if a.terrain.ship<=0.5: return True
-        except AttributeError: pass
+        except AttributeError: return True
+        except AssertionError: pass
         try:
             a = self.diagram.get_atom(self.x, self.y+1)
             if a.terrain.ship<=0.5: return True
-        except AttributeError: pass
+        except AttributeError: return True
+        except AssertionError: pass
         try:
             a = self.diagram.get_atom(self.x, self.y-1)
             if a.terrain.ship<=0.5: return True
-        except AttributeError: pass
+        except AttributeError: return True
+        except AssertionError: pass
+        return False
 
     def __repr__(self):
         return "x%d:y%d" % (self.x, self.y)
