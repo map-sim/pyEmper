@@ -59,7 +59,7 @@ class EmpEditor(Gtk.Window):
         self.labels = {}
         self.tables = {}
         self.objects = {}
-        symbols = ["p", "t", "n", "c", "g", "s", "d"]
+        symbols = ["p", "t", "n", "c", "g", "s", "d", "r"]
         for n,s in enumerate(symbols):
             self.objects[s] = None
             self.labels[s] = Gtk.Label(s+":")
@@ -73,6 +73,9 @@ class EmpEditor(Gtk.Window):
 
         self.pens = ["none", "cross", "quad", "circle", "dilation", "filling"]
         self.set_pen(0)
+
+        self.screens = ["map", "rgb"]
+        self.set_screen(0)
         
         self.show_all()
 
@@ -93,7 +96,7 @@ class EmpEditor(Gtk.Window):
     def on_clicked_mouse (self, box, event):
         self.last_click = (int(event.x), int(event.y))
         x,y = self.last_click        
-        if self.pens[self.objects["d"]] == "none":
+        if self.pens[self.objects["d"]] == "none" and self.screens[self.objects["r"]] != "rgb":
             atom = self.core.diagram.get_atom(x,y)
             try:
                 print(atom.terrain)
@@ -140,3 +143,9 @@ class EmpEditor(Gtk.Window):
         self.objects["d"] = n
         label = self.pens[self.objects["d"]]
         self.labels["d"].set_text("d:"+label)
+
+    def set_screen(self, n):
+        self.objects["r"] = n
+        label = self.screens[self.objects["r"]]
+        self.labels["r"].set_text("r:"+label)
+

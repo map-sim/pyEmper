@@ -332,8 +332,8 @@ class EmpInterpreter:
         ###########################################################################
         # pen
 
-        elif re.match("\Ad[0-5]\Z", line):
-            n = int(re.findall("[0-5]", line)[0])
+        elif re.match("\Ad[0-6]\Z", line):
+            n = int(re.findall("[0-6]", line)[0])
             self.editor.set_pen(n)
             print("pen:", n)
 
@@ -363,17 +363,19 @@ class EmpInterpreter:
             self.editor.diagram_rgb = self.editor.core.diagram.rgb
             self.editor.core.diagram.refresh()
             self.editor.refresh()
-
-        elif re.match("\Arr\Z", line):
-            self.editor.diagram_rgb = self.editor.rainbow.rgb
-            self.editor.refresh()
-            self.editor.set_pen(0)
-
+            self.editor.set_screen(0)
+            
         elif re.match("\Arl\Z", line):
             self.editor.diagram_rgb = self.editor.core.diagram.rgb
             self.editor.core.diagram.refresh()
             self.editor.core.diagram.draw_lines()        
             self.editor.refresh()
+            self.editor.set_screen(0)
+
+        elif re.match("\Arr\Z", line):
+            self.editor.diagram_rgb = self.editor.rainbow.rgb
+            self.editor.refresh()
+            self.editor.set_screen(1)
 
         ###########################################################################
         # settings
