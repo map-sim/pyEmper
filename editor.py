@@ -95,24 +95,19 @@ class EmpEditor(Gtk.Window):
 
     def on_clicked_mouse (self, box, event):
         self.last_click = (int(event.x), int(event.y))
-        x,y = self.last_click        
-        if self.pens[self.objects["d"]] == "none" and self.screens[self.objects["r"]] != "rgb":
-            atom = self.core.diagram.get_atom(x,y)
-            try:
-                print(atom.terrain)
-                print(atom.province)
-                self.set_object("t", atom.terrain.get_my_id())
-                self.set_object("p", atom.province.get_my_id())
-            except AttributeError: pass
-            
-        elif self.pens[self.objects["d"]] == "filling":
-            self.core.diagram.filling(self.last_click, self.objects["p"], self.objects["t"])
-            self.refresh()
-
-        if self.objects["t"] == None: return    
-        if self.objects["p"] == None: return
+        x,y = self.last_click
         
-        if self.pens[self.objects["d"]] == "cross":
+        if self.pens[self.objects["d"]] == "none":
+            if self.screens[self.objects["r"]] != "rgb":
+                atom = self.core.diagram.get_atom(x,y)
+                try:
+                    print(atom.terrain)
+                    print(atom.province)
+                    self.set_object("t", atom.terrain.get_my_id())
+                    self.set_object("p", atom.province.get_my_id())
+                except AttributeError: pass
+                    
+        elif self.pens[self.objects["d"]] == "cross":
             a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
             self.core.diagram.set_area(a, self.objects["p"], self.objects["t"])
             self.refresh()
@@ -128,6 +123,10 @@ class EmpEditor(Gtk.Window):
 
         elif self.pens[self.objects["d"]] == "dilation":
             self.core.diagram.dilation(self.last_click, self.objects["p"], self.objects["t"])
+            self.refresh()
+
+        elif self.pens[self.objects["d"]] == "filling":
+            self.core.diagram.filling(self.last_click, self.objects["p"], self.objects["t"])
             self.refresh()
 
 

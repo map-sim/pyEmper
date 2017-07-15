@@ -91,8 +91,12 @@ class EmpDiagram:
             if x<0 or y<0 or x>=self.width or y>=self.height: return
 
             i,i3 = x+self.width*y, 3*(x+self.width*y)
-            self.atoms[i] = EmpAtom(self, x, y, p, t)
-            self.rgb[i3:i3+3] = t.rgb[0:3]
+            if p==None or t==None:
+                self.atoms[i] = None
+                self.rgb[i3:i3+3] = (0, 100, 100)
+            else:
+                self.atoms[i] = EmpAtom(self, x, y, p, t)
+                self.rgb[i3:i3+3] = t.rgb[0:3]
                         
     def set_circle(self, pixel, p, t):
         radius, pixels = 6, []
@@ -128,11 +132,10 @@ class EmpDiagram:
         print("dilatation")
 
     def filling(self, pixel, p, t):
-        if p==None and t==None:
-            self.set_atom(*pixel, None)
-            
         atom = self.get_atom(*pixel)
         if atom == None: return
+        if p == None: return
+        if t == None: return
         old_p = atom.province
         old_t = atom.terrain
 
@@ -145,11 +148,14 @@ class EmpDiagram:
             a.province,a.terrain = p,t
 
             for x,y in [(0,1), (0,-1), (1,0), (-1,0)]:
-                an = self.get_atom(a.x+x,a.y+y)
-                if an == None: continue
-                elif an in checked: continue
-                elif an.province is old_p and an.terrain is old_t:
-                    to_check.append(an)
+
+                try:
+                    an = self.get_atom(a.x+x,a.y+y)
+                    if an in checked: continue
+                    elif an.province is old_p and an.terrain is old_t:
+                        to_check.append(an)
+                except AttributeError: continue
+                except AssertionError: continue
         print("filling")
        
     def smooth_by_province(self):
