@@ -52,10 +52,6 @@ class EmpDiagram:
         call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
         return self.atoms[x+self.width*y]
 
-    def set_atom(self, x, y, atom):
-        call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
-        self.atoms[x+self.width*y] = None
-    
     def draw_lines(self):
         g = (a for a in self.atoms if a!=None and a.check_coast())        
         for a in g: self.rgb[3*a.n:3*a.n+3] = (0,64,128)
@@ -81,17 +77,6 @@ class EmpDiagram:
                 if (x-radius)**2 + (y-radius)**2 > radius**2: continue
                 pixels.append((pixel[0]+(x-radius), pixel[1]+(y-radius)))
         self.set_area(pixels, p, t)
-
-    def dilation(self, pixel, p, t):
-        ribon = self.get_ribon(pixel)
-        self.set_area(ribon, p, t)
-        print("dilatation")
-
-    def filling(self, pixel, p, t):
-        group = self.get_area(pixel)
-        self.set_area(group, p, t)
-        print("filling")
-       
         
     def get_area(self, pixel):
         atom = self.get_atom(*pixel)
@@ -117,26 +102,18 @@ class EmpDiagram:
                 except AssertionError: continue
         return found 
 
-    def get_ribon(self, pixel):
-        atom = self.get_atom(*pixel)
-        if atom == None:
-            print("None cannot be got")
-            return []
+    def get_ribbon(self, pixels, p, t):
+        found = []
+        for xy in pixels:
+            a = self.get_atom(*xy)
+            if a == None: continue
 
-        checked = []
-        to_check = [atom]
-        found = [atom.get_xy()]
-
-        while to_check:
-            a = to_check.pop()
-            checked.append(a)
             for x,y in [(0,1), (0,-1), (1,0), (-1,0)]:
                 try:
                     an = self.get_atom(a.x+x,a.y+y)
-                    if an in checked: continue
-                    elif an.province is atom.province and an.terrain is atom.terrain:
-                        to_check.append(an)
-                    else: found.append(an.get_xy())
+                    if not an.province is p: continue
+                    if not an.terrain is t: continue
+                    found.append(an.get_xy())
                 except AttributeError: continue
                 except AssertionError: continue
         return found 

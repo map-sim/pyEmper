@@ -78,11 +78,11 @@ class EmpInterpreter:
         orders.append("t[.]\s*ship\s*[0-9]+[.]?[0-9]?")
         orders.append("t\s*swap\s*[0-9]+")
 
-        orders.extend(["[?]", "p[?]", "t[?]"])
         orders.extend(["d", "d[0-5]", "p\s*aa"])
         orders.extend(["r", "rl", "rr"])
         orders.extend(["rgb", "xy"])
 
+        orders.extend(["clean", "fill", "ribb"])
         orders.append("save [a-zA-Z0-9_-]+")
         orders.extend(["info", "help"])
 
@@ -305,31 +305,6 @@ class EmpInterpreter:
             else: print("not swap")
             
         ###########################################################################
-        # get
-
-        elif re.match("\A[?]\Z", line):
-            atom = self.editor.core.diagram.get_atom(*self.editor.last_click)
-            if atom==None: print("not get")
-            else:
-                self.editor.set_object("p", atom.province.get_my_id())
-                self.editor.set_object("t", atom.terrain.get_my_id())
-                print("got")
-
-        elif re.match("\Ap[?]\Z", line):
-            atom = self.editor.core.diagram.get_atom(*self.editor.last_click)
-            if atom==None: print("not get")
-            else:
-                self.editor.set_object("p", atom.province.get_my_id())
-                if atom==None: print("get")
-                
-        elif re.match("\At[?]\Z", line):
-            atom = self.editor.core.diagram.get_atom(*self.editor.last_click)
-            if atom==None: print("not get")
-            else:
-                self.editor.set_object("t", atom.terrain.get_my_id())
-                if atom==None: print("get")
-
-        ###########################################################################
         # pen
 
         elif re.match("\Ad[0-6]\Z", line):
@@ -355,6 +330,25 @@ class EmpInterpreter:
         elif re.match("\Ap\s*aa\Z", line):           
             self.editor.core.diagram.smooth_by_province()
             print("aa")
+
+        elif re.match("\Aclean\Z", line):                      
+            self.editor.set_pix_buffer([])
+            print("clean")
+
+        elif re.match("\Afill\Z", line):                      
+            buf = self.editor.objects["x"]
+            p = self.editor.objects["p"]
+            t = self.editor.objects["t"]
+            self.editor.core.diagram.set_area(buf, p, t)
+            print("fill")
+                        
+        elif re.match("\Aribb\Z", line):                      
+            buf = self.editor.objects["x"]
+            p = self.editor.objects["p"]
+            t = self.editor.objects["t"]
+            o = self.editor.core.diagram.get_ribbon(buf, p, t)
+            self.editor.set_pix_buffer(o)
+            print("ribb")
             
         ###########################################################################
         # screen

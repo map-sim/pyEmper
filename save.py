@@ -85,9 +85,12 @@ class EmpSave():
         self.con.commit()
 
     def __save_diagram(self):
-        self.cur.execute("CREATE TABLE diagram(x INT, y INT, t INT, p INT)")
-        g = (a for a in self.core.diagram.atoms if a)
-        for a in g: self.cur.execute("INSERT INTO diagram VALUES(%d, %d, %d, %d)" % (a.x, a.y, a.terrain.get_my_id(), a.province.get_my_id()))
+        self.cur.execute("CREATE TABLE diagram(t INT, p INT)")
+        g = ( self.core.diagram.get_atom(x, y)  for y in range(self.core.diagram.height) for x in range(self.core.diagram.width))
+
+        for a in g:
+            try: self.cur.execute("INSERT INTO diagram VALUES(%d, %d)" % (a.terrain.get_my_id(), a.province.get_my_id()))
+            except: self.cur.execute("INSERT INTO diagram VALUES(%d, %d)" % (-1, -1))
         self.con.commit()
 
     def expotr_to_html(self):

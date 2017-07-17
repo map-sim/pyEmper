@@ -53,11 +53,17 @@ class EmpLoad:
 
             self.cur.execute("SELECT * FROM diagram")
             rows = self.cur.fetchall()
-            for a in rows:
-                xy = [(int(a['x']), int(a['y']))]
+            for i,a in enumerate(rows):
+                if int(a['p']) == -1 or int(a['t']) == -1:
+                    continue
+
                 province = self.core.provinces[int(a['p'])]
                 terrain = self.core.terrains[int(a['t'])]
-                self.core.diagram.set_area(xy, province, terrain)
+
+                x = i % self.width
+                y = i / self.width
+                xy = (int(x), int(y))
+                self.core.diagram.set_area([xy], province, terrain)
             
         finally:    
             if self.con:

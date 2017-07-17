@@ -59,7 +59,7 @@ class EmpEditor(Gtk.Window):
         self.labels = {}
         self.tables = {}
         self.objects = {}
-        symbols = ["p", "t", "n", "c", "g", "s", "d", "r"]
+        symbols = ["p", "t", "n", "c", "g", "s", "d", "r", "x"]
         for n,s in enumerate(symbols):
             self.objects[s] = None
             self.labels[s] = Gtk.Label(s+":")
@@ -71,11 +71,13 @@ class EmpEditor(Gtk.Window):
         self.tables["s"] = self.core.processes
         self.tables["g"] = self.core.goods
 
-        self.pens = ["none", "cross", "quad", "circle", "dilation", "filling"]
+        self.pens = ["none", "cross", "quad", "circle", "dilation"]
         self.set_pen(0)
 
         self.screens = ["map", "rgb"]
         self.set_screen(0)
+
+        self.set_pix_buffer([])
         
         self.show_all()
 
@@ -106,6 +108,9 @@ class EmpEditor(Gtk.Window):
                     self.set_object("t", atom.terrain.get_my_id())
                     self.set_object("p", atom.province.get_my_id())
                 except AttributeError: pass
+
+                if event.button==3:
+                    self.set_pix_buffer(self.core.diagram.get_area(self.last_click))
                     
         elif self.pens[self.objects["d"]] == "cross":
             a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
@@ -123,10 +128,6 @@ class EmpEditor(Gtk.Window):
 
         elif self.pens[self.objects["d"]] == "dilation":
             self.core.diagram.dilation(self.last_click, self.objects["p"], self.objects["t"])
-            self.refresh()
-
-        elif self.pens[self.objects["d"]] == "filling":
-            self.core.diagram.filling(self.last_click, self.objects["p"], self.objects["t"])
             self.refresh()
 
 
@@ -148,3 +149,6 @@ class EmpEditor(Gtk.Window):
         label = self.screens[self.objects["r"]]
         self.labels["r"].set_text("r:"+label)
 
+    def set_pix_buffer(self, pixels):
+        self.objects["x"] = pixels
+        self.labels["x"].set_text("x:"+str(len(pixels)))
