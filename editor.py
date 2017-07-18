@@ -72,7 +72,7 @@ class EmpEditor(Gtk.Window):
         self.tables["g"] = self.core.goods
         self.set_pix_buffer([])
 
-        self.pens = ["none", "cross", "quad", "circle", "dilation"]
+        self.pens = ["none", "cross", "quad", "circle"]
         self.screens = ["map", "rgb"]
         self.set_screen(0)
         self.set_pen(0)
@@ -99,17 +99,17 @@ class EmpEditor(Gtk.Window):
         
         if self.pens[self.objects["d"]] == "none" or event.button==3:
             if self.screens[self.objects["r"]] != "rgb":
-                atom = self.core.diagram.get_atom(x,y)
-                try:
-                    print(atom.terrain)
-                    print(atom.province)
-                    self.set_object("t", atom.terrain.get_my_id())
-                    self.set_object("p", atom.province.get_my_id())
-                except AttributeError: pass
-
                 if event.button==3:
                     self.set_pix_buffer(self.core.diagram.get_area(self.last_click))
                     self.set_pen(0)
+                else:
+                    atom = self.core.diagram.get_atom(x,y)
+                    try:
+                        print(atom.terrain)
+                        print(atom.province)
+                        self.set_object("t", atom.terrain.get_my_id())
+                        self.set_object("p", atom.province.get_my_id())
+                    except AttributeError: pass
 
         elif self.pens[self.objects["d"]] == "cross":
             a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]

@@ -307,14 +307,12 @@ class EmpInterpreter:
         ###########################################################################
         # pen
 
-        elif re.match("\Ad[0-6]\Z", line):
-            n = int(re.findall("[0-6]", line)[0])
+        elif re.match("\Ad[0-3]\Z", line):
+            n = int(re.findall("[0-3]", line)[0])
             self.editor.set_pen(n)
             print("pen:", n)
 
-            if n==5: cursor = Gdk.Cursor(Gdk.CursorType.BOX_SPIRAL)
-            elif n in [1,2,3]: cursor = Gdk.Cursor(Gdk.CursorType.CROSS)
-            elif n==4: cursor = Gdk.Cursor(Gdk.CursorType.TARGET)
+            if n in [1,2,3]: cursor = Gdk.Cursor(Gdk.CursorType.CROSS)
             else: cursor = Gdk.Cursor(Gdk.CursorType.DOT)
             gdk_window = self.editor.get_root_window()
             gdk_window.set_cursor(cursor)
