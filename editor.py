@@ -70,14 +70,12 @@ class EmpEditor(Gtk.Window):
         self.tables["c"] = self.core.controls
         self.tables["s"] = self.core.processes
         self.tables["g"] = self.core.goods
+        self.set_pix_buffer([])
 
         self.pens = ["none", "cross", "quad", "circle", "dilation"]
-        self.set_pen(0)
-
         self.screens = ["map", "rgb"]
         self.set_screen(0)
-
-        self.set_pix_buffer([])
+        self.set_pen(0)
         
         self.show_all()
 
@@ -99,7 +97,7 @@ class EmpEditor(Gtk.Window):
         self.last_click = (int(event.x), int(event.y))
         x,y = self.last_click
         
-        if self.pens[self.objects["d"]] == "none":
+        if self.pens[self.objects["d"]] == "none" or event.button==3:
             if self.screens[self.objects["r"]] != "rgb":
                 atom = self.core.diagram.get_atom(x,y)
                 try:
@@ -111,7 +109,8 @@ class EmpEditor(Gtk.Window):
 
                 if event.button==3:
                     self.set_pix_buffer(self.core.diagram.get_area(self.last_click))
-                    
+                    self.set_pen(0)
+
         elif self.pens[self.objects["d"]] == "cross":
             a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
             self.core.diagram.set_area(a, self.objects["p"], self.objects["t"])
