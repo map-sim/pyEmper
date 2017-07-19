@@ -151,7 +151,9 @@ class EmpInterpreter:
 
         elif re.match("\Ap[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
-            print(self.editor.core.add_province(name))
+            p = self.editor.core.add_province(name)
+            self.editor.set_object("p", p.get_my_id())
+            print(p)
             
         elif re.match("\At[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
@@ -385,7 +387,8 @@ class EmpInterpreter:
         elif re.match("\Asave [a-zA-Z0-9_-]+\Z", line):           
             name = re.findall("[a-zA-Z0-9_-]+", line)[1]
             s = EmpSave(self.editor.core, name+".db")
-            s.expotr_to_html()
+            s.export_screen_to_pngfile(self.editor.diagram_rgb, name+".png")
+            s.expotr_to_html(name+".html")
 
         elif re.match("\Ainfo\Z", line):           
             print("Author: Krzysztof Czarnecki, Gdansk, Poland")

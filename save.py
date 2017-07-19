@@ -6,6 +6,9 @@ import core, sys
 import datetime
 from tools import call_error
 
+from gi.repository import GdkPixbuf as Gpb
+from gi.repository import GLib
+
 class EmpSave():
 
     def __init__(self, arg, fname="save.db", author="anonymous"):
@@ -93,9 +96,19 @@ class EmpSave():
             except: self.cur.execute("INSERT INTO diagram VALUES(%d, %d)" % (-1, -1))
         self.con.commit()
 
-    def expotr_to_html(self):
-        with open("save.html", "w") as fd:
+    def export_screen_to_pngfile(self, diagram_rgb, fname):
+        tmp = GLib.Bytes.new(diagram_rgb)        
+        pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, self.core.diagram.width, self.core.diagram.height, 3*self.core.diagram.width)
+        pbuf.savev(fname, "png", [], [])
+
+    def expotr_to_html(self, fname):
+        with open(fname, "w") as fd:
+            fd.write("<b>TERRAINS</b><br>\n")
             for t in self.core.terrains:                
                 fd.write("%1.2f %1.2f " % (t.con, t.ship))
                 fd.write("<canvas width='10' height='10' style='border:1px solid #000000; background: #%02x%02x%02x'></canvas>" % t.rgb)
-                fd.write(" <b>%s</b><br>\n " % t.name)
+                fd.write(" %s<br>\n" % t.name)
+
+            fd.write("<br><b>PROVINCES</b><br>\n")
+            for p in self.core.provinces:                
+                fd.write("%s<br>\n" % p.name)
