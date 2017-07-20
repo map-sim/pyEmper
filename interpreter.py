@@ -282,14 +282,14 @@ class EmpInterpreter:
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
                 
-        elif re.match("\At[.]con\s*[0-9]+[.]?[0-9]?\Z", line):
+        elif re.match("\At[.]\s*con\s*[0-9]+[.]?[0-9]*\Z", line):
             if self.editor.objects["t"]:
-                con = re.findall("[0-9]+[.]?[0-9]?", line)[0]
+                con = re.findall("[0-9]+[.]?[0-9]*", line)[0]
                 self.editor.objects["t"].set_con(float(con))
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
 
-        elif re.match("\At[.]ship\s*[0-9]+[.]?[0-9]?\Z", line):
+        elif re.match("\At[.]\s*ship\s*[0-9]+[.]?[0-9]?\Z", line):
             if self.editor.objects["t"]:
                 ship = re.findall("[0-9]+[.]?[0-9]?", line)[0]
                 self.editor.objects["t"].set_ship(float(ship))
