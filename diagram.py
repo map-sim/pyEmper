@@ -8,7 +8,9 @@ class EmpAtom:
         self.province = province
         self.terrain = terrain
         self.diagram = diagram
-        
+        self.set_xy(x,y)
+
+    def set_xy(self, x, y):
         self.n = x + y*self.diagram.width
         self.x,self.y = x,y
 
@@ -34,7 +36,6 @@ class EmpAtom:
             except AssertionError: pass
 
     
-
 class EmpDiagram:
     def __init__(self, core, width, height):
         self.rgb = [0, 100, 100] * width * height
@@ -42,6 +43,19 @@ class EmpDiagram:
         self.height = height
         self.width = width
         self.core = core
+
+    def move_roller(self, delta):
+        moved_atoms = [None] * self.width * self.height
+        g = (a for a in self.atoms if a!=None)        
+        for a in g:
+            nx = (a.x+delta) % self.width
+            a.set_xy(nx, a.y)
+            n = a.x+self.width*a.y
+            moved_atoms[n] = a
+        self.atoms = moved_atoms
+        self.refresh()
+        
+
 
     def refresh(self):
         for n,a in enumerate(self.atoms):

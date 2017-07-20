@@ -79,7 +79,7 @@ class EmpInterpreter:
         orders.append("t\s*swap\s*[0-9]+")
 
         orders.extend(["d", "d[0-5]", "p\s*aa"])
-        orders.extend(["r", "rl", "rr"])
+        orders.extend(["mv", "r", "rl", "rr"])
         orders.extend(["rgb", "xy"])
 
         orders.extend(["clean", "fill", "ribb"])
@@ -352,6 +352,11 @@ class EmpInterpreter:
             
         ###########################################################################
         # screen
+
+        elif re.match("\Amv [0-9]+\Z", line):
+            delta = int(re.findall("[0-9]+", line)[0])
+            self.editor.core.diagram.move_roller(delta)
+            self.editor.refresh()
 
         elif re.match("\Ar\Z", line):
             self.editor.diagram_rgb = self.editor.core.diagram.rgb
