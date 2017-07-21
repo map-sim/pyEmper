@@ -53,9 +53,11 @@ class EmpLoad:
 
             self.cur.execute("SELECT * FROM diagram")
             rows = self.cur.fetchall()
+            counter = 0
             for i,a in enumerate(rows):
                 if int(a['p']) == -1 or int(a['t']) == -1:
                     continue
+                counter+=1
 
                 province = self.core.provinces[int(a['p'])]
                 terrain = self.core.terrains[int(a['t'])]
@@ -65,6 +67,8 @@ class EmpLoad:
                 xy = (int(x), int(y))
                 self.core.diagram.set_area([xy], province, terrain)
             
+            print("load:", 100*counter/(self.width*self.height))
+
         finally:    
             if self.con:
                 self.con.close()
