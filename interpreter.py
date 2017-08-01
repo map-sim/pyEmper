@@ -89,7 +89,12 @@ class EmpInterpreter:
         ###########################################################################
         # print obj
         
-        if re.match("\Ap\Z", line): print(self.editor.objects["p"])
+        if re.match("\Ap\Z", line):
+            print(self.editor.objects["p"])
+            try:
+                print("area:", self.editor.objects["p"].get_area())
+            except AttributeError: pass
+                
         elif re.match("\At\Z", line): print(self.editor.objects["t"])
         elif re.match("\An\Z", line): print(self.editor.objects["n"])
         elif re.match("\Ac\Z", line): print(self.editor.objects["c"])

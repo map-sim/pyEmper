@@ -46,7 +46,17 @@ class EmpProvince(EmpIder):
     def __repr__(self): return "p%d:%s" % (self.get_my_id(), self.name)
     def __init__(self, core, name):
         super().__init__(core, name, core.provinces)        
-            
+
+    def get_area(self):
+        area = 0
+        ground = 0
+        for a in self.core.diagram.atoms:
+            if a.province is self:
+                area += 1
+                if a.terrain.ship<0.5: ground += 1
+        return area,ground
+
+
 class EmpNation(EmpIder):
     def __repr__(self): return "n%d:%s" % (self.get_my_id(), self.name)
     def __init__(self, core, name):

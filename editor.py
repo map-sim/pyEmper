@@ -109,6 +109,9 @@ class EmpEditor(Gtk.Window):
                         print(atom.province)
                         self.set_object("t", atom.terrain.get_my_id())
                         self.set_object("p", atom.province.get_my_id())
+                        
+                        print("p area:", self.objects["p"].get_area()[0])
+                        
                     except AttributeError: pass
 
         elif self.pens[self.objects["d"]] == "cross":

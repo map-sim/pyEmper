@@ -110,5 +110,6 @@ class EmpSave():
                 fd.write(" %s<br>\n" % t.name)
 
             fd.write("<br><b>PROVINCES</b><br>\n")
-            for p in self.core.provinces:                
-                fd.write("%s<br>\n" % p.name)
+            for p in self.core.provinces:
+                area, ground = p.get_area()
+                fd.write("%s | %d = %d + %d<br>\n" % (p.name, area, ground, area-ground))
