@@ -66,12 +66,38 @@ class EmpDiagram:
         call_error(x<0 or y<0 or x>=self.width or y>=self.height, "out of diagram")
         return self.atoms[x+self.width*y]
 
-    def draw_lines(self):
+    def draw_lines(self, rgb):
         g = (a for a in self.atoms if a!=None and a.check_coast())        
-        for a in g: self.rgb[3*a.n:3*a.n+3] = (0,64,128)
+        for a in g: rgb[3*a.n:3*a.n+3] = (0,64,128)
         g = (a for a in self.atoms if a!=None and a.check_border())        
-        for a in g: self.rgb[3*a.n:3*a.n+3] = (0,0,0)
-                    
+        for a in g: rgb[3*a.n:3*a.n+3] = (0,0,0)
+
+    def draw_population(self, nation):
+        rgb = [255, 255, 255] * self.width * self.height
+        max_pop = 0
+        for p in self.core.provinces:
+            if p.population[nation]>max_pop:
+                max_pop = p.population[nation]
+        
+        g = (a for a in self.atoms if a!=None)        
+        for a in g:
+            if a.terrain.ship>0.5: rgb[3*a.n:3*a.n+3] = (0,255,255)
+            else:
+                f = a.province.population[nation]/max_pop
+                if f<0.66:
+                    r = 255
+                    g = 255-int(255*1.5*f)
+                    b = 255-int(255*1.5*f)
+                else:
+                    r = 255-int(255*2*(f-0.66))
+                    b = 0
+                    g = 0
+                rgb[3*a.n:3*a.n+3] = (r,g,b)
+
+        return rgb
+        
+
+    
     def set_area(self, pixels, p, t):
         for x,y in pixels:
             if x<0 or y<0 or x>=self.width or y>=self.height: return

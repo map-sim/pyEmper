@@ -52,7 +52,7 @@ class EmpEditor(Gtk.Window):
         
         self.img = Gtk.Image()
         ebox.add(self.img)
-        self.core.diagram.draw_lines()        
+        self.core.diagram.draw_lines(self.diagram_rgb)        
         self.refresh()
 
         # labels ################################################################
@@ -73,7 +73,7 @@ class EmpEditor(Gtk.Window):
         self.set_pix_buffer([])
 
         self.pens = ["none", "cross", "quad", "circle"]
-        self.screens = ["map", "rgb"]
+        self.screens = ["terr-map", "rainbow", "param-map"]
         self.set_screen(0)
         self.set_pen(0)
         
@@ -98,11 +98,11 @@ class EmpEditor(Gtk.Window):
         x,y = self.last_click
         
         if self.pens[self.objects["d"]] == "none" or event.button==3:
-            if self.screens[self.objects["r"]] != "rgb":
-                if event.button==3:
+            if self.screens[self.objects["r"]] != "rainbow":
+                if event.button==3 and self.screens[self.objects["r"]] == "terr-map":
                     self.set_pix_buffer(self.core.diagram.get_area(self.last_click))
-                    self.set_pen(0)
-                else:
+ 
+                if event.button==1:
                     atom = self.core.diagram.get_atom(x,y)
                     try:
                         print(atom.terrain)
@@ -111,21 +111,21 @@ class EmpEditor(Gtk.Window):
                         self.set_object("p", atom.province.get_my_id())                       
                     except AttributeError: pass
 
-        elif self.pens[self.objects["d"]] == "cross":
+        elif self.pens[self.objects["d"]] == "cross" and self.screens[self.objects["r"]] == "terr-map":
             a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
             self.core.diagram.set_area(a, self.objects["p"], self.objects["t"])
             self.refresh()
             
-        elif self.pens[self.objects["d"]] == "quad":
+        elif self.pens[self.objects["d"]] == "quad" and self.screens[self.objects["r"]] == "terr-map":
             a = [(x+a-2,y+b-2) for a in range(5) for b in range(5)]
             self.core.diagram.set_area(a, self.objects["p"], self.objects["t"])
             self.refresh()
 
-        elif self.pens[self.objects["d"]] == "circle":
+        elif self.pens[self.objects["d"]] == "circle" and self.screens[self.objects["r"]] == "terr-map":
             self.core.diagram.set_circle(self.last_click, self.objects["p"], self.objects["t"])
             self.refresh()
 
-        elif self.pens[self.objects["d"]] == "dilation":
+        elif self.pens[self.objects["d"]] == "dilation" and self.screens[self.objects["r"]] == "terr-map":
             self.core.diagram.dilation(self.last_click, self.objects["p"], self.objects["t"])
             self.refresh()
 

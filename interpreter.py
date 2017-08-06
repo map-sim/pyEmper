@@ -79,7 +79,7 @@ class EmpInterpreter:
         orders.append("t\s*swap\s*[0-9]+")
 
         orders.extend(["d", "d[0-5]", "p\s*aa"])
-        orders.extend(["mv", "r", "rl", "rr"])
+        orders.extend(["mv", "rt", "rl", "rr"])
         orders.extend(["rgb", "xy"])
 
         orders.extend(["clean", "fill", "ribb"])
@@ -131,8 +131,14 @@ class EmpInterpreter:
             print(self.editor.objects["t"])
         elif re.match("\An[0-9]+\Z", line):
             n_id = int(re.findall("[0-9]+", line)[0])
-            self.editor.set_object("n", n_id)
+            self.editor.set_object("n", n_id)            
             print(self.editor.objects["n"])
+
+            self.editor.diagram_rgb = self.editor.core.diagram.draw_population(self.editor.objects["n"])
+            self.editor.core.diagram.draw_lines(self.editor.diagram_rgb)        
+            self.editor.refresh()
+            self.editor.set_screen(2)
+            
         elif re.match("\Ac[0-9]+\Z", line):
             c_id = int(re.findall("[0-9]+", line)[0])
             self.editor.set_object("c", c_id)
@@ -365,16 +371,16 @@ class EmpInterpreter:
             self.editor.core.diagram.move_roller(delta)
             self.editor.refresh()
 
-        elif re.match("\Ar\Z", line):
-            self.editor.diagram_rgb = self.editor.core.diagram.rgb
+        elif re.match("\Art\Z", line):
             self.editor.core.diagram.refresh()
+            self.editor.diagram_rgb = self.editor.core.diagram.rgb
             self.editor.refresh()
             self.editor.set_screen(0)
             
         elif re.match("\Arl\Z", line):
-            self.editor.diagram_rgb = self.editor.core.diagram.rgb
             self.editor.core.diagram.refresh()
-            self.editor.core.diagram.draw_lines()        
+            self.editor.core.diagram.draw_lines(self.editor.diagram_rgb)        
+            self.editor.diagram_rgb = self.editor.core.diagram.rgb
             self.editor.refresh()
             self.editor.set_screen(0)
 

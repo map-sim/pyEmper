@@ -146,7 +146,7 @@ class EmpCore:
     def get_nation_by_name(self, name):
         for n in self.nations:
             if name == n.name: return n
-    
+            
     def rm_control(self, n):
         del self.controls[n]
     def add_control(self, name):
