@@ -20,16 +20,27 @@ class EmpSave():
         try:
             self.con = lite.connect(fname)
             self.cur = self.con.cursor()
-                        
+
+            print("save general info...")
             self.__save_general_info(str(author))
+            print("save terrains...")
             self.__save_terrains()
+            print("save provinces...")
             self.__save_provinces()
+            print("save nations...")
             self.__save_nations()
+            print("save controls...")
             self.__save_controls()
+            print("save processes...")
             self.__save_processes()
+            print("save goods...")
             self.__save_goods()
 
+            print("save diagram...")
             self.__save_diagram()
+            print("save population...")
+            self.__save_population()
+
             print("save as", fname)
             
         finally:    
@@ -57,6 +68,14 @@ class EmpSave():
             self.cur.execute("INSERT INTO provinces VALUES('%s')" % p.name)
         self.con.commit()
 
+    def __save_population(self):
+        self.cur.execute("CREATE TABLE population(province_name TEXT, nation_name TEXT, people INTEGER)")
+        for p in self.core.provinces:
+            for n in self.core.nations:
+                if p.population[n] == 0: continue
+                self.cur.execute("INSERT INTO population VALUES('%s', '%s', %d)" % (p.name, n.name, p.population[n]))
+        self.con.commit()
+        
     def __save_terrains(self):
         self.cur.execute("CREATE TABLE terrains(name TEXT, r INT,  g INT,  b INT, con REAL, ship REAL)")
         for t in self.core.terrains:
@@ -88,7 +107,7 @@ class EmpSave():
         self.con.commit()
 
     def __save_diagram(self):
-        self.cur.execute("CREATE TABLE diagram(t INT, p INT)")
+        self.cur.execute("CREATE TABLE diagram(t INTEGER, p INTEGER)")
         g = ( self.core.diagram.get_atom(x, y)  for y in range(self.core.diagram.height) for x in range(self.core.diagram.width))
 
         for a in g:

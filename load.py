@@ -31,22 +31,22 @@ class EmpLoad:
                 con,ship = float(t['con']),float(t['ship'])
                 self.core.add_terrain(t['name'], rgb, con, ship)
 
-            self.cur.execute("SELECT * FROM provinces")
+            self.cur.execute("SELECT * FROM goods")
             rows = self.cur.fetchall()
-            for p in rows: self.core.add_province(p['name'])
-
+            for g in rows: self.core.add_good(g['name'])
+            
             self.cur.execute("SELECT * FROM nations")
             rows = self.cur.fetchall()
             for n in rows: self.core.add_nation(n['name'])
+            
+            self.cur.execute("SELECT * FROM provinces")
+            rows = self.cur.fetchall()
+            for p in rows: self.core.add_province(p['name'])
 
             self.cur.execute("SELECT * FROM controls")
             rows = self.cur.fetchall()
             for c in rows: self.core.add_control(c['name'])
             
-            self.cur.execute("SELECT * FROM goods")
-            rows = self.cur.fetchall()
-            for g in rows: self.core.add_good(g['name'])
-
             self.cur.execute("SELECT * FROM processes")
             rows = self.cur.fetchall()
             for x in rows: self.core.add_process(x['name'])
@@ -68,6 +68,15 @@ class EmpLoad:
                 self.core.diagram.set_area([xy], province, terrain)
             
             print("load:", 100*counter/(self.width*self.height))
+
+            self.cur.execute("SELECT * FROM population")
+            rows = self.cur.fetchall()
+            for x in rows:
+                nname = x['nation_name']
+                pname = x['province_name']
+                n = self.core.get_nation_by_name(nname)
+                p = self.core.get_province_by_name(pname)
+                p.population[n] = int(x['people'])
 
         finally:    
             if self.con:

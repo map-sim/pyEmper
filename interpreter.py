@@ -89,12 +89,7 @@ class EmpInterpreter:
         ###########################################################################
         # print obj
         
-        if re.match("\Ap\Z", line):
-            print(self.editor.objects["p"])
-            try:
-                print("area:", self.editor.objects["p"].get_area())
-            except AttributeError: pass
-                
+        if re.match("\Ap\Z", line): print(self.editor.objects["p"])
         elif re.match("\At\Z", line): print(self.editor.objects["t"])
         elif re.match("\An\Z", line): print(self.editor.objects["n"])
         elif re.match("\Ac\Z", line): print(self.editor.objects["c"])
@@ -156,9 +151,7 @@ class EmpInterpreter:
 
         elif re.match("\Ap[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
-            p = self.editor.core.add_province(name)
-            self.editor.set_object("p", p.get_my_id())
-            print(p)
+            print(self.editor.core.add_province(name))
             
         elif re.match("\At[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
@@ -238,7 +231,7 @@ class EmpInterpreter:
         elif re.match("\Ap[.]\s*name\s+[a-zA-Z_]+\Z", line):
             if self.editor.objects["p"]:
                 name = re.findall("[a-zA-Z_]+", line)[2]
-                self.editor.objects["p"].name = name
+                self.editor.objects["p"].set_name(name)
                 print("mod:", self.editor.objects["p"])
             else: print("not mod")
 
@@ -278,8 +271,17 @@ class EmpInterpreter:
             else: print("not mod")
 
         ###########################################################################
-        # mod
+        # mod p -> n
 
+        elif re.match("\Ap[.]\s*pop\s*[0-9]+\Z", line):
+            if self.editor.objects["p"] and self.editor.objects["n"]:
+                num = int(re.findall("[0-9]+", line)[0])
+                self.editor.objects["p"].population[self.editor.objects["n"]] = num
+            else: print("not set")
+            
+        ###########################################################################
+        # mod
+        
         elif re.match("\At[.]\s*rgb\Z", line):
             if self.editor.objects["t"]:
                 rgb = self.editor.rainbow.get_rgb_color(*self.editor.last_click)

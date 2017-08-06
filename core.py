@@ -9,8 +9,12 @@ class EmpIder:
     def __init__(self, core, name, tab):
         self.core = core
         self.table = tab
-        
+        self.set_name(name)
+        self.table.append(self)
+
+    def set_name(self, name):
         assert len(name)>=3 and len(name)<=16, "too long string"
+        for obj in self.table: assert name!=obj.name
         self.name = str(name)
         
     def get_my_id(self):
@@ -43,17 +47,26 @@ class EmpTerrain(EmpIder):
         self.rgb = tuple(rgb)
             
 class EmpProvince(EmpIder):
-    def __repr__(self): return "p%d:%s" % (self.get_my_id(), self.name)
+    def __repr__(self):
+        out = "p%d:%s" % (self.get_my_id(), self.name)
+        out += "\n   area: %d (%d)" % self.get_area()
+        for k in self.population.keys():
+            if self.population[k]>0: out += "\n   pop %s: %d" % (k.name, self.population[k])
+        return out
+    
     def __init__(self, core, name):
-        super().__init__(core, name, core.provinces)        
+        super().__init__(core, name, core.provinces)
 
+        self.population = {}
+        for n in self.core.nations:
+            self.population[n] = 0
+        
     def get_area(self):
-        area = 0
-        ground = 0
-        for a in self.core.diagram.atoms:
-            if a.province is self:
-                area += 1
-                if a.terrain.ship<0.5: ground += 1
+        area,ground = 0,0
+        g = (a for a in self.core.diagram.atoms if a.province is self)
+        for a1 in g:
+            area += 1
+            if a1.terrain.ship<0.5: ground += 1
         return area,ground
 
 
@@ -61,6 +74,9 @@ class EmpNation(EmpIder):
     def __repr__(self): return "n%d:%s" % (self.get_my_id(), self.name)
     def __init__(self, core, name):
         super().__init__(core, name, core.nations)        
+        
+        for p in self.core.provinces:
+            p.population[self] = 0
 
 class EmpControl(EmpIder):
     def __repr__(self): return "c%d:%s" % (self.get_my_id(), self.name)
@@ -98,12 +114,8 @@ class EmpCore:
     def add_terrain(self, name, rgb, con, ship):
         try: nt = EmpTerrain(self, name, rgb, con, ship)
         except AssertionError: return None
-        nt.core = self
-
-        for t in self.terrains:
-            if name==t.name: None
-        self.terrains.append(nt)
-        return nt 
+        return nt
+    
     def swap_terrains(self, n1, n2):
         if n1==n2: return
         t1 = self.terrains[n1]
@@ -120,35 +132,26 @@ class EmpCore:
     def add_province(self, name):
         try: np = EmpProvince(self, name)
         except AssertionError: return None
-        np.core = self
-
-        for p in self.provinces:
-            if name==p.name: return None
-        self.provinces.append(np)
         return np
-    
+    def get_province_by_name(self, name):
+        for p in self.provinces:
+            if name == p.name: return p
+            
     def rm_nation(self, n):
         del self.nations[n]
     def add_nation(self, name):
         try: nn = EmpNation(self, name)
         except AssertionError: return None
-        nn.core = self
-        
-        for n in self.nations:
-            if name==n.name: return None
-        self.nations.append(nn)
         return nn
+    def get_nation_by_name(self, name):
+        for n in self.nations:
+            if name == n.name: return n
     
     def rm_control(self, n):
         del self.controls[n]
     def add_control(self, name):
         try: nc = EmpControl(self, name)
         except AssertionError: return None
-        nc.core = self
-
-        for c in self.controls:
-            if name==c.name: return None
-        self.controls.append(nc)
         return nc
     
     def rm_good(self, n):        
@@ -156,11 +159,6 @@ class EmpCore:
     def add_good(self, name):
         try: ng = EmpGood(self, name)
         except AssertionError: return None
-        ng.core = self
-
-        for g in self.goods:
-            if name==g.name: return None
-        self.goods.append(ng)
         return ng
     
     def rm_process(self, n):
@@ -168,11 +166,6 @@ class EmpCore:
     def add_process(self, name):
         try: ns = EmpProcess(self, name)
         except AssertionError: return None
-        ns.core = self
-
-        for p in self.processes:
-            if name==p.name: return None
-        self.processes.append(ns)
         return ns
     
         
