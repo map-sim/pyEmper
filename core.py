@@ -49,9 +49,13 @@ class EmpTerrain(EmpIder):
 class EmpProvince(EmpIder):
     def __repr__(self):
         out = "p%d:%s" % (self.get_my_id(), self.name)
-        out += "\n   area: %d (%d)" % self.get_area()
-        for k in self.population.keys():
-            if self.population[k]>0: out += "\n   pop %s: %d" % (k.name, self.population[k])
+        a,g = self.get_area()
+        p = self.get_population()
+        try:
+            out += "\n   area: %d (%d) dens: %g" % (a,g, p/g)
+            for k in self.population.keys():
+                if self.population[k]>0: out += "\n   pop %s: %d" % (k.name, self.population[k])
+        except ZeroDivisionError: out += "\n   area: %d (%d) dens: 0" % (a,g)
         return out
     
     def __init__(self, core, name):
@@ -60,7 +64,10 @@ class EmpProvince(EmpIder):
         self.population = {}
         for n in self.core.nations:
             self.population[n] = 0
-        
+
+    def get_population(self):
+        return sum([self.population[n] for n in self.core.nations])
+            
     def get_area(self):
         area,ground = 0,0
         g = (a for a in self.core.diagram.atoms if a.province is self)

@@ -78,13 +78,16 @@ class EmpDiagram:
         for p in self.core.provinces:
             if p.population[nation]>max_pop:
                 max_pop = p.population[nation]
+        if max_pop==0: return rgb
         
         g = (a for a in self.atoms if a!=None)        
         for a in g:
             if a.terrain.ship>0.5: rgb[3*a.n:3*a.n+3] = (0,255,255)
             else:
                 f = a.province.population[nation]/max_pop
-                if f<0.66:
+                if f==0:
+                    r,g,b = 0,200,200
+                elif f<0.66:
                     r = 255
                     g = 255-int(255*1.5*f)
                     b = 255-int(255*1.5*f)
