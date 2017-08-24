@@ -145,22 +145,6 @@ class EmpDiagram:
                 except AssertionError: continue
         return found 
 
-    def get_ribbon(self, pixels, p, t):
-        found = []
-        for xy in pixels:
-            a = self.get_atom(*xy)
-            if a == None: continue
-
-            for x,y in [(0,1), (0,-1), (1,0), (-1,0)]:
-                try:
-                    an = self.get_atom(a.x+x,a.y+y)
-                    if not an.province is p: continue
-                    if not an.terrain is t: continue
-                    found.append(an.get_xy())
-                except AttributeError: continue
-                except AssertionError: continue
-        return found 
-        
     def smooth_by_province(self):
         for a in self.atoms:
             if a==None:  continue

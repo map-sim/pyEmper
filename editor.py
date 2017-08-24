@@ -125,10 +125,6 @@ class EmpEditor(Gtk.Window):
             self.core.diagram.set_circle(self.last_click, self.objects["p"], self.objects["t"])
             self.refresh()
 
-        elif self.pens[self.objects["d"]] == "dilation" and self.screens[self.objects["r"]] == "terr-map":
-            self.core.diagram.dilation(self.last_click, self.objects["p"], self.objects["t"])
-            self.refresh()
-
 
     def set_object(self, symbol, number):
         try:

@@ -82,7 +82,7 @@ class EmpInterpreter:
         orders.extend(["mv", "rt", "rl", "rr"])
         orders.extend(["rgb", "xy"])
 
-        orders.extend(["clean", "fill", "ribb"])
+        orders.extend(["clean", "fill"])
         orders.append("save [a-zA-Z0-9_-]+")
         orders.extend(["info", "help"])
 
@@ -157,28 +157,40 @@ class EmpInterpreter:
 
         elif re.match("\Ap[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
-            print(self.editor.core.add_province(name))
+            prov = self.editor.core.add_province(name)
+            if prov: self.editor.set_object("p", prov.get_my_id())
+            print(prov)
             
         elif re.match("\At[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
             rgb = self.editor.rainbow.get_rgb_color(*self.editor.last_click)
-            print(self.editor.core.add_terrain(name, rgb, 0.0, 0.0))
+            terr = self.editor.core.add_terrain(name, rgb, 0.0, 0.0)
+            if terr: self.editor.set_object("t", terr.get_my_id())
+            print(terr)
 
         elif re.match("\An[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
-            print(self.editor.core.add_nation(name))
+            nat = self.editor.core.add_nation(name)
+            if nat: self.editor.set_object("n", nat.get_my_id())
+            print(nat)
 
         elif re.match("\Ac[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
-            print(self.editor.core.add_control(name))
+            ctrl = self.editor.core.add_control(name)
+            if ctrl: self.editor.set_object("c", ctrl.get_my_id())
+            print(ctrl)
 
         elif re.match("\Ag[+]\s*[a-zA-Z_]+\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
-            print(self.editor.core.add_good(name))
+            good = self.editor.core.add_good(name)
+            if good: self.editor.set_object("g", good.get_my_id())
+            print(good)
 
         elif re.match("\As[+]\s*[a-zA-Z_]*\Z", line):
             name = re.findall("[a-zA-Z_]+", line)[1]
-            print(self.editor.core.add_process(name))
+            proc = self.editor.core.add_process(name)
+            if proc: self.editor.set_object("s", proc.get_my_id())
+            print(proc)
 
         ###########################################################################
         # sub
@@ -302,9 +314,9 @@ class EmpInterpreter:
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
 
-        elif re.match("\At[.]\s*ship\s*[0-9]+[.]?[0-9]?\Z", line):
+        elif re.match("\At[.]\s*ship\s*[0-9]+[.]?[0-9]*\Z", line):
             if self.editor.objects["t"]:
-                ship = re.findall("[0-9]+[.]?[0-9]?", line)[0]
+                ship = re.findall("[0-9]+[.]?[0-9]*", line)[0]
                 self.editor.objects["t"].set_ship(float(ship))
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
@@ -354,15 +366,7 @@ class EmpInterpreter:
             t = self.editor.objects["t"]
             self.editor.core.diagram.set_area(buf, p, t)
             print("fill")
-                        
-        elif re.match("\Aribb\Z", line):                      
-            buf = self.editor.objects["x"]
-            p = self.editor.objects["p"]
-            t = self.editor.objects["t"]
-            o = self.editor.core.diagram.get_ribbon(buf, p, t)
-            self.editor.set_pix_buffer(o)
-            print("ribb")
-            
+                                    
         ###########################################################################
         # screen
 
@@ -379,8 +383,8 @@ class EmpInterpreter:
             
         elif re.match("\Arl\Z", line):
             self.editor.core.diagram.refresh()
-            self.editor.core.diagram.draw_lines(self.editor.diagram_rgb)        
             self.editor.diagram_rgb = self.editor.core.diagram.rgb
+            self.editor.core.diagram.draw_lines(self.editor.diagram_rgb)        
             self.editor.refresh()
             self.editor.set_screen(0)
 
