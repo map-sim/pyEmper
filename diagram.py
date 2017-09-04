@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from tools import  call_error
+import random
 
 class EmpAtom:
     def __repr__(self): return "x%d:y%d" % (self.x, self.y)
@@ -44,6 +45,11 @@ class EmpDiagram:
         self.width = width
         self.core = core
 
+    def get_xy(self, n):
+        x = int(n % self.width)
+        y = int(n / self.width)
+        return x,y
+        
     def move_roller(self, delta):
         moved_atoms = [None] * self.width * self.height
         g = (a for a in self.atoms if a!=None)        
@@ -98,9 +104,7 @@ class EmpDiagram:
                 rgb[3*a.n:3*a.n+3] = (r,g,b)
 
         return rgb
-        
-
-    
+            
     def set_area(self, pixels, p, t):
         for x,y in pixels:
             if x<0 or y<0 or x>=self.width or y>=self.height: return
@@ -113,14 +117,26 @@ class EmpDiagram:
                 self.atoms[i] = EmpAtom(self, x, y, p, t)
                 self.rgb[i3:i3+3] = t.rgb[0:3]
                         
-    def set_circle(self, pixel, p, t):
-        radius, pixels = 6, []
-        for x in range(2*radius+1):
-            for y in range(2*radius+1):
-                if (x-radius)**2 + (y-radius)**2 > radius**2: continue
-                pixels.append((pixel[0]+(x-radius), pixel[1]+(y-radius)))
+    def set_circle(self, pixel, p, t, r=6):
+        pixels = []
+        for x in range(2*r+1):
+            for y in range(2*r+1):
+                if (x-r)**2 + (y-r)**2 > r**2: continue
+                pixels.append((pixel[0]+(x-r), pixel[1]+(y-r)))
         self.set_area(pixels, p, t)
         
+    def set_blur(self, pixel, p, t):
+        for n in range(5):
+            x = random.randint(-9,9) +pixel[0]
+            y = random.randint(-9,9) +pixel[1]
+            self.set_circle((x,y), p, t, 6)
+
+            for n in range(4):
+                xx = random.randint(-5,5) +x
+                yy = random.randint(-5,5) +y
+                self.set_circle((xx,yy), p, t, 3)
+
+
     def get_area(self, pixel):
         atom = self.get_atom(*pixel)
         if atom == None:
@@ -162,3 +178,34 @@ class EmpDiagram:
             for p in dp.keys():
                 if dp[p]>2: a.province = p
         print("smooth")
+
+    def smooth_none_poits(self):
+        for n,a in enumerate(self.atoms):
+            if a!=None:  continue
+            bx,by = self.get_xy(n)
+            provs = []
+            terrs = []
+            nexts = 0
+            for x,y in [(0,1), (0,-1), (1,0), (-1,0)]:
+                try: 
+                    provs.append(self.get_atom(bx+x, by+y).province)
+                    terrs.append(self.get_atom(bx+x, by+y).terrain)
+                    nexts += 1
+                except AttributeError: continue
+                except AssertionError: continue
+            if nexts<3: continue
+
+            dp = {}
+            for p in provs:
+                try: dp[p] += 1
+                except KeyError: dp[p] = 1
+            dt = {}
+            for t in terrs:
+                try: dt[t] += 1
+                except KeyError: dt[t] = 1
+                
+            for p in dp.keys(): 
+                if dp[p]>2: prov = p
+            for t in dt.keys(): 
+                if dt[t]>2: terr = t
+            self.set_area([(bx, by)], p, t)

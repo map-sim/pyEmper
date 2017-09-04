@@ -72,7 +72,7 @@ class EmpEditor(Gtk.Window):
         self.tables["g"] = self.core.goods
         self.set_pix_buffer([])
 
-        self.pens = ["none", "cross", "quad", "circle"]
+        self.pens = ["none", "cross", "quad", "circle", "blur"]
         self.screens = ["terr-map", "rainbow", "param-map"]
         self.set_screen(0)
         self.set_pen(0)
@@ -109,7 +109,8 @@ class EmpEditor(Gtk.Window):
                         print(atom.province)
                         self.set_object("t", atom.terrain.get_my_id())
                         self.set_object("p", atom.province.get_my_id())                       
-                    except AttributeError: pass
+                    except AttributeError: 
+                        if atom==None: self.set_object("p", 6666666)                       
 
         elif self.pens[self.objects["d"]] == "cross" and self.screens[self.objects["r"]] == "terr-map":
             a = [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
@@ -123,6 +124,10 @@ class EmpEditor(Gtk.Window):
 
         elif self.pens[self.objects["d"]] == "circle" and self.screens[self.objects["r"]] == "terr-map":
             self.core.diagram.set_circle(self.last_click, self.objects["p"], self.objects["t"])
+            self.refresh()
+
+        elif self.pens[self.objects["d"]] == "blur" and self.screens[self.objects["r"]] == "terr-map":
+            self.core.diagram.set_blur(self.last_click, self.objects["p"], self.objects["t"])
             self.refresh()
 
 

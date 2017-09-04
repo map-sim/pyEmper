@@ -334,12 +334,12 @@ class EmpInterpreter:
         ###########################################################################
         # pen
 
-        elif re.match("\Ad[0-3]\Z", line):
-            n = int(re.findall("[0-3]", line)[0])
+        elif re.match("\Ad[0-4]\Z", line):
+            n = int(re.findall("[0-4]", line)[0])
             self.editor.set_pen(n)
             print("pen:", n)
 
-            if n in [1,2,3]: cursor = Gdk.Cursor(Gdk.CursorType.CROSS)
+            if n in [1,2,3,4]: cursor = Gdk.Cursor(Gdk.CursorType.CROSS)
             else: cursor = Gdk.Cursor(Gdk.CursorType.DOT)
             gdk_window = self.editor.get_root_window()
             gdk_window.set_cursor(cursor)
@@ -354,6 +354,7 @@ class EmpInterpreter:
         
         elif re.match("\Ap\s*aa\Z", line):           
             self.editor.core.diagram.smooth_by_province()
+            self.editor.core.diagram.smooth_none_poits()
             print("aa")
 
         elif re.match("\Aclean\Z", line):                      
