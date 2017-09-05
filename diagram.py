@@ -107,7 +107,8 @@ class EmpDiagram:
             
     def set_area(self, pixels, p, t):
         for x,y in pixels:
-            if x<0 or y<0 or x>=self.width or y>=self.height: return
+            if x<0 or y<0 or x>=self.width or y>=self.height:
+                continue
 
             i,i3 = x+self.width*y, 3*(x+self.width*y)
             if p==None or t==None:

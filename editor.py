@@ -107,6 +107,8 @@ class EmpEditor(Gtk.Window):
                     try:
                         print(atom.terrain)
                         print(atom.province)
+                        a,g = atom.province.get_area()
+                        print("area: %d ground: %.1f water: %.1f" % (a, 100*g/a, 100*(a-g)/a))
                         self.set_object("t", atom.terrain.get_my_id())
                         self.set_object("p", atom.province.get_my_id())                       
                     except AttributeError: 
