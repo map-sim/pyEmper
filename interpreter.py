@@ -74,6 +74,7 @@ class EmpInterpreter:
         orders.append("s[.]\s*name\s+[a-zA-Z_]+")
 
         orders.append("t[.]\s*rgb")
+        orders.append("t[.]\s*rgb\s*[0-9]+[,][0-9]+[,][0-9]")
         orders.append("t[.]\s*con\s*[0-9]+[.]?[0-9]?")
         orders.append("t[.]\s*ship\s*[0-9]+[.]?[0-9]?")
         orders.append("t\s*swap\s*[0-9]+")
@@ -304,6 +305,15 @@ class EmpInterpreter:
             if self.editor.objects["t"]:
                 rgb = self.editor.rainbow.get_rgb_color(*self.editor.last_click)
                 self.editor.objects["t"].set_rgb(rgb)
+                print("mod:", self.editor.objects["t"])
+            else: print("not set")
+
+        elif re.match("\At[.]\s*rgb\s*[0-9]+[,][0-9]+[,][0-9]+\Z", line):
+            if self.editor.objects["t"]:
+                r = int(re.findall("[0-9]+", line)[0])
+                g = int(re.findall("[0-9]+", line)[1])
+                b = int(re.findall("[0-9]+", line)[2])
+                self.editor.objects["t"].set_rgb((r,g,b))
                 print("mod:", self.editor.objects["t"])
             else: print("not set")
                 
