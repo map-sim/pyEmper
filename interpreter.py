@@ -196,6 +196,12 @@ class EmpInterpreter:
         ###########################################################################
         # sub
         
+        elif re.match("\Ap\s*clear\Z", line):
+            np = len(self.editor.core.provinces)
+            for n in range(np):
+                self.editor.core.rm_province(np-1-n)
+            print("clear province table")
+            
         elif re.match("\Ap-\s*[a-zA-Z_]+\Z", line):
             p_name = str(re.findall("[a-zA-Z_]+", line)[1])
             if self.editor.objects["p"] and self.editor.objects["p"].name == p_name:
