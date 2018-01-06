@@ -24,7 +24,7 @@ def RGBreader(fd):
             raise StopIteration
 
 
-class EmpMapLoader:
+class EmpDiagramLoader:
     def __init__(self, tarrains, fname):        
         self.rgb2t = dict([(t.rgb, t) for t in tarrains])
         
@@ -51,8 +51,9 @@ class EmpMapLoader:
             
             width, height = readline(fd).split()
             width, height = int(width), int(height)
-            diagram = EmpDiagram(width, height)
-            deep = readline(fd) 
+            deep = readline(fd)
+            
+            diagram = EmpDiagram(width, height, deep)
             
             histogram = dict([(t.rgb, 0) for t in self.terrains])
             for n, rgb in RGBreader(fd):
@@ -60,13 +61,16 @@ class EmpMapLoader:
                     t = self.rgb2t[rgb]
                 except KeyError:
                     t = self.get_nearest(rgb)
+                    print("warning:", rgb, "-->", t.rgb)
+                                    
                 histogram[t.rgb] += 1
                     
                 x = n % width
                 y = n // width
                 a = EmpAtom(x, y, t)
                 diagram.atoms[x][y] = a
-
+                a.n = n
+                
         total = width * height
         if n + 1 != total:
             raise ValueError("file %s not looks crashed (px = %d)" % (self.fname, n + 1))
