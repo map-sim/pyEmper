@@ -4,6 +4,7 @@ import os
 
 from diagram import EmpAtom
 from diagram import EmpDiagram
+from terrain import EmpTerrains
 
 def readline(fd):
     line = fd.readline()
@@ -25,13 +26,13 @@ def RGBreader(fd):
 
 
 class EmpDiagramLoader:
-    def __init__(self, tarrains, fname):        
-        self.rgb2t = dict([(t.rgb, t) for t in tarrains])
-        
-        if not isinstance(tarrains, (set, )):
+    def __init__(self, tarrains, conf):        
+        if not isinstance(tarrains, (EmpTerrains, )):
             raise TypeError("no terrain collection")
         self.terrains = tarrains
+        self.rgb2t = dict((t.rgb, t) for t in tarrains.values())
         
+        fname = conf["diagram"]
         if not os.path.exists(fname):
             raise ValueError("file %s not exists" % fname)
         if fname[-4:] != ".ppm" and  fname[-4:] != ".PPM":
@@ -39,7 +40,7 @@ class EmpDiagramLoader:
         self.fname = str(fname)
         
     def get_nearest(self, rgb):
-        tmp = [(t - rgb, t) for t in self.terrains]
+        tmp = [(t - rgb, t) for t in self.terrains.values()]
         tmp = min(tmp, key=lambda e: e[0])
         return tmp[1]
         
@@ -55,15 +56,15 @@ class EmpDiagramLoader:
             
             diagram = EmpDiagram(width, height, deep)
             
-            histogram = dict([(t.rgb, 0) for t in self.terrains])
+            histogram = dict([(t.rgb, 0) for t in self.terrains.values()])
             for n, rgb in RGBreader(fd):
                 try:
                     t = self.rgb2t[rgb]
                 except KeyError:
                     t = self.get_nearest(rgb)
-                    print("warning:", rgb, "-->", t.rgb)
-                                    
-                histogram[t.rgb] += 1
+                    print("warning:", [hex(c) for c in rgb], "->", [hex(c) for c in t.rgb], t.name) 
+                finally:
+                    histogram[t.rgb] += 1
                     
                 x = n % width
                 y = n // width
@@ -73,10 +74,10 @@ class EmpDiagramLoader:
                 
         total = width * height
         if n + 1 != total:
-            raise ValueError("file %s not looks crashed (px = %d)" % (self.fname, n + 1))
+            raise ValueError("file %s looks crashed (px = %d)" % (self.fname, n + 1))
 
         cover = 0.0
-        for t in self.terrains:
+        for t in self.terrains.values():
             frac = float(histogram[t.rgb]) / total
             print(t.name+"\t", "%.4f" % frac)
             cover += frac

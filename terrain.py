@@ -2,73 +2,43 @@
 
 import os
 
-
-def EmpTerrainGen(fname):
-    if not os.path.exists(fname):
-        raise ValueError("file %s not exists" % fname)
-    if fname[-4:] != ".txt" and  fname[-4:] != ".TXT":
-        raise ValueError("file %s not looks as TXT" % fname)
-
-    tmp_rgb = set()
-    tmp_name = set()
-    with open(fname) as fd:
-        while True:
-            try:
-                line = fd.readline()
-                if "#" in line:
-                    continue
-                name, con, rgb = line.split(";")
-                con, wet = con.split()
-                rgb = rgb.split()
-                rgb = tuple([int(c, 16) for c in rgb])
-            except ValueError:
-                raise StopIteration
-                
-            if name in tmp_name:
-                raise GeneratorExit("name %s in terrains is doubled" % name)
-            tmp_name.add(name)
-                    
-            if rgb in tmp_rgb:
-                raise GeneratorExit("rgb %s in terrains is doubled" % str(rgb))
-            tmp_rgb.add(rgb)
-                
-            yield EmpTerrain(name, con, wet, rgb)
-
             
-class EmpTerrains(set):
-    def __init__(self, fname):
-        gen = EmpTerrainGen(fname)
-        set.__init__(self, gen)
+class EmpTerrains(dict):
+    def __init__(self, conf):
+        dict.__init__(self)
+        for name in conf.keys():
+            t = EmpTerrain(name, conf[name])
+            self[name] = t
+            print(t)        
+        print("sum:", len(self))
+        
+    def get_conf(self):
+        out = {}
+        for k in self.keys():
+            out[k] = self[k].get_conf()
+        return out
 
-        self.proxy = {}
-        for t in self:
-            self.proxy[t.name] = t
-        
-    def get_by_name(self, name):
-        return self.proxy[name]
-        
-    def save(self, fname):
-        with open(fname, "w") as fd:
-            for t in self:
-                fd.write(str(t))
-                fd.write("\n")
-        
-
+    
 class EmpTerrain:
-    def __init__(self, name, con, wet, rgb):
+    def __init__(self, name, conf):
         self.name = str(name)
+        self.conf = conf
+        
+        if float(conf["CON"][0])<0 or float(conf["CON"][0])>1:
+            raise ValueError("CON[0] has wrong value")
+        self.con_ground = float(conf["CON"][0])
+        
+        if float(conf["CON"][1])<0 or float(conf["CON"][1])>1:
+            raise ValueError("CON[1] has wrong value")
+        self.con_water = float(conf["CON"][1])
+        
+        if float(conf["IFC"])<0 or float(conf["IFC"])>1:
+            raise ValueError("IFC has wrong value")
+        self.infr_cost = float(conf["IFC"])
 
-        if float(con)<0 or float(con)>1:
-            raise ValueError("con has wrong value")
-        self.con = float(con)
-        
-        if float(wet)<0 or float(wet)>1:
-            raise ValueError("wet has wrong value")
-        self.wet = float(wet)
-        
-        if not isinstance(rgb, (tuple, list)):
+        if not isinstance(conf["RGB"], (tuple, list)):
             raise TypeError("no rgb collection")
-        self.rgb = rgb
+        self.rgb = tuple([int(c, 16) for c in conf["RGB"]])
 
     def __sub__(self, rgb):
         if isinstance(rgb, (EmpTerrain, )):
@@ -81,10 +51,14 @@ class EmpTerrain:
             out += abs(i - j)
         return out
 
+    def get_conf(self):
+        return self.conf
+    
     def __str__(self):
-        out = self.name + "; "
-        out += "%g %g; " % (self.con, self.wet)
-        out += "%s %s %s" % tuple([hex(c) for c in self.rgb])
+        out = self.name + ":\n"
+        out += "\t%g\n" % self.infr_cost
+        out += "\t%g %g\n" % (self.con_ground, self.con_water)
+        out += "\t%s %s %s" % tuple([hex(c) for c in self.rgb])
         return out
 
     

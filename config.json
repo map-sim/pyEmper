@@ -1,0 +1,73 @@
+{
+    "params": {
+	"diagram": "map.ppm"
+    },
+    
+    "terrains": {
+	"large mountains": {
+	    "RGB": ["0x0", "0x0", "0x0"],
+	    "CON": [0.02, 0.0],
+	    "IFC": 0.15
+	},
+	"high mountains": {
+	    "RGB": ["0x88", "0x44", "0x0"],
+	    "CON": [0.06, 0.0],
+	    "IFC": 0.12
+	},
+	"upland hills": {
+	    "RGB": ["0xff", "0x44", "0x0"],
+	    "CON": [0.15, 0.0],
+	    "IFC": 0.11
+	},
+	"high plateau": {
+	    "RGB": ["0xff", "0xcc", "0x0"],
+	    "CON": [0.35, 0.0],
+	    "IFC": 0.1
+	},
+	"dry desert": {
+	    "RGB": ["0xff", "0xff", "0x88"],
+	    "CON": [0.3, 0.0],
+	    "IFC": 0.3
+	},
+	"cold tundra": {
+	    "RGB": ["0x99", "0xaa", "0xbb"],
+	    "CON": [0.4, 0.05],
+	    "IFC": 0.3
+	},
+	"ice ocean": {
+	    "RGB": ["0x0", "0x99", "0xff"],
+	    "CON": [0.0, 0.55],
+	    "IFC": 0
+	},
+	"costal sea": {
+	    "RGB": ["0x0", "0x44", "0xff"],
+	    "CON": [0.0, 0.9],
+	    "IFC": 0
+	},
+	"open ocean": {
+	    "RGB": ["0x0", "0x0", "0xcc"],
+	    "CON": [0.0, 0.98],
+	    "IFC": 0
+	},
+	"narrow river": {
+	    "RGB": ["0xbb", "0x22", "0xff"],
+	    "CON": [0.8, 0.7],
+	    "IFC": 0.18
+	},
+	"great river": {
+	    "RGB": ["0x77", "0x11", "0x88"],
+	    "CON": [0.9, 0.8],
+	    "IFC": 0.15
+	},       
+	"flat plain": {
+	    "RGB": ["0x44", "0xcc", "0x66"],
+	    "CON": [0.6, 0.05],
+	    "IFC": 0.01	    
+	},
+	"marshy swamps": {
+	    "RGB": ["0x44", "0x88", "0x44"],
+	    "CON": [0.25, 0.3],  
+	    "IFC": 0.01
+	}
+    }
+}
