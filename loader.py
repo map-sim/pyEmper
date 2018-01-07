@@ -26,13 +26,13 @@ def RGBreader(fd):
 
 
 class EmpDiagramLoader:
-    def __init__(self, tarrains, conf):        
+    def __init__(self, tarrains, params):        
         if not isinstance(tarrains, (EmpTerrains, )):
             raise TypeError("no terrain collection")
         self.terrains = tarrains
         self.rgb2t = dict((t.rgb, t) for t in tarrains.values())
         
-        fname = conf["diagram"]
+        fname = params["diagram ppm"]
         if not os.path.exists(fname):
             raise ValueError("file %s not exists" % fname)
         if fname[-4:] != ".ppm" and  fname[-4:] != ".PPM":

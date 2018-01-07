@@ -1,16 +1,9 @@
 import json
 
 class EmpSaver(dict):
-    def __init__(self):
-        dict.__init__(self)
-        self["params"] = {}
+    def save_diagram(self, diagram):
+        diagram.save(self["params"]["diagram ppm"])            
         
-    def set_param(self, key, *args):
-        if key == "diagram":
-            diagram, fname = args
-            diagram.save(fname)
-            self["params"]["diagram"] = fname
-            
     def __setitem__(self, key, val):        
         if key == "terrains":
             val = val.get_conf()
@@ -29,8 +22,7 @@ class EmpSaver(dict):
             raise KeyError("terrains have to be set")
         if not "params" in self.keys():
             raise KeyError("params have to be set")
-        if not "diagram" in self["params"].keys():
-            raise KeyError("diagram has to be set")
 
         with open(fname, "w") as fd:
             json.dump(self, fd)
+        print("(info) save config as:", fname)

@@ -1,6 +1,8 @@
 {
     "params": {
-	"diagram": "map.ppm"
+	"diagram ppm": "map.ppm",
+	"shipment cost": 100.0,
+	"transport cost": 5.0
     },
     
     "terrains": {

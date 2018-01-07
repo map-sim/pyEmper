@@ -34,6 +34,7 @@ class EmpDiagram:
             for y in range(self.height):
                 for x in range(self.width):
                     fd.write("%d\n%d\n%d\n" % self.atoms[x][y].t.rgb)
+        print("(info) save diagram as:", fname)
                     
     def connect(self):
         for x in range(self.width):
