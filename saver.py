@@ -2,12 +2,14 @@ import json
 
 class EmpSaver(dict):
     def save_diagram(self, diagram):
-        diagram.save(self["params"]["diagram ppm"])            
+        diagram.save(self["params"]["diagram ppm"], self["nodes"])            
         
     def __setitem__(self, key, val):        
         if key == "terrains":
             val = val.get_conf()
         elif key == "params":
+            pass
+        elif key == "nodes":
             pass
         else:
             raise KeyError("%s unexpected key!" % val)

@@ -1,8 +1,8 @@
 {
     "params": {
 	"diagram ppm": "map.ppm",
-	"shipment cost": 100.0,
-	"transport cost": 5.0
+	"transport cost": 100.0,
+	"transship cost": 50.0,
     },
     
     "terrains": {
@@ -71,5 +71,18 @@
 	    "CON": [0.25, 0.3],  
 	    "IFC": 0.01
 	}
-    }
+    },
+    
+    "nodes": [
+	{
+	    "skeleton": [ [192, 178, 1.0], [194, 185, 1.0] ]
+	},
+	{
+	    "skeleton": [ [214, 192, 1.0], [215, 201, 1.0], [211, 204, 6.0] ]
+	},
+	{
+	    "skeleton": [ [164, 135, 1.0] ]  
+	}
+    ]
 }
+

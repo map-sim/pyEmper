@@ -1,8 +1,14 @@
 #! /usr/bin/python3
 
+# author: Krzysztof Czarnecki
+# email: czarnecki.krzysiek@gmail.com
+# opensource licence: LGPL
+
 import os
 
 from diagram import EmpAtom
+from diagram import EmpNode
+
 from diagram import EmpDiagram
 from terrain import EmpTerrains
 
@@ -22,15 +28,15 @@ def RGBreader(fd):
             yield index, (r, g, b)
             index += 1
         except ValueError:
-            raise StopIteration
-
+            break
 
 class EmpDiagramLoader:
-    def __init__(self, tarrains, params):        
+    def __init__(self, tarrains, params, nodes):        
         if not isinstance(tarrains, (EmpTerrains, )):
             raise TypeError("no terrain collection")
-        self.terrains = tarrains
         self.rgb2t = dict((t.rgb, t) for t in tarrains.values())
+        self.terrains = tarrains
+        self.nodes = nodes
         
         fname = params["diagram ppm"]
         if not os.path.exists(fname):
@@ -43,6 +49,39 @@ class EmpDiagramLoader:
         tmp = [(t - rgb, t) for t in self.terrains.values()]
         tmp = min(tmp, key=lambda e: e[0])
         return tmp[1]
+
+    def create_nodes(self, world):
+        active = set()
+        for n in self.nodes:
+            node = EmpNode()
+            for x, y, p in n["skeleton"]:
+                active.add(world.diagram.atoms[x][y])
+                world.diagram.atoms[x][y].tmp["n"] = node
+                world.diagram.atoms[x][y].tmp["p"] = float(p)
+                print("*", x, y, p, world.diagram.atoms[x][y].t.name)
+        print("---------")
+
+        while True:
+            try: atom = active.pop()
+            except KeyError:
+                break
+            
+            for atom2 in world.diagram.get_next(atom):                
+                if atom.t.con_water < 0.5 and atom2.t.con_water < 0.5:
+                    # ground process (exept rivers)
+                    np = atom.tmp["p"] * atom2.t.con_ground  
+                elif atom.t.con_ground == 0 and atom2.t.con_ground == 0:
+                    # water process (exept rivers)                    
+                    np = atom.tmp["p"] * atom2.t.con_water  
+                else: continue
+                
+                if np > atom2.tmp["p"]:
+                    atom2.tmp["p"] = np
+                    atom2.tmp["n"] = atom.tmp["n"]
+                    active.add(atom2)
+                    
+        # TODO: remove tmp
+        # TODO: return nodes
         
     def get_diagram(self):
         with open(self.fname, "r") as fd:
@@ -70,7 +109,7 @@ class EmpDiagramLoader:
                 y = n // width
                 a = EmpAtom(x, y, t)
                 diagram.atoms[x][y] = a
-                a.n = n
+            diagram.tupling()
                 
         total = width * height
         if n + 1 != total:
@@ -81,6 +120,5 @@ class EmpDiagramLoader:
             frac = float(histogram[t.rgb]) / total
             print(t.name+"\t", "%.4f" % frac)
             cover += frac
-        print("cover: %.4f" % cover)
-        diagram.connect()
+        print("cover: %.4f\n---------" % cover)
         return diagram

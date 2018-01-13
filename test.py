@@ -8,8 +8,8 @@ from world import EmpWorld
 
 world = EmpWorld(sys.argv[1])
 
-t = world.terrains["open ocean"]
-t.rgb = (0x00, 0x00, 0x00)
+# t = world.terrains["open ocean"]
+# t.rgb = (0x00, 0x00, 0x00)
 
 world.save("out")
 
