@@ -1,6 +1,13 @@
 #! /usr/bin/python3
 
+# author: Krzysztof Czarnecki
+# email: czarnecki.krzysiek@gmail.com
+# application: EMPER simulator
+# brief: economic and strategic simulator
+# opensource licence: GPL-3.0
+
 import os
+from termcolor import colored
 
             
 class EmpTerrains(dict):
@@ -11,7 +18,13 @@ class EmpTerrains(dict):
             self[name] = t
             print(t)        
         print("sum:", len(self))
+        print(colored("(new)", "red"), "EmpTerrains")
         
+    def get_nearest(self, rgb):
+        tmp = [(t - rgb, t) for t in self.values()]
+        tmp = min(tmp, key=lambda e: e[0])
+        return tmp[1]
+    
     def get_conf(self):
         out = {}
         for k in self.keys():
@@ -55,10 +68,10 @@ class EmpTerrain:
         return self.conf
     
     def __str__(self):
-        out = self.name + ":\n"
-        out += "\t%g\n" % self.infr_cost
-        out += "\t%g %g\n" % (self.con_ground, self.con_water)
-        out += "\t%s %s %s" % tuple([hex(c) for c in self.rgb])
+        out = self.name + ": "
+        out += "%g | " % self.infr_cost
+        out += "%g %g | " % (self.con_ground, self.con_water)
+        out += "%s %s %s" % tuple([hex(c) for c in self.rgb])
         return out
 
     

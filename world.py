@@ -1,40 +1,41 @@
+#! /usr/bin/python3
+
+# author: Krzysztof Czarnecki
+# email: czarnecki.krzysiek@gmail.com
+# application: EMPER simulator
+# brief: economic and strategic simulator
+# opensource licence: GPL-3.0
 
 from terrain import EmpTerrains 
-from loader import EmpDiagramLoader 
-from saver import EmpSaver
+from diagram import EmpDiagram 
+from network import EmpNetwork 
+
+from termcolor import colored
 
 import json
 
 class EmpWorld:
 
     def __init__(self, fname):
-        dc = open(fname)
-        conf = json.load(dc)
 
-        self.terrains = EmpTerrains(conf["terrains"])
-        loader = EmpDiagramLoader(self.terrains, conf["params"], conf["nodes"])
-        
-        self.confnodes = list(conf["nodes"])
-        self.params = conf["params"]
-        
-        self.diagram = loader.get_diagram()
-        self.nodes = loader.create_nodes(self)
-        
-    def get_cost_to_ground(self, a1, a2):
-        cost = abs(a2.t.con_water - a1.t.con_water)
-        cost *= self.params["transshipment cost"]
-        cost += (1.0 - a2.t.con_ground) * self.params["transport cost"]
-        return cost
-    
+        with open(fname) as dc:
+            self.conf = json.load(dc)
+
+        self.terrains = EmpTerrains(self.conf["terrains"])
+        self.diagram = EmpDiagram(self.terrains, self.conf["params"]["diagram"])
+        self.network = EmpNetwork(self.diagram, self.conf["params"]["nodes"])
+            
     def save(self, preffix):
-        saver = EmpSaver()
         suffppm = "-map.ppm"
-        suffjson = "-config.json"
+        suffnodes = "-nodes.json"
+        suffconf = "-config.json"
+
+        self.conf["params"]["nodes"] = preffix + suffnodes
+        self.conf["params"]["diagram"] = preffix + suffppm
         
-        saver["nodes"] = self.confnodes
-        saver["params"] = self.params
-        saver["terrains"] = self.terrains
-        saver["params"]["diagram ppm"] = preffix + suffppm
-        
-        saver.save_diagram(self.diagram)
-        saver.save(preffix + suffjson)
+        fname = preffix + suffconf
+        with open(fname, "w") as fd:
+            json.dump(self.conf, fd)
+        print(colored("(info)", "red"), "save config as:", fname)
+        self.network.save(preffix+suffnodes)
+        self.diagram.save(preffix+suffppm)

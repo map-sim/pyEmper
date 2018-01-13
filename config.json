@@ -1,8 +1,10 @@
 {
     "params": {
-	"diagram ppm": "map.ppm",
+	"diagram": "map.ppm",
+	"nodes": "nodes.json",
+	
 	"transport cost": 100.0,
-	"transship cost": 50.0,
+	"transship cost": 50.0
     },
     
     "terrains": {
