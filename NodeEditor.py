@@ -147,7 +147,11 @@ class NodeEditor(Gtk.Window):
                 self.node = node
                 self.nodes.remove(node)
                 break
-        
+            
+        for p in self.node["skeleton"]:
+            self.put_pixel(p[0], p[1], self.rgb)
+        self.refresh()
+
     def on_clicked_mouse (self, box, event):
         print(event.x, event.y, event.button)
         
