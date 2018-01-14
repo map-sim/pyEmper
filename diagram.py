@@ -67,11 +67,15 @@ class EmpDiagram:
         out = []
         try: out.append(self.atoms[a.x][a.y+1])
         except IndexError: pass
-        try: out.append(self.atoms[a.x][a.y-1])
+        try:
+            if a.y-1 < 0: raise IndexError
+            out.append(self.atoms[a.x][a.y-1])
         except IndexError: pass
         try: out.append(self.atoms[a.x+1][a.y])
         except IndexError: pass
-        try: out.append(self.atoms[a.x-1][a.y])
+        try:
+            if a.x-1 < 0: raise IndexError
+            out.append(self.atoms[a.x-1][a.y])
         except IndexError: pass
         return out
         
