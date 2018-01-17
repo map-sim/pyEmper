@@ -16,26 +16,32 @@ import json
 
 class EmpWorld:
 
-    def __init__(self, fname):
+    def __init__(self, savedir):
 
-        with open(fname) as dc:
-            self.conf = json.load(dc)
-
-        self.terrains = EmpTerrains(self.conf["terrains"])
-        self.diagram = EmpDiagram(self.terrains, self.conf["params"]["diagram"])
-        self.network = EmpNetwork(self.diagram, self.conf["params"]["nodes"])
+        # check "/" char
+        if savedir[-1] != "/": 
+            savedir += "/"
             
-    def save(self, preffix):
-        suffppm = "-map.ppm"
-        suffnodes = "-nodes.json"
-        suffconf = "-config.json"
+        # load main config
+        with open(savedir + "main.json") as dc:
+            self.conf = json.load(dc)
+            
+        self.terrains = EmpTerrains(self.conf["terrains"])
+        self.diagram = EmpDiagram(self.terrains, savedir + self.conf["params"]["diagram"])
+        self.network = EmpNetwork(self.diagram, savedir + self.conf["params"]["nodes"])
+            
+    def save(self, savedir):
 
-        self.conf["params"]["nodes"] = preffix + suffnodes
-        self.conf["params"]["diagram"] = preffix + suffppm
+        # check "/" char
+        if savedir[-1] != "/": 
+            savedir += "/"
+
+        self.conf["params"]["nodes"] = "nodes.json"
+        self.conf["params"]["diagram"] = "map.ppm"
         
-        fname = preffix + suffconf
-        with open(fname, "w") as fd:
+        with open("main.json", "w") as fd:
             json.dump(self.conf, fd)
-        print(colored("(info)", "red"), "save config as:", fname)
-        self.network.save(preffix+suffnodes)
-        self.diagram.save(preffix+suffppm)
+
+        self.network.save(savedir, self.conf["params"]["nodes"])
+        self.diagram.save(savedir, self.conf["params"]["diagram"])
+        print(colored("(info)", "red"), "save config as:", savedir)
