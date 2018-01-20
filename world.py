@@ -13,6 +13,7 @@ from network import EmpNetwork
 from termcolor import colored
 
 import json
+import os
 
 class EmpWorld:
 
@@ -38,10 +39,16 @@ class EmpWorld:
 
         self.conf["params"]["nodes"] = "nodes.json"
         self.conf["params"]["diagram"] = "map.ppm"
-        
-        with open("main.json", "w") as fd:
+
+        if not os.path.exists(savedir):
+            os.makedirs(savedir)
+        else:
+            warning = colored("(warning)", "yellow")
+            print(warning, "dir %s exists!" % savedir)
+
+        with open(savedir +"main.json", "w") as fd:
             json.dump(self.conf, fd)
 
-        self.network.save(savedir, self.conf["params"]["nodes"])
-        self.diagram.save(savedir, self.conf["params"]["diagram"])
+        self.network.save(savedir + self.conf["params"]["nodes"])
+        self.diagram.save(savedir + self.conf["params"]["diagram"])
         print(colored("(info)", "red"), "save config as:", savedir)
