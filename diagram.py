@@ -92,8 +92,8 @@ class EmpDiagram:
                         if not border:
                             raise IndexError
                         
-                        if self.atoms[x][y].tmp["n"] != self.atoms[x][y+1].tmp["n"] or self.atoms[x][y].tmp["n"] != self.atoms[x][y-1].tmp["n"] \
-                           or self.atoms[x][y].tmp["n"] != self.atoms[x+1][y].tmp["n"] or self.atoms[x][y].tmp["n"] != self.atoms[x-1][y].tmp["n"]:
+                        if self.atoms[x][y].n != self.atoms[x][y+1].n or self.atoms[x][y].n != self.atoms[x][y-1].n \
+                           or self.atoms[x][y].n != self.atoms[x+1][y].n or self.atoms[x][y].n != self.atoms[x-1][y].n:
                             nrgb = [ c + (255-c)*0.75 if sum(self.atoms[x][y].t.rgb) < 16 else 0.333 * c for c in self.atoms[x][y].t.rgb]                            
                             fd.write("%d\n%d\n%d\n" % tuple(nrgb))
                         else:

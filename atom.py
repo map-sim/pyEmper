@@ -13,9 +13,9 @@ class EmpAtom:
             raise ValueError("x < 0 or y < 0")
         self.x, self.y = x, y
         self.t = t
-
+        self.n = None
+        
         self.tmp = {}
-        self.tmp["n"] = None
         self.tmp["p"] = 0.0
     
     def __str__(self):

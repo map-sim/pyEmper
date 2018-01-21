@@ -8,7 +8,6 @@
 
 from node import EmpNode 
 from termcolor import colored
-import random
 import json
 
 class EmpNetwork(list):
@@ -22,18 +21,14 @@ class EmpNetwork(list):
             self.append(node)
             for x, y, p in raw["skeleton"]:
                 active.add(diagram.atoms[x][y])
-                diagram.atoms[x][y].tmp["n"] = node
+                diagram.atoms[x][y].n = node
                 diagram.atoms[x][y].tmp["p"] = float(p)
 
-        rivers = set()        
         while True:
             try: atom = active.pop()
             except KeyError: break
                 
             for atom2 in diagram.get_next(atom):
-                if atom2.t.con_water >= 0.5 and atom2.t.con_ground > 0.5:
-                    rivers.add(atom2)
-
                 if atom.t.con_water < 0.5 and atom2.t.con_water < 0.5:
                     # ground process (exept rivers)
                     np = atom.tmp["p"] * atom2.t.con_ground  
@@ -44,33 +39,40 @@ class EmpNetwork(list):
                 
                 if np > atom2.tmp["p"]:
                     atom2.tmp["p"] = np
-                    atom2.tmp["n"] = atom.tmp["n"]
+                    atom2.n = atom.n
                     active.add(atom2)
 
-        tmp = rivers
-        rivers = set()
-        tested = set()
+        rivers = set()        
+        for row in diagram.atoms:
+            for a in row:
+                if a.t.con_water >= 0.5 and a.t.con_ground > 0.5:
+                    rivers.add(a)
+
+        rivers = list(rivers)
+        counter = 0
         while True:
-            try: atom = tmp.pop()
-            except KeyError: break
-            rivers.add(atom)
-            tested.add(atom)
+            counter += 1
+            try: atom = rivers.pop(0)
+            except IndexError: break
             
-            for atom2 in diagram.get_next(atom):
-                if atom2.t.con_water >= 0.5 and atom2.t.con_ground > 0.5:
-                    if not atom2 in tested:
-                        tmp.add(atom2)
-                    
-        while True:
-            try: atom = rivers.pop()
-            except KeyError: break
+            if counter%50 != 0:
+                ag = [a for a in diagram.get_next(atom) if a.t.con_ground>0 and a.t.con_water<0.5]
+                nn = [a.n for a in ag if a.n]                  
+                if nn: atom.n = nn[0]
+                else: rivers.append(atom)
+            else:
+                ag = [a for a in diagram.get_next(atom) if a.t.con_ground>0]
+                nn = [a.n for a in ag if a.n]
+                if nn: atom.n = nn[0]
+                else: rivers.append(atom)
+
+        for row in diagram.atoms:
+            for a in row:
+                if not a.n:
+                    print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
+                    raise ValueError("Nodes do not cover the entire map!")
+
             
-            nn = [a.tmp["n"] for a in diagram.get_next(atom) if a.tmp["n"] != None]
-            
-            if not nn: rivers.add(atom)
-            else: atom.tmp["n"] = random.choice(nn)
-                
-                    
         # TODO: remove tmp
         # TODO: return nodes
         print(colored("(new)", "red"), "EmpNetwork")
