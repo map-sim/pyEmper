@@ -68,13 +68,12 @@ class EmpNetwork(list):
 
         for row in diagram.atoms:
             for a in row:
+                delattr(a, "tmp")
                 if not a.n:
                     print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
                     raise ValueError("Nodes do not cover the entire map!")
 
             
-        # TODO: remove tmp
-        # TODO: return nodes
         print(colored("(new)", "red"), "EmpNetwork")
 
 
