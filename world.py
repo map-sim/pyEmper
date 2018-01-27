@@ -39,7 +39,8 @@ class EmpWorld:
 
         self.conf["params"]["nodes"] = "nodes.json"
         self.conf["params"]["diagram"] = "map.ppm"
-
+        self.conf["terrains"] = self.terrains.get_conf()
+        
         if not os.path.exists(savedir):
             os.makedirs(savedir)
         else:

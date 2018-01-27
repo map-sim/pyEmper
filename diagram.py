@@ -79,7 +79,7 @@ class EmpDiagram:
         except IndexError: pass
         return out
         
-    def save(self, fname, border=True):
+    def save(self, fname):
         with open(fname, "w") as fd:
             fd.write("P3\n")
             fd.write("# author: Krzysztof Czarnecki\n")
@@ -88,19 +88,7 @@ class EmpDiagram:
             
             for y in range(self.height):
                 for x in range(self.width):
-                    try:
-                        if not border:
-                            raise IndexError
-                        
-                        if self.atoms[x][y].n != self.atoms[x][y+1].n or self.atoms[x][y].n != self.atoms[x][y-1].n \
-                           or self.atoms[x][y].n != self.atoms[x+1][y].n or self.atoms[x][y].n != self.atoms[x-1][y].n:
-                            nrgb = [ c + (255-c)*0.75 if sum(self.atoms[x][y].t.rgb) < 16 else 0.333 * c for c in self.atoms[x][y].t.rgb]                            
-                            fd.write("%d\n%d\n%d\n" % tuple(nrgb))
-                        else:
-                            raise IndexError
-                        
-                    except IndexError:
-                        fd.write("%d\n%d\n%d\n" % self.atoms[x][y].t.rgb)
+                    fd.write("%d\n%d\n%d\n" % self.atoms[x][y].t.rgb)
                         
         print(colored("(info)", "red"), "save diagram as:", fname)
                     

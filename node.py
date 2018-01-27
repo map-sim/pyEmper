@@ -7,8 +7,10 @@
 # opensource licence: GPL-3.0
 
 
-class EmpNode:
+class EmpNode(set):
     def __init__(self, conf):
+        self.name = conf["name"]
+        set.__init__(self)
         self.conf = conf
 
     def get_config(self):

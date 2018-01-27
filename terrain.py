@@ -65,6 +65,9 @@ class EmpTerrain:
         return out
 
     def get_conf(self):
+        self.conf["IFC"] = self.infr_cost
+        self.conf["RGB"] = [hex(c) for c in self.rgb]
+        self.conf["CON"] = [self.con_ground, self.con_water]
         return self.conf
     
     def __str__(self):
