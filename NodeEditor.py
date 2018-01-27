@@ -79,14 +79,14 @@ class NodeEditor(Gtk.Window):
     def draw_borders(self):                        
         for y in range(self.world.diagram.height-1):
             for x in range(self.world.diagram.width-1):
-                a = self.world.diagram.atoms[x][y]
+                a = self.world.diagram[x][y]
                 
-                if self.world.diagram.atoms[x+1][y].n != a.n:
+                if self.world.diagram[x+1][y].n != a.n:
                     self.set_xy(SCALE*x+1, SCALE*y, RGB1)
                     self.set_xy(SCALE*(x+1), SCALE*y, RGB1)
                     self.set_xy(SCALE*x+1, SCALE*y+1, RGB1)
                     self.set_xy(SCALE*(x+1), SCALE*y+1, RGB1)
-                if self.world.diagram.atoms[x][y+1].n != a.n:
+                if self.world.diagram[x][y+1].n != a.n:
                     self.set_xy(SCALE*x, SCALE*y+1, RGB1)
                     self.set_xy(SCALE*x, SCALE*(y+1), RGB1)
                     self.set_xy(SCALE*x+1, SCALE*y+1, RGB1)
@@ -99,7 +99,7 @@ class NodeEditor(Gtk.Window):
         
     def get_terrain_map(self):
         g = xy_gen(self.world.diagram.width, self.world.diagram.height)
-        out  = [c for x, y in g for c in self.world.diagram.atoms[x][y].t.rgb]
+        out  = [c for x, y in g for c in self.world.diagram[x][y].t.rgb]
         return out
 
     def select_node(self, node):
@@ -108,7 +108,7 @@ class NodeEditor(Gtk.Window):
         
         g = xy_gen(self.selected_node)
         for x, y in g:
-            rgb = self.world.diagram.atoms[int(x/SCALE)][int(y/SCALE)].t.rgb
+            rgb = self.world.diagram[int(x/SCALE)][int(y/SCALE)].t.rgb
             self.set_xy(x, y, rgb)
 
         self.selected_node = node
@@ -123,14 +123,23 @@ class NodeEditor(Gtk.Window):
         # info = "x = %.2f y = %.2f b = %d" % (event.x, event.y, event.button)
         # print(info)
 
+        x = int(event.x/SCALE)
+        y = int(event.y/SCALE)
+        node = self.world.diagram[x][y].n
+        print(node.name, len(node))
+
         if event.button == 1:
-            x = int(event.x/SCALE)
-            y = int(event.y/SCALE)
-            node = self.world.diagram.atoms[x][y].n
-            print(node.name, len(node))
             self.select_node(node)
             self.refresh(self.rgbmap)
+            
+        elif event.button == 3:
+            if self.selected_node is None:
+                return
 
+            start = self.selected_node
+            c = self.world.network.get_transport_cost(start, node)
+            print(start.name, "-->", node.name, "=", c)
+            
     def on_press_keyboard(self, widget, event):
         print(event.keyval)
         

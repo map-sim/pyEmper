@@ -13,9 +13,10 @@ from atom import EmpAtom
 from termcolor import colored
 
 
-class EmpDiagram:
+class EmpDiagram(list):
     def __init__(self, terrains, fname):
-
+        list.__init__(self)
+        
         if not isinstance(terrains, (EmpTerrains, )):
             raise TypeError("no terrain collection")
         self.rgb2t = dict((t.rgb, t) for t in terrains.values())
@@ -27,9 +28,8 @@ class EmpDiagram:
         
         self.width = int(width)
         self.height = int(height)        
-        self.atoms = [None] * self.width
         for x in range(self.width):
-            self.atoms[x] = [None] * self.height
+            self.append([None] * self.height)
         
         for n, rgb in generator:
             try:
@@ -43,8 +43,7 @@ class EmpDiagram:
             x = n % width
             y = n // width
             a = EmpAtom(x, y, t)
-            self.atoms[x][y] = a
-        self.tupling()
+            self[x][y] = a
                 
         total = width * height
         if n + 1 != total:
@@ -58,24 +57,20 @@ class EmpDiagram:
         print("cover: %.4f" % cover)
         print(colored("(new)", "red"), "EmpDiagram")
 
-    def tupling(self):
-        for x in range(self.width):
-            self.atoms[x] = tuple(self.atoms[x])                
-        self.atoms = tuple(self.atoms)
 
     def get_next(self, a):
         out = []
-        try: out.append(self.atoms[a.x][a.y+1])
+        try: out.append(self[a.x][a.y+1])
         except IndexError: pass
         try:
             if a.y-1 < 0: raise IndexError
-            out.append(self.atoms[a.x][a.y-1])
+            out.append(self[a.x][a.y-1])
         except IndexError: pass
-        try: out.append(self.atoms[a.x+1][a.y])
+        try: out.append(self[a.x+1][a.y])
         except IndexError: pass
         try:
             if a.x-1 < 0: raise IndexError
-            out.append(self.atoms[a.x-1][a.y])
+            out.append(self[a.x-1][a.y])
         except IndexError: pass
         return out
         
@@ -88,7 +83,7 @@ class EmpDiagram:
             
             for y in range(self.height):
                 for x in range(self.width):
-                    fd.write("%d\n%d\n%d\n" % self.atoms[x][y].t.rgb)
+                    fd.write("%d\n%d\n%d\n" % self[x][y].t.rgb)
                         
         print(colored("(info)", "red"), "save diagram as:", fname)
                     

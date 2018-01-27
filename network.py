@@ -20,9 +20,9 @@ class EmpNetwork(list):
             node = EmpNode(raw)
             self.append(node)
             for x, y, p in raw["skeleton"]:
-                active.add(diagram.atoms[x][y])
-                diagram.atoms[x][y].n = node
-                diagram.atoms[x][y].tmp["p"] = float(p)
+                active.add(diagram[x][y])
+                diagram[x][y].n = node
+                diagram[x][y].tmp["p"] = float(p)
 
         while True:
             try: atom = active.pop()
@@ -43,7 +43,7 @@ class EmpNetwork(list):
                     active.add(atom2)
 
         rivers = set()        
-        for row in diagram.atoms:
+        for row in diagram:
             for a in row:
                 if a.t.con_water >= 0.5 and a.t.con_ground > 0.5:
                     rivers.add(a)
@@ -61,7 +61,7 @@ class EmpNetwork(list):
             if ng: atom.n = ng[counter%len(ng)]
             else: rivers.append(atom)
 
-        for row in diagram.atoms:
+        for row in diagram:
             for a in row:
                 a.n.add(a)
                 delattr(a, "tmp")
@@ -71,7 +71,9 @@ class EmpNetwork(list):
                 
         print(colored("(new)", "red"), "EmpNetwork")
 
-
+    def get_transport_cost(self, start_node, stop_node):
+        return 0
+    
     def save(self, fname):
         with open(fname, "w") as fd:
             conf = [n.get_config() for n in self]
