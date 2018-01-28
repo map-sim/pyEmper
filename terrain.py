@@ -77,5 +77,12 @@ class EmpTerrain:
         out += "%s %s %s" % tuple([hex(c) for c in self.rgb])
         return out
 
-    
+    def isriver(self):
+        return self.con_water >= 0.5 and self.con_ground > 0
 
+    def isground(self):
+        return self.con_ground > 0
+
+    def iswater(self):
+        return self.con_ground == 0
+    

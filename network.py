@@ -29,11 +29,11 @@ class EmpNetwork(list):
             except KeyError: break
                 
             for atom2 in diagram.get_next(atom):
-                if atom.t.con_water < 0.5 and atom2.t.con_water < 0.5:
-                    # ground process (exept rivers)
-                    np = atom.tmp["p"] * atom2.t.con_ground  
-                elif atom.t.con_ground == 0 and atom2.t.con_ground == 0:
-                    # water process (exept rivers)                    
+                if atom.t.isground() and atom2.t.isground():
+                    np = atom.tmp["p"] * atom2.t.con_ground
+                    if atom2.t.isriver() or atom.t.isriver():
+                        np *= 0.1
+                elif atom.t.iswater() and atom2.t.iswater():
                     np = atom.tmp["p"] * atom2.t.con_water  
                 else: continue
                 
@@ -42,32 +42,13 @@ class EmpNetwork(list):
                     atom2.n = atom.n
                     active.add(atom2)
 
-        rivers = set()        
-        for row in diagram:
-            for a in row:
-                if a.t.con_water >= 0.5 and a.t.con_ground > 0.5:
-                    rivers.add(a)
-                    
-        rivers = list(rivers)
-        counter = 0
-        while True:            
-            counter += 1
-            if len(rivers):
-                atom = rivers.pop(counter%len(rivers))
-            else: break
-            
-            ng = [a.n for a in diagram.get_next(atom) if a.t.con_ground>0 and a.n is not None]
-
-            if ng: atom.n = ng[counter%len(ng)]
-            else: rivers.append(atom)
-
-        for row in diagram:
-            for a in row:
-                a.n.add(a)
-                delattr(a, "tmp")
-                if not a.n:
-                    print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
-                    raise ValueError("Nodes do not cover the entire map!")
+        g = diagram.get_agener()
+        for a in g():
+            if a.n is None:
+                print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
+                raise ValueError("Nodes do not cover the entire map!")
+            delattr(a, "tmp")
+            a.n.add(a)
                 
         print(colored("(new)", "red"), "EmpNetwork")
 

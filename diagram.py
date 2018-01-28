@@ -57,7 +57,16 @@ class EmpDiagram(list):
         print("cover: %.4f" % cover)
         print(colored("(new)", "red"), "EmpDiagram")
 
-
+    def get_agener(self):
+        def gener():
+            for y in range(self.height):
+                for x in range(self.width):
+                    # ny = (y + self.width) % self.height
+                    # nx = (x+y) % self.width
+                    # yield self[nx][ny]
+                    yield self[x][y]
+        return gener
+    
     def get_next(self, a):
         out = []
         try: out.append(self[a.x][a.y+1])
