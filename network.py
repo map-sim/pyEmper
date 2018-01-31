@@ -12,6 +12,7 @@ import json
 
 class EmpNetwork(list):
     def __init__(self, diagram, fname):
+        self.diagram = diagram
         with open(fname) as dc:
             conf = json.load(dc)
 
@@ -20,15 +21,15 @@ class EmpNetwork(list):
             node = EmpNode(raw)
             self.append(node)
             for x, y, p in raw["skeleton"]:
-                active.add(diagram[x][y])
-                diagram[x][y].n = node
-                diagram[x][y].tmp["p"] = float(p)
+                active.add(self.diagram[x][y])
+                self.diagram[x][y].n = node
+                self.diagram[x][y].tmp["p"] = float(p)
 
         while True:
             try: atom = active.pop()
             except KeyError: break
                 
-            for atom2 in diagram.get_next(atom):
+            for atom2 in self.diagram.get_next(atom):
                 if atom.t.isground() and atom2.t.isground():
                     np = atom.tmp["p"] * atom2.t.con_ground
                     if atom2.t.isriver() or atom.t.isriver():
@@ -42,7 +43,7 @@ class EmpNetwork(list):
                     atom2.n = atom.n
                     active.add(atom2)
 
-        g = diagram.get_agener()
+        g = self.diagram.get_agener()
         for a in g():
             if a.n is None:
                 print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
@@ -53,7 +54,12 @@ class EmpNetwork(list):
         print(colored("(new)", "red"), "EmpNetwork")
 
     def get_transport_cost(self, start_node, stop_node):
-        return 0
+        start_points = set()
+        for a in stop_node:
+            if start_node in [an.n for an in self.diagram.get_next(a)]:
+                start_points.add(a)
+
+        return len(start_points)
     
     def save(self, fname):
         with open(fname, "w") as fd:
