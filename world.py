@@ -27,9 +27,9 @@ class EmpWorld:
         with open(savedir + "main.json") as dc:
             self.conf = json.load(dc)
             
-        self.terrains = EmpTerrains(self.conf["terrains"])
-        self.diagram = EmpDiagram(self.terrains, savedir + self.conf["params"]["diagram"])
-        self.network = EmpNetwork(self.diagram, savedir + self.conf["params"]["nodes"])
+        self.terrains = EmpTerrains(self, self.conf["terrains"])
+        self.diagram = EmpDiagram(self.terrains, savedir + self.conf["diagram"])
+        self.network = EmpNetwork(self.diagram, savedir + self.conf["nodes"])
             
     def save(self, savedir):
 
@@ -37,8 +37,8 @@ class EmpWorld:
         if savedir[-1] != "/": 
             savedir += "/"
 
-        self.conf["params"]["nodes"] = "nodes.json"
-        self.conf["params"]["diagram"] = "map.ppm"
+        self.conf["nodes"] = "nodes.json"
+        self.conf["diagram"] = "map.ppm"
         self.conf["terrains"] = self.terrains.get_conf()
         
         if not os.path.exists(savedir):
@@ -50,6 +50,6 @@ class EmpWorld:
         with open(savedir +"main.json", "w") as fd:
             json.dump(self.conf, fd)
 
-        self.network.save(savedir + self.conf["params"]["nodes"])
-        self.diagram.save(savedir + self.conf["params"]["diagram"])
+        self.network.save(savedir + self.conf["nodes"])
+        self.diagram.save(savedir + self.conf["diagram"])
         print(colored("(info)", "red"), "save config as:", savedir)

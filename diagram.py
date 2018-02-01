@@ -16,7 +16,7 @@ from termcolor import colored
 class EmpDiagram(list):
     def __init__(self, terrains, fname):
         list.__init__(self)
-        
+        self.world = terrains.world
         if not isinstance(terrains, (EmpTerrains, )):
             raise TypeError("no terrain collection")
         self.rgb2t = dict((t.rgb, t) for t in terrains.values())

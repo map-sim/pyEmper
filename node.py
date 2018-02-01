@@ -15,3 +15,4 @@ class EmpNode(set):
 
     def get_config(self):
         return self.conf
+

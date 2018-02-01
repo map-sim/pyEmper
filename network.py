@@ -12,6 +12,7 @@ import json
 
 class EmpNetwork(list):
     def __init__(self, diagram, fname):
+        self.world = diagram.world
         self.diagram = diagram
         with open(fname) as dc:
             conf = json.load(dc)
@@ -33,11 +34,12 @@ class EmpNetwork(list):
                 if atom.t.isground() and atom2.t.isground():
                     np = atom.tmp["p"] * atom2.t.con_ground
                     if atom2.t.isriver() or atom.t.isriver():
-                        np *= 0.1
+                        np *= self.world.conf["transship con"]
                 elif atom.t.iswater() and atom2.t.iswater():
                     np = atom.tmp["p"] * atom2.t.con_water  
                 else: continue
                 
+                np *= self.world.conf["transport con"]
                 if np > atom2.tmp["p"]:
                     atom2.tmp["p"] = np
                     atom2.n = atom.n
@@ -48,18 +50,31 @@ class EmpNetwork(list):
             if a.n is None:
                 print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
                 raise ValueError("Nodes do not cover the entire map!")
-            delattr(a, "tmp")
+            del(a.tmp["p"])
             a.n.add(a)
                 
         print(colored("(new)", "red"), "EmpNetwork")
 
     def get_transport_cost(self, start_node, stop_node):
-        start_points = set()
+        tmp = set()
+        active = set()
         for a in stop_node:
             if start_node in [an.n for an in self.diagram.get_next(a)]:
-                start_points.add(a)
+                a.tmp["t"] = 1.0
+                active.add(a)
+                tmp.add(a)
+                
+        #  while active:
+        #      try: atom = active.pop()
+        #      except KeyError: break
+        #
+        #      for atom2 in self.diagram.get_next(atom):
+        #          if atom.t.isground() and atom2.t.isground():
+        #              np = atom.tmp["t"] * atom2.t.con_ground
 
-        return len(start_points)
+        for a in tmp:
+            a.tmp["p"] = 0
+        return len(active)
     
     def save(self, fname):
         with open(fname, "w") as fd:

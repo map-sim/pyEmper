@@ -11,8 +11,10 @@ from termcolor import colored
 
             
 class EmpTerrains(dict):
-    def __init__(self, conf):
+    def __init__(self, world, conf):
         dict.__init__(self)
+        self.world = world
+        
         for name in conf.keys():
             t = EmpTerrain(name, conf[name])
             self[name] = t
@@ -37,21 +39,21 @@ class EmpTerrain:
         self.name = str(name)
         self.conf = conf
         
-        if float(conf["CON"][0])<0 or float(conf["CON"][0])>1:
-            raise ValueError("CON[0] has wrong value")
-        self.con_ground = float(conf["CON"][0])
+        if float(conf["con"][0])<0 or float(conf["con"][0])>1:
+            raise ValueError("con[0] has wrong value")
+        self.con_ground = float(conf["con"][0])
         
-        if float(conf["CON"][1])<0 or float(conf["CON"][1])>1:
-            raise ValueError("CON[1] has wrong value")
-        self.con_water = float(conf["CON"][1])
+        if float(conf["con"][1])<0 or float(conf["con"][1])>1:
+            raise ValueError("con[1] has wrong value")
+        self.con_water = float(conf["con"][1])
         
-        if float(conf["IFC"])<0 or float(conf["IFC"])>1:
-            raise ValueError("IFC has wrong value")
-        self.infr_cost = float(conf["IFC"])
+        if float(conf["ifc"])<0 or float(conf["ifc"])>1:
+            raise ValueError("ifc has wrong value")
+        self.infr_cost = float(conf["ifc"])
 
-        if not isinstance(conf["RGB"], (tuple, list)):
+        if not isinstance(conf["rgb"], (tuple, list)):
             raise TypeError("no rgb collection")
-        self.rgb = tuple([int(c, 16) for c in conf["RGB"]])
+        self.rgb = tuple([int(c, 16) for c in conf["rgb"]])
 
     def __sub__(self, rgb):
         if isinstance(rgb, (EmpTerrain, )):
@@ -65,9 +67,9 @@ class EmpTerrain:
         return out
 
     def get_conf(self):
-        self.conf["IFC"] = self.infr_cost
-        self.conf["RGB"] = [hex(c) for c in self.rgb]
-        self.conf["CON"] = [self.con_ground, self.con_water]
+        self.conf["ifc"] = self.infr_cost
+        self.conf["rgb"] = [hex(c) for c in self.rgb]
+        self.conf["con"] = [self.con_ground, self.con_water]
         return self.conf
     
     def __str__(self):
