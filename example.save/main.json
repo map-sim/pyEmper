@@ -1,35 +1,59 @@
 {
-    "transport con": 0.9,
-    "transship con": 0.1,
+    "transport con": 1.0,
+    "transship con": 0.001,
     "diagram": "map.ppm",
     "nodes": "nodes.json",
     "terrains": {
 	"great river": {
-	    "con": [0.9, 0.8],
+	    "con": [0.9, 0.099],
 	    "ifc": 0.15,
 	    "rgb": ["0x77", "0x11", "0x88"]},
+	"narrow river": {
+	    "con": [0.8, 0.195],
+	    "ifc": 0.18,
+	    "rgb": ["0xbb", "0x22", "0xff"]},
 	"open ocean": {
-	    "con": [0.0, 0.98],
+	    "con": [0.0, 0.999],
 	    "ifc": 0.0,
 	    "rgb": ["0x0", "0x0", "0xcc"]},
+	"costal sea": {
+	    "con": [0.0, 0.995],
+	    "ifc": 0.0,
+	    "rgb": ["0x0", "0x44", "0xff"]},
+	"ice ocean": {
+	    "con": [0.0, 0.8],
+	    "ifc": 0.0,
+	    "rgb": ["0x0", "0x77", "0xff"]},
 	"dry desert": {
-	    "con": [0.3, 0.0],
+	    "con": [0.3, 0.2],
 	    "ifc": 0.3,
 	    "rgb": ["0xff", "0xdd", "0x44"]},
 	"cold tundra": {
-	    "con": [0.4, 0.05],
+	    "con": [0.25, 0.15],
 	    "ifc": 0.3,
 	    "rgb": ["0xaa", "0xaa", "0x99"]},
-	"costal sea": {
-	    "con": [0.0, 0.9],
-	    "ifc": 0.0,
-	    "rgb": ["0x0", "0x44", "0xff"]},
-	"narrow river": {"con": [0.8, 0.7], "ifc": 0.18, "rgb": ["0xbb", "0x22", "0xff"]},
-	"large mountains": {"con": [0.02, 0.0], "ifc": 0.15, "rgb": ["0x0", "0x0", "0x0"]},
-	"ice ocean": {"con": [0.0, 0.55], "ifc": 0.0, "rgb": ["0x0", "0x77", "0xff"]},
-	"high plateau": {"con": [0.35, 0.0], "ifc": 0.1, "rgb": ["0xff", "0xaa", "0x11"]},
-	"high mountains": {"con": [0.06, 0.0], "ifc": 0.12, "rgb": ["0x88", "0x44", "0x0"]},
-	"flat plain": {"con": [0.6, 0.05], "ifc": 0.01, "rgb": ["0x33", "0xbb", "0x33"]},
-	"upland hills": {"con": [0.15, 0.0], "ifc": 0.11, "rgb": ["0xff", "0x44", "0x0"]},
-	"marshy swamps": {"con": [0.25, 0.3], "ifc": 0.01, "rgb": ["0x44", "0x88", "0x44"]}}
+	"large mountains": {
+	    "con": [0.01, 0.04],
+	    "ifc": 0.15,
+	    "rgb": ["0x0", "0x0", "0x0"]},
+	"high plateau": {
+	    "con": [0.25, 0.2],
+	    "ifc": 0.1,
+	    "rgb": ["0xff", "0xaa", "0x11"]},
+	"high mountains": {
+	    "con": [0.05, 0.05],
+	    "ifc": 0.12,
+	    "rgb": ["0x88", "0x44", "0x0"]},
+	"flat plain": {
+	    "con": [0.5, 0.16],
+	    "ifc": 0.01,
+	    "rgb": ["0x33", "0xbb", "0x33"]},
+	"upland hills": {
+	    "con": [0.1, 0.1],
+	    "ifc": 0.11,
+	    "rgb": ["0xff", "0x44", "0x0"]},
+	"marshy swamps": {
+	    "con": [0.1, 0.4],
+	    "ifc": 0.01,
+	    "rgb": ["0x44", "0x88", "0x44"]}}
 }

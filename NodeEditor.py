@@ -131,14 +131,22 @@ class NodeEditor(Gtk.Window):
         if event.button == 1:
             self.select_node(node)
             self.refresh(self.rgbmap)
-            
+
+        elif event.button == 2:
+            if self.selected_node is None:
+                return
+
+            start = [self.selected_node]
+            c = self.world.network.get_enter_cost(start, node, 1)
+            print("-->", node.name, "= %.2f" % c)
+
         elif event.button == 3:
             if self.selected_node is None:
                 return
 
-            start = self.selected_node
-            c = self.world.network.get_transport_cost(start, node)
-            print(start.name, "-->", node.name, "=", c)
+            start = [self.selected_node]
+            c = self.world.network.get_enter_cost(start, node, 0)
+            print("-->", node.name, "= %.2f" % c)
             
     def on_press_keyboard(self, widget, event):
         print(event.keyval)

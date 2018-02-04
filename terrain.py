@@ -41,11 +41,11 @@ class EmpTerrain:
         
         if float(conf["con"][0])<0 or float(conf["con"][0])>1:
             raise ValueError("con[0] has wrong value")
-        self.con_ground = float(conf["con"][0])
+        self.con_base = float(conf["con"][0])
         
         if float(conf["con"][1])<0 or float(conf["con"][1])>1:
             raise ValueError("con[1] has wrong value")
-        self.con_water = float(conf["con"][1])
+        self.con_delta = float(conf["con"][1])
         
         if float(conf["ifc"])<0 or float(conf["ifc"])>1:
             raise ValueError("ifc has wrong value")
@@ -69,22 +69,22 @@ class EmpTerrain:
     def get_conf(self):
         self.conf["ifc"] = self.infr_cost
         self.conf["rgb"] = [hex(c) for c in self.rgb]
-        self.conf["con"] = [self.con_ground, self.con_water]
+        self.conf["con"] = [self.con_base, self.con_delta]
         return self.conf
     
     def __str__(self):
         out = self.name + ": "
         out += "%g | " % self.infr_cost
-        out += "%g %g | " % (self.con_ground, self.con_water)
+        out += "%g %g | " % (self.con_base, self.con_delta)
         out += "%s %s %s" % tuple([hex(c) for c in self.rgb])
         return out
 
     def isriver(self):
-        return self.con_water >= 0.5 and self.con_ground > 0
+        return self.con_base >= 0.9 and self.con_delta > 0
 
     def isground(self):
-        return self.con_ground > 0
+        return self.con_base > 0
 
     def iswater(self):
-        return self.con_ground == 0
+        return self.con_base == 0
     
