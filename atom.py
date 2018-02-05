@@ -16,9 +16,6 @@ class EmpAtom:
         self.n = None
         
         self.tmp = {}
-        self.tmp["p"] = 0.0
-        self.tmp["t"] = 0.0
-        self.tmp["i"] = 0.0
     
     def __str__(self):
         return "atom: %d %d %s" % (self.x, self.y, self.t.name)

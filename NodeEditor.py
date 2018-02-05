@@ -61,6 +61,7 @@ class NodeEditor(Gtk.Window):
         
         self.world = EmpWorld(sys.argv[1])
 
+        self.selected_nodes = []
         self.selected_node = None
         self.rgbmap = self.get_terrain_map()
         self.draw_borders()
@@ -131,6 +132,7 @@ class NodeEditor(Gtk.Window):
         if event.button == 1:
             self.select_node(node)
             self.refresh(self.rgbmap)
+            self.selected_nodes.append(node)
 
         elif event.button == 2:
             if self.selected_node is None:
@@ -150,6 +152,12 @@ class NodeEditor(Gtk.Window):
             
     def on_press_keyboard(self, widget, event):
         print(event.keyval)
+
+        if event.keyval == ord("p"):
+            for node in self.selected_nodes:
+                print(node.name)
+        elif event.keyval == ord("c"):
+            self.selected_nodes = []
         
 if len(sys.argv) < 2:
     print("ERROR! Give a map file!")
