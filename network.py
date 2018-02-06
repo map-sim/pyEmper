@@ -34,20 +34,20 @@ class EmpNetwork(list):
             try: atom = active.pop()
             except KeyError: break
                 
-            for atom2 in self.diagram.get_next(atom):
-                if atom.t.isground() and atom2.t.isground():
-                    np = atom.tmp["en"] * atom2.t.con_base
-                    if atom2.t.isriver() or atom.t.isriver():
+            for a2 in self.diagram.get_next(atom):
+                if atom.t.isground() and a2.t.isground():
+                    np = atom.tmp["en"] * a2.t.con_base
+                    if a2.t.isriver() or atom.t.isriver():
                         np *= self.world.conf["transship con"]
-                elif atom.t.iswater() and atom2.t.iswater():
-                    np = atom.tmp["en"] * atom2.t.con_delta  
+                elif atom.t.iswater() and a2.t.iswater():
+                    np = atom.tmp["en"] * a2.t.con_delta  
                 else: continue
                 
                 np *= self.world.conf["transport con"]
-                if np > atom2.tmp["en"]:
-                    atom2.tmp["en"] = np
-                    atom2.n = atom.n
-                    active.add(atom2)
+                if np > a2.tmp["en"]:
+                    a2.tmp["en"] = np
+                    a2.n = atom.n
+                    active.add(a2)
 
         g = self.diagram.get_agener()
         for a in g():
@@ -65,48 +65,94 @@ class EmpNetwork(list):
         for atom in proxy:
             if start in [an.n for an in self.diagram.get_next(atom)]:
                 atom.tmp["from"] = None
-                atom.tmp["pow"] = 1.0
+                atom.tmp["en"] = 1.0
                 active.add(atom)
                 tmp.add(atom)
+                
+        while active:
+            try: atom = active.pop()
+            except KeyError: break
 
-    
+            for a2 in self.diagram.get_next(atom):
+                if not (atom.n is proxy) and not (a2.n is proxy):
+                    continue                    
+
+                elif atom.t.isground() and a2.t.isground():
+                    np = atom.tmp["en"] * (a2.t.con_base + a2.t.con_delta * transport_infra)
+                    if a2.t.isriver() and not atom.t.isriver() or not a2.t.isriver() and atom.t.isriver():
+                        np *= self.world.conf["transship con"]
+                elif atom.t.iswater() and a2.t.isground():
+                    np = atom.tmp["en"] * (a2.t.con_base + a2.t.con_delta * transport_infra)
+                    np *= self.world.conf["transship con"]
+                elif atom.t.isground() and a2.t.iswater():
+                    np = atom.tmp["en"] * a2.t.con_delta
+                    np *= self.world.conf["transship con"]
+                else:
+                    np = atom.tmp["en"] * a2.t.con_delta
+                    
+                np *= self.world.conf["transport con"]
+                if not "en" in a2.tmp.keys():
+                    a2.tmp["en"] = 0.0
+                if np > a2.tmp["en"]:
+                    a2.tmp["from"] = atom 
+                    a2.tmp["en"] = np
+                    active.add(a2)
+                    tmp.add(a2)
+
+        target = set()
+        for atom in proxy:
+            if stop in [an.n for an in self.diagram.get_next(atom)]:
+                target.add(atom)
+
+        output = 0.0
+        for atom in target:
+            a2 = atom 
+            while a2.tmp["from"]:
+                output += -math.log10(a2.tmp["en"])
+                a2 = a2.tmp["from"]
+
+        for atom in tmp:
+            del atom.tmp["en"]
+                
+        return output
+                
     def get_enter_cost(self, start_nodes, stop_node, transport_infra=0, fortress_infra=0):
         tmp = set()
         active = set()
         for atom in stop_node:            
             for node in start_nodes:
-                if node in [an.n for an in self.diagram.get_next(atom)]:
+                if node in [a2.n for a2 in self.diagram.get_next(atom)]:
                     atom.tmp["en"] = 1.0
                     active.add(atom)
                     tmp.add(atom)
-                    
+
         while active:
             try: atom = active.pop()
             except KeyError: break
             
-            for atom2 in self.diagram.get_next(atom):
-                if not (atom.n is stop_node) and not (atom2.n is stop_node):
+            for a2 in self.diagram.get_next(atom):
+                if not (atom.n is stop_node) and not (a2.n is stop_node):
                     continue                    
-                elif atom.t.isground() and atom2.t.isground():
-                    np = atom.tmp["en"] * (atom2.t.con_base + atom2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
-                    if atom2.t.isriver() and not atom.t.isriver() or not atom2.t.isriver() and atom.t.isriver():
+                elif atom.t.isground() and a2.t.isground():
+                    np = atom.tmp["en"] * (a2.t.con_base + a2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
+                    if a2.t.isriver() and not atom.t.isriver() or not a2.t.isriver() and atom.t.isriver():
                         np *= self.world.conf["transship con"]
-                elif atom.t.iswater() and atom2.t.isground():
-                    np = atom.tmp["en"] * (atom2.t.con_base + atom2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
+                elif atom.t.iswater() and a2.t.isground():
+                    np = atom.tmp["en"] * (a2.t.con_base + a2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
                     np *= self.world.conf["transship con"]
-                elif atom.t.isground() and atom2.t.iswater():
-                    np = atom.tmp["en"] * atom2.t.con_delta
+                elif atom.t.isground() and a2.t.iswater():
+                    np = atom.tmp["en"] * a2.t.con_delta
                     np *= self.world.conf["transship con"]
                 else:
-                    np = atom.tmp["en"] * atom2.t.con_delta
+                    np = atom.tmp["en"] * a2.t.con_delta
 
                 np *= self.world.conf["transport con"]
-                if not "en" in atom2.tmp.keys():
-                    atom2.tmp["en"] = 0.0
-                if np > atom2.tmp["en"]:
-                    atom2.tmp["en"] = np
-                    active.add(atom2)
-                    tmp.add(atom2)
+                if not "en" in a2.tmp.keys():
+                    a2.tmp["en"] = 0.0
+                if np > a2.tmp["en"]:
+                    a2.tmp["en"] = np
+                    active.add(a2)
+                    tmp.add(a2)
 
         output = 0.0
         for atom in tmp:

@@ -138,9 +138,9 @@ class NodeEditor(Gtk.Window):
             if self.selected_node is None:
                 return
 
-            start = [self.selected_node]
-            c = self.world.network.get_enter_cost(start, node, 1)
-            print("-->", node.name, "= %.2f" % c)
+            c = self.world.network.get_enter_cost(self.selected_nodes, node, 0)
+            names = [n.name for n in self.selected_nodes]
+            print(names, "-->", node.name, "= %.2f" % c)
 
         elif event.button == 3:
             if self.selected_node is None:
@@ -148,16 +148,27 @@ class NodeEditor(Gtk.Window):
 
             start = [self.selected_node]
             c = self.world.network.get_enter_cost(start, node, 0)
-            print("-->", node.name, "= %.2f" % c)
+            print(self.selected_node.name, "-->", node.name, "= %.2f" % c)
             
     def on_press_keyboard(self, widget, event):
         print(event.keyval)
 
         if event.keyval == ord("p"):
-            for node in self.selected_nodes:
-                print(node.name)
+            names = [n.name for n in self.selected_nodes]
+            print(names)
         elif event.keyval == ord("c"):
             self.selected_nodes = []
+
+        elif event.keyval == ord("r"):
+            route = 0
+            for n, node in enumerate(self.selected_nodes):
+                if n>0 and n<len(self.selected_nodes)-1:
+                    p = self.selected_nodes[n-1]
+                    n = self.selected_nodes[n+1]
+                    r = self.world.network.get_proxy_cost(p, node, n)
+                    print(p.name, "-->", node.name, "-->", n.name, "= %.2f" % r)
+                    route += r
+            print("route = %.2f" % route)
         
 if len(sys.argv) < 2:
     print("ERROR! Give a map file!")
