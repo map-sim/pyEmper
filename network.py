@@ -107,12 +107,15 @@ class EmpNetwork(list):
         output = 0.0
         for atom in target:
             a2 = atom 
+            if not "from" in a2.tmp.keys():
+                break
             while a2.tmp["from"]:
                 output += -math.log10(a2.tmp["en"])
                 a2 = a2.tmp["from"]
 
         for atom in tmp:
             del atom.tmp["en"]
+            del atom.tmp["from"]
                 
         return output
                 
