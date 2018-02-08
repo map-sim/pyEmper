@@ -5,19 +5,19 @@
     "nodes": "nodes.json",
     "terrains": {
 	"great river": {
-	    "con": [0.9, 0.099],
+	    "con": [0.85, 0.12],
 	    "ifc": 0.15,
 	    "rgb": ["0x77", "0x11", "0x88"]},
 	"narrow river": {
-	    "con": [0.8, 0.195],
+	    "con": [0.8, 0.15],
 	    "ifc": 0.18,
 	    "rgb": ["0xbb", "0x22", "0xff"]},
 	"open ocean": {
-	    "con": [0.0, 0.999],
+	    "con": [0.0, 0.98],
 	    "ifc": 0.0,
 	    "rgb": ["0x0", "0x0", "0xcc"]},
 	"costal sea": {
-	    "con": [0.0, 0.995],
+	    "con": [0.0, 0.95],
 	    "ifc": 0.0,
 	    "rgb": ["0x0", "0x44", "0xff"]},
 	"ice ocean": {

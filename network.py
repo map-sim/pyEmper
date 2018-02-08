@@ -20,15 +20,16 @@ class EmpNetwork(list):
 
         g = self.diagram.get_agener()
         for a in g(): a.tmp["en"] = 0.0
-            
+
+        plazma = {}
         active = set()
         for raw in conf:
             node = EmpNode(raw)
             self.append(node)
             for x, y, p in raw["skeleton"]:
+                plazma[self.diagram[x][y]] = float(p)
                 active.add(self.diagram[x][y])
                 self.diagram[x][y].n = node
-                self.diagram[x][y].tmp["en"] = float(p)
 
         while True:
             try: atom = active.pop()
@@ -36,16 +37,16 @@ class EmpNetwork(list):
                 
             for a2 in self.diagram.get_next(atom):
                 if atom.t.isground() and a2.t.isground():
-                    np = atom.tmp["en"] * a2.t.con_base
+                    np = plazma[atom] * a2.t.con_base
                     if a2.t.isriver() or atom.t.isriver():
                         np *= self.world.conf["transship con"]
                 elif atom.t.iswater() and a2.t.iswater():
-                    np = atom.tmp["en"] * a2.t.con_delta  
+                    np = plazma[atom] * a2.t.con_delta
                 else: continue
                 
                 np *= self.world.conf["transport con"]
-                if np > a2.tmp["en"]:
-                    a2.tmp["en"] = np
+                if not a2 in plazma.keys() or np > plazma[a2]:
+                    plazma[a2] = np
                     a2.n = atom.n
                     active.add(a2)
 
@@ -54,20 +55,17 @@ class EmpNetwork(list):
             if a.n is None:
                 print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
                 raise ValueError("Nodes do not cover the entire map!")
-            del(a.tmp["en"])
             a.n.add(a)                
         print(colored("(new)", "red"), "EmpNetwork")
 
         
     def get_proxy_cost(self, start, proxy, stop, transport_infra=0):
-        tmp = set()
+        plazma = {}
         active = set()
         for atom in proxy:
             if start in [an.n for an in self.diagram.get_next(atom)]:
-                atom.tmp["from"] = None
-                atom.tmp["en"] = 1.0
+                plazma[atom] = (1.0, None)
                 active.add(atom)
-                tmp.add(atom)
                 
         while active:
             try: atom = active.pop()
@@ -78,26 +76,25 @@ class EmpNetwork(list):
                     continue                    
 
                 elif atom.t.isground() and a2.t.isground():
-                    np = atom.tmp["en"] * (a2.t.con_base + a2.t.con_delta * transport_infra)
+                    np = plazma[atom][0] * (a2.t.con_base + a2.t.con_delta * transport_infra)                    
                     if a2.t.isriver() and not atom.t.isriver() or not a2.t.isriver() and atom.t.isriver():
                         np *= self.world.conf["transship con"]
                 elif atom.t.iswater() and a2.t.isground():
-                    np = atom.tmp["en"] * (a2.t.con_base + a2.t.con_delta * transport_infra)
+                    np = plazma[atom][0] * (a2.t.con_base + a2.t.con_delta * transport_infra)
                     np *= self.world.conf["transship con"]
                 elif atom.t.isground() and a2.t.iswater():
-                    np = atom.tmp["en"] * a2.t.con_delta
+                    np = plazma[atom][0] * a2.t.con_delta
                     np *= self.world.conf["transship con"]
                 else:
-                    np = atom.tmp["en"] * a2.t.con_delta
+                    np = plazma[atom][0] * a2.t.con_delta
                     
                 np *= self.world.conf["transport con"]
-                if not "en" in a2.tmp.keys():
-                    a2.tmp["en"] = 0.0
-                if np > a2.tmp["en"]:
-                    a2.tmp["from"] = atom 
-                    a2.tmp["en"] = np
+                if not a2 in plazma.keys():
+                    plazma[a2] = (0.0, None) 
+                    
+                if np > plazma[a2][0]:
+                    plazma[a2] = (np, atom)                    
                     active.add(a2)
-                    tmp.add(a2)
 
         target = set()
         for atom in proxy:
@@ -107,18 +104,17 @@ class EmpNetwork(list):
         output = 0.0
         for atom in target:
             a2 = atom 
-            if not "from" in a2.tmp.keys():
+            if not a2 in  plazma.keys():
                 break
-            while a2.tmp["from"]:
-                output += -math.log10(a2.tmp["en"])
-                a2 = a2.tmp["from"]
 
-        for atom in tmp:
-            del atom.tmp["en"]
-            del atom.tmp["from"]
+            while plazma[a2][1]:
+                output += -math.log10(plazma[a2][0])
+                a2 = plazma[a2][1]
                 
-        return output
-                
+        try: return output / len(target)
+        except ZeroDivisionError:
+            return 0.0
+        
     def get_enter_cost(self, start_nodes, stop_node, transport_infra=0, fortress_infra=0):
         tmp = set()
         active = set()
