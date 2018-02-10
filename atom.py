@@ -14,8 +14,6 @@ class EmpAtom:
         self.x, self.y = x, y
         self.t = t
         self.n = None
-        
-        self.tmp = {}
     
     def __str__(self):
         return "atom: %d %d %s" % (self.x, self.y, self.t.name)

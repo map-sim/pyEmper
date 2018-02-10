@@ -18,9 +18,6 @@ class EmpNetwork(list):
         with open(fname) as dc:
             conf = json.load(dc)
 
-        g = self.diagram.get_agener()
-        for a in g(): a.tmp["en"] = 0.0
-
         plazma = {}
         active = set()
         for raw in conf:
@@ -116,14 +113,13 @@ class EmpNetwork(list):
             return 0.0
         
     def get_enter_cost(self, start_nodes, stop_node, transport_infra=0, fortress_infra=0):
-        tmp = set()
+        plazma = {}
         active = set()
         for atom in stop_node:            
             for node in start_nodes:
                 if node in [a2.n for a2 in self.diagram.get_next(atom)]:
-                    atom.tmp["en"] = 1.0
+                    plazma[atom] = (1.0, None)
                     active.add(atom)
-                    tmp.add(atom)
 
         while active:
             try: atom = active.pop()
@@ -133,31 +129,30 @@ class EmpNetwork(list):
                 if not (atom.n is stop_node) and not (a2.n is stop_node):
                     continue                    
                 elif atom.t.isground() and a2.t.isground():
-                    np = atom.tmp["en"] * (a2.t.con_base + a2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
+                    np = plazma[atom][0] * (a2.t.con_base + a2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
                     if a2.t.isriver() and not atom.t.isriver() or not a2.t.isriver() and atom.t.isriver():
                         np *= self.world.conf["transship con"]
                 elif atom.t.iswater() and a2.t.isground():
-                    np = atom.tmp["en"] * (a2.t.con_base + a2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
+                    np = plazma[atom][0] * (a2.t.con_base + a2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
                     np *= self.world.conf["transship con"]
                 elif atom.t.isground() and a2.t.iswater():
-                    np = atom.tmp["en"] * a2.t.con_delta
+                    np = plazma[atom][0] * a2.t.con_delta
                     np *= self.world.conf["transship con"]
                 else:
-                    np = atom.tmp["en"] * a2.t.con_delta
+                    np = plazma[atom][0] * a2.t.con_delta
 
                 np *= self.world.conf["transport con"]
-                if not "en" in a2.tmp.keys():
-                    a2.tmp["en"] = 0.0
-                if np > a2.tmp["en"]:
-                    a2.tmp["en"] = np
+                if not a2 in plazma.keys():
+                    plazma[a2] = (0.0, None) 
+
+                if np > plazma[a2][0]:
+                    plazma[a2] = (np, atom)                    
                     active.add(a2)
-                    tmp.add(a2)
 
         output = 0.0
-        for atom in tmp:
+        for atom in plazma.keys():
             if atom.n is stop_node:
-                output += -math.log10(atom.tmp["en"])
-            del atom.tmp["en"]
+                output += -math.log10(plazma[atom][0])
         return output
 
             
