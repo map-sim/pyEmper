@@ -39,21 +39,21 @@ class EmpTerrain:
         self.name = str(name)
         self.conf = conf
         
-        if float(conf["con"][0])<0 or float(conf["con"][0])>1:
-            raise ValueError("con[0] has wrong value")
-        self.con_base = float(conf["con"][0])
+        if float(conf["conductivity"][0])<0 or float(conf["conductivity"][0])>1:
+            raise ValueError("conductivity[0] has wrong value")
+        self.con_base = float(conf["conductivity"][0])
         
-        if float(conf["con"][1])<0 or float(conf["con"][1])>1:
-            raise ValueError("con[1] has wrong value")
-        self.con_delta = float(conf["con"][1])
+        if float(conf["conductivity"][1])<0 or float(conf["conductivity"][1])>1:
+            raise ValueError("conductivity[1] has wrong value")
+        self.con_delta = float(conf["conductivity"][1])
         
         if float(conf["ifc"])<0 or float(conf["ifc"])>1:
             raise ValueError("ifc has wrong value")
         self.infr_cost = float(conf["ifc"])
 
-        if not isinstance(conf["rgb"], (tuple, list)):
+        if not isinstance(conf["color"], (tuple, list)):
             raise TypeError("no rgb collection")
-        self.rgb = tuple([int(c, 16) for c in conf["rgb"]])
+        self.rgb = tuple([int(c, 16) for c in conf["color"]])
 
     def __sub__(self, rgb):
         if isinstance(rgb, (EmpTerrain, )):
@@ -68,8 +68,8 @@ class EmpTerrain:
 
     def get_conf(self):
         self.conf["ifc"] = self.infr_cost
-        self.conf["rgb"] = [hex(c) for c in self.rgb]
-        self.conf["con"] = [self.con_base, self.con_delta]
+        self.conf["color"] = [hex(c) for c in self.rgb]
+        self.conf["conductivity"] = [self.con_base, self.con_delta]
         return self.conf
     
     def __str__(self):

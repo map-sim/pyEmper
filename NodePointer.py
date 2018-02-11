@@ -29,7 +29,7 @@ def rand_name(nr=3):
     return "".join(random.choice(string.ascii_uppercase) for n in range(nr))
 
 class NodePointer(Gtk.Window):
-    def __init__(self, fname_map, fname_json=None):
+    def __init__(self, fname_map, nodes={}):
         Gtk.Window.__init__(self, title="EMPER - Node Editor")
         
         self.connect('key_press_event', self.on_press_keyboard)
@@ -51,26 +51,13 @@ class NodePointer(Gtk.Window):
         self.power = 1.0
         self.base = 0.1
                 
-        if fname_json:
-            with open(fname_json) as dc:
-                nodes = json.load(dc)
-        else: nodes = []
-
-        self.nodes = []
+        self.nodes = nodes
         self.rgb = self.random_color()
-        for node in nodes:
-            if len(node["skeleton"]) < 3:
-                continue
-            
-            if not "name" in node.keys():                
-                node["name"] = rand_name()
-
-            while node["name"] in [n["name"] for n in self.nodes]:
-                node["name"] = rand_name()
+        for name in self.nodes.keys():
+            node = self.nodes[name]
                                 
             for p in node["skeleton"]: 
-                self.put_pixel(p[0], p[1], self.rgb)
-            self.nodes.append(node)
+                self.put_pixel(p[0], p[1], self.rgb)                
             self.rgb = self.random_color()
             
         print("loaded nodes:", len(self.nodes))
@@ -103,13 +90,11 @@ class NodePointer(Gtk.Window):
     def new_node(self):
         if hasattr(self, "node"):
             if self.node["skeleton"]:
-                self.nodes.append(self.node)
+                name = rand_name()
+                while name in self.nodes.keys():                
+                    name = rand_name()
+                self.nodes[name] = self.node
         self.node = {"skeleton": []}
-
-        self.node["name"] = rand_name()
-        while self.node["name"] in [n["name"] for n in self.nodes]:
-            self.node["name"] = rand_name()
-        print("new node:", self.node["name"])
                 
     def put_pixel(self, x, y, rgb):
         for n, c in enumerate(rgb):
@@ -155,7 +140,7 @@ class NodePointer(Gtk.Window):
         self.refresh()
 
     def checkout_points(self, x, y):            
-        for node in self.nodes:
+        for name, node in self.nodes.items():
             found = False
             for p in node["skeleton"]: 
                 if (p[0], p[1]) == (x, y): 
@@ -165,7 +150,7 @@ class NodePointer(Gtk.Window):
             if found:
                 self.clean_points()
                 self.node = node
-                self.nodes.remove(node)
+                del self.nodes[name]
                 break
             
         for p in self.node["skeleton"]:
@@ -241,7 +226,6 @@ class NodePointer(Gtk.Window):
         elif event.button == 2:
             point = (int(event.x), int(event.y))
             self.checkout_points(*point)            
-            print("load node:", self.node["name"])
 
         elif event.button == 3:
             point = (int(event.x), int(event.y))
@@ -314,7 +298,9 @@ if len(sys.argv) < 2:
 elif len(sys.argv) < 3:
     win = NodePointer(sys.argv[1])
 else:
-    win = NodePointer(sys.argv[1], sys.argv[2])
+    with open(sys.argv[2]) as dc:
+        nodes = json.load(dc)
+        win = NodePointer(sys.argv[1], nodes)
                 
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()

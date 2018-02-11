@@ -9,6 +9,7 @@
 from terrain import EmpTerrains 
 from diagram import EmpDiagram 
 from network import EmpNetwork 
+from nation import EmpNation
 
 from termcolor import colored
 
@@ -26,10 +27,14 @@ class EmpWorld:
         # load main config
         with open(savedir + "main.json") as dc:
             self.conf = json.load(dc)
-            
+
         self.terrains = EmpTerrains(self, self.conf["terrains"])
         self.diagram = EmpDiagram(self.terrains, savedir + self.conf["diagram"])
         self.network = EmpNetwork(self.diagram, savedir + self.conf["nodes"])
+            
+        self.nations = {}
+        for name in self.conf["nations"].keys():
+            self.nations[name] = EmpNation(name, self.conf["nations"][name])
             
     def save(self, savedir):
 

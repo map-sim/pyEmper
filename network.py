@@ -20,10 +20,11 @@ class EmpNetwork(list):
 
         plazma = {}
         active = set()
-        for raw in conf:
-            node = EmpNode(raw)
+        for name in conf.keys():
+            node = EmpNode(name, conf[name])
             self.append(node)
-            for x, y, p in raw["skeleton"]:
+            
+            for x, y, p in conf[name]["skeleton"]:
                 plazma[self.diagram[x][y]] = float(p)
                 active.add(self.diagram[x][y])
                 self.diagram[x][y].n = node
@@ -36,12 +37,12 @@ class EmpNetwork(list):
                 if atom.t.isground() and a2.t.isground():
                     np = plazma[atom] * a2.t.con_base
                     if a2.t.isriver() or atom.t.isriver():
-                        np *= self.world.conf["transship con"]
+                        np *= self.world.conf["transship"]
                 elif atom.t.iswater() and a2.t.iswater():
                     np = plazma[atom] * a2.t.con_delta
                 else: continue
                 
-                np *= self.world.conf["transport con"]
+                np *= self.world.conf["transport"]
                 if not a2 in plazma.keys() or np > plazma[a2]:
                     plazma[a2] = np
                     a2.n = atom.n
@@ -75,17 +76,17 @@ class EmpNetwork(list):
                 elif atom.t.isground() and a2.t.isground():
                     np = plazma[atom][0] * (a2.t.con_base + a2.t.con_delta * transport_infra)                    
                     if a2.t.isriver() and not atom.t.isriver() or not a2.t.isriver() and atom.t.isriver():
-                        np *= self.world.conf["transship con"]
+                        np *= self.world.conf["transship"]
                 elif atom.t.iswater() and a2.t.isground():
                     np = plazma[atom][0] * (a2.t.con_base + a2.t.con_delta * transport_infra)
-                    np *= self.world.conf["transship con"]
+                    np *= self.world.conf["transship"]
                 elif atom.t.isground() and a2.t.iswater():
                     np = plazma[atom][0] * a2.t.con_delta
-                    np *= self.world.conf["transship con"]
+                    np *= self.world.conf["transship"]
                 else:
                     np = plazma[atom][0] * a2.t.con_delta
                     
-                np *= self.world.conf["transport con"]
+                np *= self.world.conf["transport"]
                 if not a2 in plazma.keys():
                     plazma[a2] = (0.0, None) 
                     
@@ -131,17 +132,17 @@ class EmpNetwork(list):
                 elif atom.t.isground() and a2.t.isground():
                     np = plazma[atom][0] * (a2.t.con_base + a2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
                     if a2.t.isriver() and not atom.t.isriver() or not a2.t.isriver() and atom.t.isriver():
-                        np *= self.world.conf["transship con"]
+                        np *= self.world.conf["transship"]
                 elif atom.t.iswater() and a2.t.isground():
                     np = plazma[atom][0] * (a2.t.con_base + a2.t.con_delta * transport_infra) * (1.0 - fortress_infra)
-                    np *= self.world.conf["transship con"]
+                    np *= self.world.conf["transship"]
                 elif atom.t.isground() and a2.t.iswater():
                     np = plazma[atom][0] * a2.t.con_delta
-                    np *= self.world.conf["transship con"]
+                    np *= self.world.conf["transship"]
                 else:
                     np = plazma[atom][0] * a2.t.con_delta
 
-                np *= self.world.conf["transport con"]
+                np *= self.world.conf["transport"]
                 if not a2 in plazma.keys():
                     plazma[a2] = (0.0, None) 
 
@@ -158,7 +159,9 @@ class EmpNetwork(list):
             
     def save(self, fname):
         with open(fname, "w") as fd:
-            conf = [n.get_config() for n in self]
+            conf = {}
+            for n in self:
+                conf[n.name] = n.get_config()
             json.dump(conf, fd)
             
         print(colored("(info)", "red"), "save nodes as:", fname)

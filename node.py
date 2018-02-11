@@ -8,9 +8,11 @@
 
 
 class EmpNode(set):
-    def __init__(self, conf):
-        self.name = conf["name"]
+    
+    def __init__(self, name, conf):
         set.__init__(self)
+        
+        self.name = str(name)
         self.conf = conf
 
     def get_config(self):
