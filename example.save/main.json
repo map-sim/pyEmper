@@ -1,1 +1,250 @@
-{"nodes": "nodes.json", "nations": {"TYR": {"stability": 1.0, "acceptability": 1.0, "fertility": 0.9, "prowess": 1.1, "productivity": 1.0}, "TTY": {"stability": 1.0, "acceptability": 0.85, "fertility": 1.2, "prowess": 0.8, "productivity": 0.8}, "RAO": {"stability": 1.1, "acceptability": 0.9, "fertility": 1.0, "prowess": 0.8, "productivity": 1.1}, "PAU": {"stability": 1.1, "acceptability": 0.9, "fertility": 1.0, "prowess": 1.0, "productivity": 1.0}, "ZUP": {"stability": 1.0, "acceptability": 1.0, "fertility": 0.9, "prowess": 1.0, "productivity": 1.1}, "SQU": {"stability": 0.8, "acceptability": 1.1, "fertility": 1.1, "prowess": 1.2, "productivity": 1.0}, "XIO": {"stability": 1.0, "acceptability": 1.0, "fertility": 1.0, "prowess": 1.0, "productivity": 1.0}, "VAR": {"stability": 1.0, "acceptability": 1.1, "fertility": 1.2, "prowess": 1.1, "productivity": 0.8}, "VAG": {"stability": 1.2, "acceptability": 0.9, "fertility": 0.9, "prowess": 1.0, "productivity": 0.9}, "FOY": {"stability": 1.1, "acceptability": 1.1, "fertility": 0.9, "prowess": 0.9, "productivity": 1.2}, "CET": {"stability": 1.0, "acceptability": 1.1, "fertility": 1.1, "prowess": 0.8, "productivity": 1.2}, "PAR": {"stability": 1.1, "acceptability": 1.1, "fertility": 0.9, "prowess": 1.1, "productivity": 1.0}}, "diagram": "map.ppm", "transport": 1.0, "transship": 0.001, "terrains": {"open ocean": {"conductivity": [0.0, 0.98], "color": ["0x0", "0x0", "0xcc"], "ifc": 0.0}, "dry desert": {"conductivity": [0.3, 0.2], "color": ["0xff", "0xdd", "0x44"], "ifc": 0.3}, "costal sea": {"conductivity": [0.0, 0.95], "color": ["0x0", "0x44", "0xff"], "ifc": 0.0}, "ice ocean": {"conductivity": [0.0, 0.8], "color": ["0x0", "0x77", "0xff"], "ifc": 0.0}, "upland hills": {"conductivity": [0.1, 0.1], "color": ["0xff", "0x44", "0x0"], "ifc": 0.11}, "flat plain": {"conductivity": [0.5, 0.16], "color": ["0x33", "0xbb", "0x33"], "ifc": 0.01}, "large mountains": {"conductivity": [0.01, 0.04], "color": ["0x0", "0x0", "0x0"], "ifc": 0.15}, "marshy swamps": {"conductivity": [0.1, 0.4], "color": ["0x44", "0x88", "0x44"], "ifc": 0.01}, "high mountains": {"conductivity": [0.05, 0.05], "color": ["0x88", "0x44", "0x0"], "ifc": 0.12}, "narrow river": {"conductivity": [0.8, 0.15], "color": ["0xbb", "0x22", "0xff"], "ifc": 0.18}, "high plateau": {"conductivity": [0.25, 0.2], "color": ["0xff", "0xaa", "0x11"], "ifc": 0.1}, "cold tundra": {"conductivity": [0.25, 0.15], "color": ["0xaa", "0xaa", "0x99"], "ifc": 0.3}, "great river": {"conductivity": [0.85, 0.12], "color": ["0x77", "0x11", "0x88"], "ifc": 0.15}}}
+{
+    "diagram": "map.ppm",
+    "nations": {
+        "CET": {
+            "acceptability": 1.1,
+            "fertility": 1.1,
+            "productivity": 1.2,
+            "prowess": 0.8,
+            "stability": 1.0
+        },
+        "FOY": {
+            "acceptability": 1.1,
+            "fertility": 0.9,
+            "productivity": 1.2,
+            "prowess": 0.9,
+            "stability": 1.1
+        },
+        "PAR": {
+            "acceptability": 1.1,
+            "fertility": 0.9,
+            "productivity": 1.0,
+            "prowess": 1.1,
+            "stability": 1.1
+        },
+        "PAU": {
+            "acceptability": 0.9,
+            "fertility": 1.0,
+            "productivity": 1.0,
+            "prowess": 1.0,
+            "stability": 1.1
+        },
+        "RAO": {
+            "acceptability": 0.9,
+            "fertility": 1.0,
+            "productivity": 1.1,
+            "prowess": 0.8,
+            "stability": 1.1
+        },
+        "SQU": {
+            "acceptability": 1.1,
+            "fertility": 1.1,
+            "productivity": 1.0,
+            "prowess": 1.2,
+            "stability": 0.8
+        },
+        "TTY": {
+            "acceptability": 0.85,
+            "fertility": 1.2,
+            "productivity": 0.8,
+            "prowess": 0.8,
+            "stability": 1.0
+        },
+        "TYR": {
+            "acceptability": 1.0,
+            "fertility": 0.9,
+            "productivity": 1.0,
+            "prowess": 1.1,
+            "stability": 1.0
+        },
+        "VAG": {
+            "acceptability": 0.9,
+            "fertility": 0.9,
+            "productivity": 0.9,
+            "prowess": 1.0,
+            "stability": 1.2
+        },
+        "VAR": {
+            "acceptability": 1.1,
+            "fertility": 1.2,
+            "productivity": 0.8,
+            "prowess": 1.1,
+            "stability": 1.0
+        },
+        "XIO": {
+            "acceptability": 1.0,
+            "fertility": 1.0,
+            "productivity": 1.0,
+            "prowess": 1.0,
+            "stability": 1.0
+        },
+        "ZUP": {
+            "acceptability": 1.0,
+            "fertility": 0.9,
+            "productivity": 1.1,
+            "prowess": 1.0,
+            "stability": 1.0
+        }
+    },
+    "nodes": "nodes.json",
+    "terrains": {
+        "cold tundra": {
+            "color": [
+                "0xaa",
+                "0xaa",
+                "0x99"
+            ],
+            "conductivity": [
+                0.25,
+                0.15
+            ],
+            "ifc": 0.3
+        },
+        "costal sea": {
+            "color": [
+                "0x0",
+                "0x44",
+                "0xff"
+            ],
+            "conductivity": [
+                0.0,
+                0.95
+            ],
+            "ifc": 0.0
+        },
+        "dry desert": {
+            "color": [
+                "0xff",
+                "0xdd",
+                "0x44"
+            ],
+            "conductivity": [
+                0.3,
+                0.2
+            ],
+            "ifc": 0.3
+        },
+        "flat plain": {
+            "color": [
+                "0x33",
+                "0xbb",
+                "0x33"
+            ],
+            "conductivity": [
+                0.5,
+                0.16
+            ],
+            "ifc": 0.01
+        },
+        "great river": {
+            "color": [
+                "0x77",
+                "0x11",
+                "0x88"
+            ],
+            "conductivity": [
+                0.85,
+                0.12
+            ],
+            "ifc": 0.15
+        },
+        "high mountains": {
+            "color": [
+                "0x88",
+                "0x44",
+                "0x0"
+            ],
+            "conductivity": [
+                0.05,
+                0.05
+            ],
+            "ifc": 0.12
+        },
+        "high plateau": {
+            "color": [
+                "0xff",
+                "0xaa",
+                "0x11"
+            ],
+            "conductivity": [
+                0.25,
+                0.2
+            ],
+            "ifc": 0.1
+        },
+        "ice ocean": {
+            "color": [
+                "0x0",
+                "0x77",
+                "0xff"
+            ],
+            "conductivity": [
+                0.0,
+                0.8
+            ],
+            "ifc": 0.0
+        },
+        "large mountains": {
+            "color": [
+                "0x0",
+                "0x0",
+                "0x0"
+            ],
+            "conductivity": [
+                0.01,
+                0.04
+            ],
+            "ifc": 0.15
+        },
+        "marshy swamps": {
+            "color": [
+                "0x44",
+                "0x88",
+                "0x44"
+            ],
+            "conductivity": [
+                0.1,
+                0.4
+            ],
+            "ifc": 0.01
+        },
+        "narrow river": {
+            "color": [
+                "0xbb",
+                "0x22",
+                "0xff"
+            ],
+            "conductivity": [
+                0.8,
+                0.15
+            ],
+            "ifc": 0.18
+        },
+        "open ocean": {
+            "color": [
+                "0x0",
+                "0x0",
+                "0xcc"
+            ],
+            "conductivity": [
+                0.0,
+                0.98
+            ],
+            "ifc": 0.0
+        },
+        "upland hills": {
+            "color": [
+                "0xff",
+                "0x44",
+                "0x0"
+            ],
+            "conductivity": [
+                0.1,
+                0.1
+            ],
+            "ifc": 0.11
+        }
+    },
+    "transport": 1.0,
+    "transship": 0.001
+}
