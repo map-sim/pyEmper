@@ -6,10 +6,11 @@
 # brief: economic and strategic simulator
 # opensource licence: GPL-3.0
 
-from node import EmpNode 
 from termcolor import colored
+from node import EmpNode 
 import json
 import math
+import time
 
 class EmpNetwork(list):
     def __init__(self, diagram, fname):
@@ -18,6 +19,7 @@ class EmpNetwork(list):
         with open(fname) as dc:
             conf = json.load(dc)
 
+        tmp = time.time() 
         plazma = {}
         active = set()
         for name in conf.keys():
@@ -28,7 +30,9 @@ class EmpNetwork(list):
                 plazma[self.diagram[x][y]] = float(p)
                 active.add(self.diagram[x][y])
                 self.diagram[x][y].n = node
+        print(colored("* nodes init in %.2f s" % (time.time() - tmp), "green"))
 
+        tmp = time.time() 
         while True:
             try: atom = active.pop()
             except KeyError: break
@@ -47,13 +51,16 @@ class EmpNetwork(list):
                     plazma[a2] = np
                     a2.n = atom.n
                     active.add(a2)
+        print(colored("* nodes analysis in %.2f s" % (time.time() - tmp), "green"))
 
+        tmp = time.time() 
         g = self.diagram.get_agener()
         for a in g():
             if a.n is None:
                 print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
                 raise ValueError("Nodes do not cover the entire map!")
             a.n.add(a)                
+        print(colored("* nodes check in %.2f s" % (time.time() - tmp), "green"))
         print(colored("(new)", "red"), "EmpNetwork")
 
         

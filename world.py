@@ -13,6 +13,7 @@ from nation import EmpNation
 
 from termcolor import colored
 
+import time
 import json
 import os
 
@@ -27,7 +28,7 @@ class EmpWorld:
         # load main config
         with open(savedir + "main.json") as dc:
             self.conf = json.load(dc)
-
+            
         self.terrains = EmpTerrains(self, self.conf["terrains"])
         self.diagram = EmpDiagram(self.terrains, savedir + self.conf["diagram"])
         self.network = EmpNetwork(self.diagram, savedir + self.conf["nodes"])

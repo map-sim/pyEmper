@@ -11,6 +11,7 @@ import sys, os
 import random
 import string    
 import json
+import time
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -23,6 +24,7 @@ from gi.repository import GdkPixbuf as Gpb
 from gi.repository import GLib
 from gi.repository import Gtk
 
+from termcolor import colored
 from world import EmpWorld 
 from node import EmpNode 
 
@@ -53,7 +55,9 @@ class NodeEditor(Gtk.Window):
         self.add(fix)
         
         ebox = Gtk.EventBox()
+        ebox.add_events(Gdk.EventMask.SCROLL_MASK|Gdk.EventMask.SMOOTH_SCROLL_MASK)
         ebox.connect ('button-press-event', self.on_clicked_mouse)
+        ebox.connect('scroll-event', self.on_scrolled_mouse)
         fix.put(ebox, 0,0)
         
         self.img = Gtk.Image()
@@ -63,8 +67,15 @@ class NodeEditor(Gtk.Window):
 
         self.selected_nodes = []
         self.selected_node = None
+        self.value = 1000.0
+        
+        tmp = time.time() 
         self.rgbmap = self.get_terrain_map()
+        print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
+
+        tmp = time.time() 
         self.draw_borders()
+        print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
         
         self.refresh(self.rgbmap)
         self.show_all()
@@ -150,6 +161,15 @@ class NodeEditor(Gtk.Window):
             c = self.world.network.get_enter_cost(start, node, 0)
             print(self.selected_node.name, "-->", node.name, "= %.2f" % c)
             
+    def on_scrolled_mouse(self, box, event):
+        if event.delta_y > 0:
+            self.value /= 1.1
+            if self.value < 1:
+                self.value = 1
+        else:
+            self.value *= 1.1            
+        print("value:", int(self.value))
+        
     def on_press_keyboard(self, widget, event):
         print(event.keyval)
 
@@ -169,7 +189,11 @@ class NodeEditor(Gtk.Window):
                     print(p.name, "-->", node.name, "-->", n.name, "= %.2f" % r)
                     route += r
             print("route = %.2f" % route)
-        
+            
+        elif event.keyval == ord("0"):
+            self.value = 1000
+            print("value:", int(self.value))
+            
 if len(sys.argv) < 2:
     print("ERROR! Give a map file!")
     raise ValueError
