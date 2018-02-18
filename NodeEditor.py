@@ -64,10 +64,12 @@ class NodeEditor(Gtk.Window):
         ebox.add(self.img)
         
         self.world = EmpWorld(sys.argv[1])
+        nkey = list(self.world.nations.keys())[0]
+        self.selected_nation = self.world.nations[nkey]
+        self.value = 1000.0
 
         self.selected_nodes = []
         self.selected_node = None
-        self.value = 1000.0
         
         tmp = time.time() 
         self.rgbmap = self.get_terrain_map()
@@ -93,12 +95,12 @@ class NodeEditor(Gtk.Window):
             for x in range(self.world.diagram.width-1):
                 a = self.world.diagram[x][y]
                 
-                if self.world.diagram[x+1][y].n != a.n:
+                if not self.world.diagram[x+1][y].n is a.n:
                     self.set_xy(SCALE*x+1, SCALE*y, RGB1)
                     self.set_xy(SCALE*(x+1), SCALE*y, RGB1)
                     self.set_xy(SCALE*x+1, SCALE*y+1, RGB1)
                     self.set_xy(SCALE*(x+1), SCALE*y+1, RGB1)
-                if self.world.diagram[x][y+1].n != a.n:
+                if not self.world.diagram[x][y+1].n is a.n:
                     self.set_xy(SCALE*x, SCALE*y+1, RGB1)
                     self.set_xy(SCALE*x, SCALE*(y+1), RGB1)
                     self.set_xy(SCALE*x+1, SCALE*y+1, RGB1)
@@ -171,25 +173,51 @@ class NodeEditor(Gtk.Window):
         print("value:", int(self.value))
         
     def on_press_keyboard(self, widget, event):
-        print(event.keyval)
+        # print(event.keyval)
+        if event.keyval == ord("h"):
+            print("help: hpdr0n")
 
         if event.keyval == ord("p"):
             names = [n.name for n in self.selected_nodes]
             print(names)
-        elif event.keyval == ord("c"):
+        elif event.keyval == ord("d"):
             self.selected_nodes = []
 
         elif event.keyval == ord("r"):
             route = 0
-            for n, node in enumerate(self.selected_nodes):
+            if len(self.selected_nodes) > 1:
+                c = self.world.network.get_enter_cost([self.selected_nodes[1]], self.selected_nodes[0])
+                print(self.selected_nodes[0].name, ">-", self.selected_nodes[1].name, "= %.2f" % c)
+                route += c
+
+            for n, node in enumerate(self.selected_nodes):                    
                 if n>0 and n<len(self.selected_nodes)-1:
                     p = self.selected_nodes[n-1]
                     n = self.selected_nodes[n+1]
                     r = self.world.network.get_proxy_cost(p, node, n)
-                    print(p.name, "-->", node.name, "-->", n.name, "= %.2f" % r)
+                    print(p.name, "--", node.name, "--", n.name, "= %.2f" % r)
                     route += r
+
+            if len(self.selected_nodes) > 1:
+                c = self.world.network.get_enter_cost([self.selected_nodes[-2]], self.selected_nodes[-1])
+                print(self.selected_nodes[-2].name, "-<", self.selected_nodes[-1].name, "= %.2f" % c)
+                route += c
+
             print("route = %.2f" % route)
             
+        elif event.keyval == ord("n"):
+            nkeys = list(self.world.nations.keys())
+            n = nkeys.index(self.selected_nation.name)
+            n = (n+1) % len(nkeys)
+            self.selected_nation = self.world.nations[nkeys[n]]
+
+            for name in self.selected_node.conf["population"].keys():
+                if name is self.selected_nation.name:
+                    print("*", name, self.selected_node.conf["population"][name])
+                else:
+                    print("-", name, self.selected_node.conf["population"][name])
+                    
+
         elif event.keyval == ord("0"):
             self.value = 1000
             print("value:", int(self.value))

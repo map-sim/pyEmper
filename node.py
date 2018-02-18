@@ -15,6 +15,9 @@ class EmpNode(set):
         self.name = str(name)
         self.conf = conf
 
+        if not "population" in self.conf.keys():
+            self.conf["population"] = {}
+
     def get_config(self):
         return self.conf
 
