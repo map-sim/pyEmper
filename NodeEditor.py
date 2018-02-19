@@ -64,9 +64,10 @@ class NodeEditor(Gtk.Window):
         ebox.add(self.img)
         
         self.world = EmpWorld(sys.argv[1])
+        self.value = 2.0
+        
         nkey = list(self.world.nations.keys())[0]
         self.selected_nation = self.world.nations[nkey]
-        self.value = 1000.0
 
         self.selected_nodes = []
         self.selected_node = None
@@ -165,18 +166,20 @@ class NodeEditor(Gtk.Window):
             
     def on_scrolled_mouse(self, box, event):
         if event.delta_y > 0:
-            self.value /= 1.1
-            if self.value < 1:
-                self.value = 1
+            self.value /= 1.2
         else:
-            self.value *= 1.1            
-        print("value:", int(self.value))
+            self.value *= 1.8            
+        print("value: %.3f" % self.value)
         
     def on_press_keyboard(self, widget, event):
         # print(event.keyval)
         if event.keyval == ord("h"):
             print("help: hpdr0n")
 
+        elif event.keyval == ord("0"):
+            self.value = 2.0
+            print("value: %.3f" % self.value)
+            
         if event.keyval == ord("p"):
             names = [n.name for n in self.selected_nodes]
             print(names)
@@ -205,22 +208,26 @@ class NodeEditor(Gtk.Window):
 
             print("route = %.2f" % route)
             
+        elif event.keyval == ord("s"):
+            self.world.save("output.save")
+            
         elif event.keyval == ord("n"):
+            if self.selected_node is None: return
             nkeys = list(self.world.nations.keys())
             n = nkeys.index(self.selected_nation.name)
             n = (n+1) % len(nkeys)
             self.selected_nation = self.world.nations[nkeys[n]]
 
-            for name in self.selected_node.conf["population"].keys():
-                if name is self.selected_nation.name:
-                    print("*", name, self.selected_node.conf["population"][name])
-                else:
-                    print("-", name, self.selected_node.conf["population"][name])
-                    
+            try: p = self.selected_node.conf["population"][self.selected_nation.name]
+            except KeyError: p = 0
+            print(self.selected_nation.name, int(p))
+                                
+        elif event.keyval == ord("N"):
+            if self.selected_node is None: return            
+            self.selected_node.conf["population"][self.selected_nation.name] = self.value
+            nname = self.selected_nation.name 
+            print(nname, int(self.selected_node.conf["population"][nname]))
 
-        elif event.keyval == ord("0"):
-            self.value = 1000
-            print("value:", int(self.value))
             
 if len(sys.argv) < 2:
     print("ERROR! Give a map file!")
