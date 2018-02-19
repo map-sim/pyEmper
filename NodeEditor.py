@@ -116,6 +116,29 @@ class NodeEditor(Gtk.Window):
         g = xy_gen(self.world.diagram.width, self.world.diagram.height)
         out  = [c for x, y in g for c in self.world.diagram[x][y].t.rgb]
         return out
+    
+    def get_nation_map(self):
+        out  = []
+        m = self.world.network.get_max_nation()
+        print("max nation in nodes:", m)
+        g = xy_gen(self.world.diagram.width, self.world.diagram.height)
+        for x, y in g:
+            if not self.world.diagram[x][y].t.isground():
+                out.append(0)
+                out.append(0)
+                out.append(128)
+            elif self.world.diagram[x][y].t.isriver():
+                out.append(255)
+                out.append(32)
+                out.append(32)
+            else:
+                try: v = self.world.diagram[x][y].n.conf["population"][self.selected_nation.name]
+                except KeyError: v = 0
+                c = int(255 * float(v) / m)
+                out.append(c)
+                out.append(c)
+                out.append(0)
+        return out
 
     def select_node(self, node):
         if node is self.selected_node:
@@ -177,6 +200,26 @@ class NodeEditor(Gtk.Window):
             print("help: hpdr0n")
 
         elif event.keyval == ord("0"):
+            tmp = time.time() 
+            self.rgbmap = self.get_terrain_map()
+            print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
+
+            tmp = time.time() 
+            self.draw_borders()
+            print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
+            self.refresh(self.rgbmap)
+
+        elif event.keyval == ord("1"):
+            tmp = time.time() 
+            self.rgbmap = self.get_nation_map()
+            print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
+
+            tmp = time.time() 
+            self.draw_borders()
+            print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
+            self.refresh(self.rgbmap)
+
+        elif event.keyval == ord(" "):
             self.value = 2.0
             print("value: %.3f" % self.value)
             

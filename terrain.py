@@ -80,7 +80,7 @@ class EmpTerrain:
         return out
 
     def isriver(self):
-        return self.con_base >= 0.9 and self.con_delta > 0
+        return self.con_base >= 0.8
 
     def isground(self):
         return self.con_base > 0

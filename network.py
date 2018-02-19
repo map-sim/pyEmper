@@ -63,7 +63,14 @@ class EmpNetwork(list):
         print(colored("* nodes check in %.2f s" % (time.time() - tmp), "green"))
         print(colored("(new)", "red"), "EmpNetwork")
 
-        
+    def get_max_nation(self):
+        m = 1
+        for n in self:
+            for k in n.conf["population"].keys():
+                if n.conf["population"][k] > m:                    
+                    m = n.conf["population"][k]
+        return m
+            
     def get_proxy_cost(self, start, proxy, stop, transport_infra=0):
         plazma = {}
         active = set()
