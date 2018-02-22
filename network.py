@@ -59,7 +59,7 @@ class EmpNetwork(list):
             if a.n is None:
                 print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
                 raise ValueError("Nodes do not cover the entire map!")
-            a.n.add(a)                
+            a.n.add(a)
         print(colored("* nodes check in %.2f s" % (time.time() - tmp), "green"))
         print(colored("(new)", "red"), "EmpNetwork")
 

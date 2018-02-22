@@ -83,6 +83,13 @@ class EmpDiagram(list):
         except IndexError: pass
         return out
         
+    def isborder(self, a):
+        na = self.get_next(a)
+        for a2 in na:
+            if not a2.n is a.n:
+                return True
+        return False
+        
     def save(self, fname):
         with open(fname, "w") as fd:
             fd.write("P3\n")

@@ -28,7 +28,7 @@ from termcolor import colored
 from world import EmpWorld 
 from node import EmpNode 
 
-SCALE = 2
+SCALE = 2 # only 2 and 1
 RGB1 = (255, 255, 255)
 RGB2 = (64, 64, 64)
 RGB3 = (200, 200, 200)
@@ -77,7 +77,7 @@ class NodeEditor(Gtk.Window):
         print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
 
         tmp = time.time() 
-        self.draw_borders()
+        self.draw_borders(RGB1)
         print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
         
         self.refresh(self.rgbmap)
@@ -91,22 +91,27 @@ class NodeEditor(Gtk.Window):
         pbuf = Gpb.Pixbuf.new_from_bytes(tmp, colorf, False, 8, w, h, 3*w)
         self.img.set_from_pixbuf(pbuf)
 
-    def draw_borders(self):                        
-        for y in range(self.world.diagram.height-1):
-            for x in range(self.world.diagram.width-1):
-                a = self.world.diagram[x][y]
-                
-                if not self.world.diagram[x+1][y].n is a.n:
-                    self.set_xy(SCALE*x+1, SCALE*y, RGB1)
-                    self.set_xy(SCALE*(x+1), SCALE*y, RGB1)
-                    self.set_xy(SCALE*x+1, SCALE*y+1, RGB1)
-                    self.set_xy(SCALE*(x+1), SCALE*y+1, RGB1)
-                if not self.world.diagram[x][y+1].n is a.n:
-                    self.set_xy(SCALE*x, SCALE*y+1, RGB1)
-                    self.set_xy(SCALE*x, SCALE*(y+1), RGB1)
-                    self.set_xy(SCALE*x+1, SCALE*y+1, RGB1)
-                    self.set_xy(SCALE*x+1, SCALE*(y+1), RGB1)
-
+    def draw_node_borders(self, node, rgb):
+        for a in node:
+            if not self.world.diagram.isborder(a): continue
+            if a.x == 0 or a.y == 0: continue
+            if a.x == self.world.diagram.width-1: continue
+            if a.y == self.world.diagram.height-1: continue
+            if not self.world.diagram[a.x+1][a.y].n is a.n:
+                self.set_xy(SCALE*a.x+1, SCALE*a.y, rgb)
+                self.set_xy(SCALE*(a.x+1), SCALE*a.y, rgb)
+                self.set_xy(SCALE*a.x+1, SCALE*a.y+1, rgb)
+                self.set_xy(SCALE*(a.x+1), SCALE*a.y+1, rgb)
+            if not self.world.diagram[a.x][a.y+1].n is a.n:
+                self.set_xy(SCALE*a.x, SCALE*a.y+1, rgb)
+                self.set_xy(SCALE*a.x, SCALE*(a.y+1), rgb)
+                self.set_xy(SCALE*a.x+1, SCALE*a.y+1, rgb)
+                self.set_xy(SCALE*a.x+1, SCALE*(a.y+1), rgb)
+        
+    def draw_borders(self, rgb):
+        for n in self.world.network:
+            self.draw_node_borders(n, rgb)
+            
     def set_xy(self, x, y, rgb):
         index = 3 * (x + y * SCALE * self.world.diagram.width)
         if tuple(self.rgbmap[index:index+3]) != RGB1:
@@ -205,7 +210,7 @@ class NodeEditor(Gtk.Window):
             print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
 
             tmp = time.time() 
-            self.draw_borders()
+            self.draw_borders(RGB1)
             print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
             self.refresh(self.rgbmap)
 
@@ -215,7 +220,7 @@ class NodeEditor(Gtk.Window):
             print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
 
             tmp = time.time() 
-            self.draw_borders()
+            self.draw_borders(RGB1)
             print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
             self.refresh(self.rgbmap)
 
