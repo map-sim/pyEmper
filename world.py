@@ -36,7 +36,8 @@ class EmpWorld:
         self.nations = {}
         for name in self.conf["nations"].keys():
             self.nations[name] = EmpNation(name, self.conf["nations"][name])
-            
+
+                    
     def save(self, savedir):
 
         # check "/" char

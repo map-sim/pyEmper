@@ -71,6 +71,14 @@ class EmpNetwork(list):
                     m = n.conf["population"][k]
         return m
             
+    def get_population(self, nation):
+        m = 0
+        for n in self:
+            if nation in n.conf["population"]:
+                m += n.conf["population"][nation]
+        return m
+
+        
     def get_proxy_cost(self, start, proxy, stop, transport_infra=0):
         plazma = {}
         active = set()

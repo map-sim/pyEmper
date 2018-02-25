@@ -139,10 +139,15 @@ class NodeEditor(Gtk.Window):
             else:
                 try: v = self.world.diagram[x][y].n.conf["population"][self.selected_nation.name]
                 except KeyError: v = 0
-                c = int(255 * float(v) / m)
-                out.append(c)
-                out.append(c)
-                out.append(0)
+                if v == 0:
+                    out.append(160)
+                    out.append(160)
+                    out.append(160)
+                else:
+                    c = int(255 * (1.0 - float(v) / m))
+                    out.append(0)
+                    out.append(c)
+                    out.append(0)
         return out
 
     def select_node(self, node):
@@ -196,8 +201,11 @@ class NodeEditor(Gtk.Window):
         if event.delta_y > 0:
             self.value /= 1.2
         else:
-            self.value *= 1.8            
-        print("value: %.3f" % self.value)
+            self.value *= 1.8
+        if self.selected_node:
+            print("value: %.3f %.3f" % (self.value, self.value/len(self.selected_node)))
+        else:
+            print("value: %.3f" % self.value)
         
     def on_press_keyboard(self, widget, event):
         # print(event.keyval)
@@ -260,11 +268,15 @@ class NodeEditor(Gtk.Window):
             self.world.save("output.save")
             
         elif event.keyval == ord("n"):
-            if self.selected_node is None: return
             nkeys = list(self.world.nations.keys())
             n = nkeys.index(self.selected_nation.name)
             n = (n+1) % len(nkeys)
             self.selected_nation = self.world.nations[nkeys[n]]
+            
+            if self.selected_node is None:
+                p = self.world.network.get_population(self.selected_nation.name)
+                print(self.selected_nation.name, int(p))
+                return
 
             try: p = self.selected_node.conf["population"][self.selected_nation.name]
             except KeyError: p = 0
