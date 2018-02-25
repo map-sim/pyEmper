@@ -11,7 +11,6 @@ import sys, os
 import random
 import string    
 import json
-import time
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -24,7 +23,9 @@ from gi.repository import GdkPixbuf as Gpb
 from gi.repository import GLib
 from gi.repository import Gtk
 
-from termcolor import colored
+from toolbox import measure_time
+from toolbox import xy_gen
+
 from world import EmpWorld 
 from node import EmpNode 
 
@@ -33,19 +34,9 @@ RGB1 = (255, 255, 255)
 RGB2 = (64, 64, 64)
 RGB3 = (200, 200, 200)
 
-def xy_gen(w, h=None):
-    if not h is None:
-        for y in range(h):
-            for sy in range(SCALE):
-                for x in range(w):
-                    for sx in range(SCALE):                    
-                        yield x,y
-    elif isinstance(w, (set, list, tuple, EmpNode)):
-        for a in w:
-            for sy in range(SCALE):
-                for sx in range(SCALE):                    
-                    yield SCALE*a.x+sx, SCALE*a.y+sy
-                    
+
+
+
 class NodeEditor(Gtk.Window):
     def __init__(self, savefile):
         Gtk.Window.__init__(self, title="EMPER - Node Editor")
@@ -72,14 +63,8 @@ class NodeEditor(Gtk.Window):
         self.selected_nodes = []
         self.selected_node = None
         
-        tmp = time.time() 
         self.rgbmap = self.get_terrain_map()
-        print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
-
-        tmp = time.time() 
         self.draw_borders(RGB1)
-        print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
-        
         self.refresh(self.rgbmap)
         self.show_all()
 
@@ -107,65 +92,58 @@ class NodeEditor(Gtk.Window):
                 self.set_xy(SCALE*a.x, SCALE*(a.y+1), rgb)
                 self.set_xy(SCALE*a.x+1, SCALE*a.y+1, rgb)
                 self.set_xy(SCALE*a.x+1, SCALE*(a.y+1), rgb)
-        
+
+    @measure_time("border draw")
     def draw_borders(self, rgb):
-        for n in self.world.network:
+        for n in self.world.graph:
             self.draw_node_borders(n, rgb)
-            
+
     def set_xy(self, x, y, rgb):
         index = 3 * (x + y * SCALE * self.world.diagram.width)
         if tuple(self.rgbmap[index:index+3]) != RGB1:
             self.rgbmap[index:index+3] = rgb
-        
+
+    @measure_time("terrains draw")
     def get_terrain_map(self):
-        g = xy_gen(self.world.diagram.width, self.world.diagram.height)
+        g = xy_gen(SCALE, self.world.diagram.width, self.world.diagram.height)
         out  = [c for x, y in g for c in self.world.diagram[x][y].t.rgb]
         return out
-    
+
+    @measure_time("nations draw")
     def get_nation_map(self):
+        m = self.world.graph.get_max_population()
+        print("max nation in nodes:", int(m))
+        
         out  = []
-        m = self.world.network.get_max_nation()
-        print("max nation in nodes:", m)
-        g = xy_gen(self.world.diagram.width, self.world.diagram.height)
+        g = xy_gen(SCALE, self.world.diagram.width, self.world.diagram.height)
         for x, y in g:
             if not self.world.diagram[x][y].t.isground():
-                out.append(0)
-                out.append(0)
-                out.append(128)
+                out.extend([0, 0, 128])
             elif self.world.diagram[x][y].t.isriver():
-                out.append(255)
-                out.append(32)
-                out.append(32)
+                out.extend([255, 32, 32])
             else:
                 try: v = self.world.diagram[x][y].n.conf["population"][self.selected_nation.name]
                 except KeyError: v = 0
                 if v == 0:
-                    out.append(160)
-                    out.append(160)
-                    out.append(160)
+                    out.extend([160, 160, 160])
                 else:
                     c = int(255 * (1.0 - float(v) / m))
-                    out.append(0)
-                    out.append(c)
-                    out.append(0)
+                    out.extend([0, c, 0])
         return out
 
     def select_node(self, node):
         if node is self.selected_node:
             return
         
-        g = xy_gen(self.selected_node)
+        g = xy_gen(SCALE, self.selected_node)
         for x, y in g:
             rgb = self.world.diagram[int(x/SCALE)][int(y/SCALE)].t.rgb
             self.set_xy(x, y, rgb)
 
         self.selected_node = node
-        g = xy_gen(node)
+        g = xy_gen(SCALE, node)
         for x, y in g:
-            if int(x/(2*SCALE)) % 2 ^ int(y/(2*SCALE)) % 2:
-                rgb = RGB2
-            else: rgb = RGB3
-            self.set_xy(x, y, rgb)
+            self.set_xy(x, y, RGB2 if int(x/(2*SCALE)) % 2 ^ int(y/(2*SCALE)) % 2 else RGB3)
     
     def on_clicked_mouse (self, box, event):
         # info = "x = %.2f y = %.2f b = %d" % (event.x, event.y, event.button)
@@ -185,7 +163,7 @@ class NodeEditor(Gtk.Window):
             if self.selected_node is None:
                 return
 
-            c = self.world.network.get_enter_cost(self.selected_nodes, node, 0)
+            c = self.world.graph.get_enter_cost(self.selected_nodes, node, 0)
             names = [n.name for n in self.selected_nodes]
             print(names, "-->", node.name, "= %.2f" % c)
 
@@ -194,7 +172,7 @@ class NodeEditor(Gtk.Window):
                 return
 
             start = [self.selected_node]
-            c = self.world.network.get_enter_cost(start, node, 0)
+            c = self.world.graph.get_enter_cost(start, node, 0)
             print(self.selected_node.name, "-->", node.name, "= %.2f" % c)
             
     def on_scrolled_mouse(self, box, event):
@@ -213,23 +191,13 @@ class NodeEditor(Gtk.Window):
             print("help: hpdr0n")
 
         elif event.keyval == ord("0"):
-            tmp = time.time() 
             self.rgbmap = self.get_terrain_map()
-            print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
-
-            tmp = time.time() 
             self.draw_borders(RGB1)
-            print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
             self.refresh(self.rgbmap)
 
         elif event.keyval == ord("1"):
-            tmp = time.time() 
             self.rgbmap = self.get_nation_map()
-            print(colored("* map draw in %.2f s" % (time.time() - tmp), "green"))
-
-            tmp = time.time() 
             self.draw_borders(RGB1)
-            print(colored("* border draw in %.2f s" % (time.time() - tmp), "green"))
             self.refresh(self.rgbmap)
 
         elif event.keyval == ord(" "):
@@ -245,7 +213,7 @@ class NodeEditor(Gtk.Window):
         elif event.keyval == ord("r"):
             route = 0
             if len(self.selected_nodes) > 1:
-                c = self.world.network.get_enter_cost([self.selected_nodes[1]], self.selected_nodes[0])
+                c = self.world.graph.get_enter_cost([self.selected_nodes[1]], self.selected_nodes[0])
                 print(self.selected_nodes[0].name, ">-", self.selected_nodes[1].name, "= %.2f" % c)
                 route += c
 
@@ -253,12 +221,12 @@ class NodeEditor(Gtk.Window):
                 if n>0 and n<len(self.selected_nodes)-1:
                     p = self.selected_nodes[n-1]
                     n = self.selected_nodes[n+1]
-                    r = self.world.network.get_proxy_cost(p, node, n)
+                    r = self.world.graph.get_proxy_cost(p, node, n)
                     print(p.name, "--", node.name, "--", n.name, "= %.2f" % r)
                     route += r
 
             if len(self.selected_nodes) > 1:
-                c = self.world.network.get_enter_cost([self.selected_nodes[-2]], self.selected_nodes[-1])
+                c = self.world.graph.get_enter_cost([self.selected_nodes[-2]], self.selected_nodes[-1])
                 print(self.selected_nodes[-2].name, "-<", self.selected_nodes[-1].name, "= %.2f" % c)
                 route += c
 
@@ -274,7 +242,7 @@ class NodeEditor(Gtk.Window):
             self.selected_nation = self.world.nations[nkeys[n]]
             
             if self.selected_node is None:
-                p = self.world.network.get_population(self.selected_nation.name)
+                p = self.selected_nation.get_population()
                 print(self.selected_nation.name, int(p))
                 return
 

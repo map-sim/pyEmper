@@ -18,6 +18,12 @@ class EmpNode(set):
         if not "population" in self.conf.keys():
             self.conf["population"] = {}
 
+    def get_population(self):
+        return sum([v for v in self.conf["population"].values()])
+    
+    def get_density(self):
+        return self.get_population() / len(self)
+    
     def get_config(self):
         return self.conf
 

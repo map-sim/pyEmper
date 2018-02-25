@@ -6,20 +6,20 @@
 # brief: economic and strategic simulator
 # opensource licence: GPL-3.0
 
+from toolbox import measure_time
 from termcolor import colored
-from node import EmpNode 
-import json
-import math
-import time
 
-class EmpNetwork(list):
+from node import EmpNode 
+import json, math
+
+class EmpGraph(list):
+    @measure_time("graph init")
     def __init__(self, diagram, fname):
         self.world = diagram.world
         self.diagram = diagram
         with open(fname) as dc:
             conf = json.load(dc)
 
-        tmp = time.time() 
         plazma = {}
         active = set()
         for name in conf.keys():
@@ -30,9 +30,7 @@ class EmpNetwork(list):
                 plazma[self.diagram[x][y]] = float(p)
                 active.add(self.diagram[x][y])
                 self.diagram[x][y].n = node
-        print(colored("* nodes init in %.2f s" % (time.time() - tmp), "green"))
 
-        tmp = time.time() 
         while True:
             try: atom = active.pop()
             except KeyError: break
@@ -51,33 +49,14 @@ class EmpNetwork(list):
                     plazma[a2] = np
                     a2.n = atom.n
                     active.add(a2)
-        print(colored("* nodes analysis in %.2f s" % (time.time() - tmp), "green"))
 
-        tmp = time.time() 
         g = self.diagram.get_agener()
         for a in g():
             if a.n is None:
                 print(colored("(err)", "red"), "no node:", a.x, a.y, a.t.name)
                 raise ValueError("Nodes do not cover the entire map!")
             a.n.add(a)
-        print(colored("* nodes check in %.2f s" % (time.time() - tmp), "green"))
-        print(colored("(new)", "red"), "EmpNetwork")
-
-    def get_max_nation(self):
-        m = 1
-        for n in self:
-            for k in n.conf["population"].keys():
-                if n.conf["population"][k] > m:                    
-                    m = n.conf["population"][k]
-        return m
-            
-    def get_population(self, nation):
-        m = 0
-        for n in self:
-            if nation in n.conf["population"]:
-                m += n.conf["population"][nation]
-        return m
-
+        print(colored("(new)", "red"), "EmpGraph")
         
     def get_proxy_cost(self, start, proxy, stop, transport_infra=0):
         plazma = {}
@@ -177,8 +156,7 @@ class EmpNetwork(list):
             if atom.n is stop_node:
                 output += -math.log10(plazma[atom][0])
         return output
-
-            
+        
     def save(self, fname):
         with open(fname, "w") as fd:
             conf = {}
@@ -187,3 +165,10 @@ class EmpNetwork(list):
             json.dump(conf, fd)
             
         print(colored("(info)", "red"), "save nodes as:", fname)
+
+    def get_max_population(self):
+        return max([n.get_population() for n in self])
+    
+    def get_max_density(self):
+        return max([n.get_density() for n in self])
+                
