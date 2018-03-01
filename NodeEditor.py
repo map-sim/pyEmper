@@ -35,8 +35,6 @@ RGB2 = (64, 64, 64)
 RGB3 = (200, 200, 200)
 
 
-
-
 class NodeEditor(Gtk.Window):
     def __init__(self, savefile):
         Gtk.Window.__init__(self, title="EMPER - Node Editor")
@@ -64,6 +62,8 @@ class NodeEditor(Gtk.Window):
         self.selected_node = None
         
         self.rgbmap = self.get_terrain_map()
+        self.maptype = "terrain"
+        
         self.draw_borders(RGB1)
         self.refresh(self.rgbmap)
         self.show_all()
@@ -112,13 +112,13 @@ class NodeEditor(Gtk.Window):
     @measure_time("nations draw")
     def get_nation_map(self):
         m = self.world.graph.get_max_population()
-        print("max nation in nodes:", int(m))
+        print("max population in nodes:", int(m))
         
-        out  = []
+        out = []
         g = xy_gen(SCALE, self.world.diagram.width, self.world.diagram.height)
         for x, y in g:
             if not self.world.diagram[x][y].t.isground():
-                out.extend([0, 0, 128])
+                out.extend([0, 128, 255])
             elif self.world.diagram[x][y].t.isriver():
                 out.extend([255, 32, 32])
             else:
@@ -131,19 +131,44 @@ class NodeEditor(Gtk.Window):
                     out.extend([0, c, 0])
         return out
 
+    @measure_time("nations draw")
+    def get_population_map(self):
+        m = self.world.graph.get_max_population()
+        print("max population in nodes:", int(m))
+
+        out = []
+        g = xy_gen(SCALE, self.world.diagram.width, self.world.diagram.height)
+        for x, y in g:
+            if not self.world.diagram[x][y].t.isground():
+                out.extend([0, 128, 255])
+            elif self.world.diagram[x][y].t.isriver():
+                out.extend([255, 32, 32])
+            else:
+                try: v = self.world.diagram[x][y].n.get_population()
+                except KeyError: v = 0
+                if v == 0:
+                    out.extend([160, 160, 160])
+                else:
+                    c = int(255 * (1.0 - float(v) / m))
+                    out.extend([0, c, 0])
+        return out
+        
     def select_node(self, node):
         if node is self.selected_node:
             return
         
-        g = xy_gen(SCALE, self.selected_node)
-        for x, y in g:
-            rgb = self.world.diagram[int(x/SCALE)][int(y/SCALE)].t.rgb
-            self.set_xy(x, y, rgb)
+        if self.maptype == "terrain":
+            g = xy_gen(SCALE, self.selected_node)
+            for x, y in g:
+                rgb = self.world.diagram[int(x/SCALE)][int(y/SCALE)].t.rgb
+                self.set_xy(x, y, rgb)
 
         self.selected_node = node
-        g = xy_gen(SCALE, node)
-        for x, y in g:
-            self.set_xy(x, y, RGB2 if int(x/(2*SCALE)) % 2 ^ int(y/(2*SCALE)) % 2 else RGB3)
+        
+        if self.maptype == "terrain":
+            g = xy_gen(SCALE, node)
+            for x, y in g:
+                self.set_xy(x, y, RGB2 if int(x/(2*SCALE)) % 2 ^ int(y/(2*SCALE)) % 2 else RGB3)
     
     def on_clicked_mouse (self, box, event):
         # info = "x = %.2f y = %.2f b = %d" % (event.x, event.y, event.button)
@@ -152,7 +177,7 @@ class NodeEditor(Gtk.Window):
         x = int(event.x/SCALE)
         y = int(event.y/SCALE)
         node = self.world.diagram[x][y].n
-        print(node.name, len(node))
+        print(node.name, "atoms:", len(node), "population: %d" % node.get_population(), "density: %.3f" % (node.get_population() / len(node)))
 
         if event.button == 1:
             self.select_node(node)
@@ -188,15 +213,23 @@ class NodeEditor(Gtk.Window):
     def on_press_keyboard(self, widget, event):
         # print(event.keyval)
         if event.keyval == ord("h"):
-            print("help: hpdr0n")
+            print("help: hpdr012nN")
 
         elif event.keyval == ord("0"):
             self.rgbmap = self.get_terrain_map()
+            self.maptype = "terrain"
             self.draw_borders(RGB1)
             self.refresh(self.rgbmap)
 
         elif event.keyval == ord("1"):
+            self.rgbmap = self.get_population_map()
+            self.maptype = "population"            
+            self.draw_borders(RGB1)
+            self.refresh(self.rgbmap)
+            
+        elif event.keyval == ord("2"):
             self.rgbmap = self.get_nation_map()
+            self.maptype = "nation"            
             self.draw_borders(RGB1)
             self.refresh(self.rgbmap)
 
