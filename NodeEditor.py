@@ -131,10 +131,10 @@ class NodeEditor(Gtk.Window):
                     out.extend([0, c, 0])
         return out
 
-    @measure_time("nations draw")
-    def get_population_map(self):
-        m = self.world.graph.get_max_population()
-        print("max population in nodes:", int(m))
+    @measure_time("density draw")
+    def get_density_map(self):
+        m = self.world.graph.get_max_density()
+        print("max density in nodes:", m)
 
         out = []
         g = xy_gen(SCALE, self.world.diagram.width, self.world.diagram.height)
@@ -144,7 +144,7 @@ class NodeEditor(Gtk.Window):
             elif self.world.diagram[x][y].t.isriver():
                 out.extend([255, 32, 32])
             else:
-                try: v = self.world.diagram[x][y].n.get_population()
+                try: v = self.world.diagram[x][y].n.get_density()
                 except KeyError: v = 0
                 if v == 0:
                     out.extend([160, 160, 160])
@@ -222,8 +222,8 @@ class NodeEditor(Gtk.Window):
             self.refresh(self.rgbmap)
 
         elif event.keyval == ord("1"):
-            self.rgbmap = self.get_population_map()
-            self.maptype = "population"            
+            self.rgbmap = self.get_density_map()
+            self.maptype = "density"            
             self.draw_borders(RGB1)
             self.refresh(self.rgbmap)
             
@@ -267,7 +267,8 @@ class NodeEditor(Gtk.Window):
             
         elif event.keyval == ord("s"):
             self.world.save("output.save")
-            
+
+        # change printed nation
         elif event.keyval == ord("n"):
             nkeys = list(self.world.nations.keys())
             n = nkeys.index(self.selected_nation.name)
@@ -282,10 +283,12 @@ class NodeEditor(Gtk.Window):
             try: p = self.selected_node.conf["population"][self.selected_nation.name]
             except KeyError: p = 0
             print(self.selected_nation.name, int(p))
-                                
+
+        # write nation
         elif event.keyval == ord("N"):
-            if self.selected_node is None: return            
-            self.selected_node.conf["population"][self.selected_nation.name] = self.value
+            if self.selected_node is None: return
+            val = 0 if self.value < 2 else self.value
+            self.selected_node.conf["population"][self.selected_nation.name] = val
             nname = self.selected_nation.name 
             print(nname, int(self.selected_node.conf["population"][nname]))
 
