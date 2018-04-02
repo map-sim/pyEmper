@@ -183,6 +183,8 @@ class NodeEditor(Gtk.Window):
             self.select_node(node)
             self.refresh(self.rgbmap)
             self.selected_nodes.append(node)
+            if self.maptype == "nation" or self.maptype == "density":
+                node.list_population()
 
         elif event.button == 2:
             if self.selected_node is None:
@@ -213,7 +215,7 @@ class NodeEditor(Gtk.Window):
     def on_press_keyboard(self, widget, event):
         # print(event.keyval)
         if event.keyval == ord("h"):
-            print("help: hpdr012nN")
+            print("help: hpdr012mnN")
 
         elif event.keyval == ord("0"):
             self.rgbmap = self.get_terrain_map()
@@ -267,7 +269,15 @@ class NodeEditor(Gtk.Window):
             
         elif event.keyval == ord("s"):
             self.world.save("output.save")
-
+            
+        elif event.keyval == ord("m"):
+            name = self.maptype
+            if self.maptype == "nation":
+                name += "-" + str(self.selected_nation.name)
+            name += ".png"
+            self.img.get_pixbuf().savev(name, "png", "", "")
+            print("save:", name)
+            
         # change printed nation
         elif event.keyval == ord("n"):
             nkeys = list(self.world.nations.keys())

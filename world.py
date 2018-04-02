@@ -13,6 +13,7 @@ from graph import EmpGraph
 
 from termcolor import colored
 
+import sqlite3
 import time
 import json
 import os
@@ -60,3 +61,114 @@ class EmpWorld:
         self.graph.save(savedir + self.conf["nodes"])
         self.diagram.save(savedir + self.conf["diagram"])
         print(colored("(info)", "red"), "save config as:", savedir)
+
+        self.save_db("out.db")
+
+    def save_db(self, path):
+
+        if os.path.exists(path):
+            warning = colored("(warning)", "yellow")
+            print(warning, "path %s exists!" % path)
+            
+        conn = sqlite3.connect(path)
+        cur = conn.cursor()
+
+        query = "CREATE TABLE parameters(name text UNIQUE, value real)"
+        print(query)
+        cur.execute(query)
+        conn.commit()
+
+        query = "INSERT INTO parameters VALUES ('width', %d)" % self.diagram.width
+        # print(query)
+        cur.execute(query)
+
+        query = "INSERT INTO parameters VALUES ('height', %d)" % self.diagram.height
+        # print(query)
+        cur.execute(query)
+
+        query = "INSERT INTO parameters VALUES ('terrains', %d)" % len(self.terrains)
+        # print(query)
+        cur.execute(query)
+
+        query = "INSERT INTO parameters VALUES ('nations', %d)" % len(self.nations)
+        # print(query)
+        cur.execute(query)
+
+        query = "INSERT INTO parameters VALUES ('nodes', %d)" % len(self.graph)
+        # print(query)
+        cur.execute(query)
+        conn.commit()
+
+        
+        query = "CREATE TABLE terrains(name text UNIQUE, color text, conduct1 real, conduct2 real, infrcost real)"
+        print(query)
+        cur.execute(query)
+        conn.commit()
+        # SELECT * FROM terrains LIMIT 1 OFFSET 5;
+        
+        for k in self.terrains.keys():
+            color = "%02X%02X%02X" % self.terrains[k].rgb
+            con1 = self.terrains[k].con_base
+            con2 = self.terrains[k].con_delta
+            infc = self.terrains[k].infr_cost
+
+            values = "'%s', '%s', %g, %g, %g" % (k, color, con1, con2, infc)
+            query = "INSERT INTO terrains VALUES (%s)" % values
+            # print(query)
+            cur.execute(query)
+        conn.commit()
+
+
+        query = "CREATE TABLE nations(name text UNIQUE, prower real, product real, fert real, accept real)"
+        print(query)
+        cur.execute(query)
+        conn.commit()
+        
+        for n in self.nations.keys():
+            pw = float(self.nations[n].conf["prowess"])
+            pr = float(self.nations[n].conf["productivity"])
+            ft = float(self.nations[n].conf["fertility"])
+            ac = float(self.nations[n].conf["acceptability"])
+
+            values = "'%s', %g, %g, %g, %g" % (n, pw, pr, ft, ac)
+            query = "INSERT INTO nations VALUES (%s)" % values
+            # print(query)
+            cur.execute(query)
+        conn.commit()
+
+
+        line = "name text UNIQUE"
+        for n in self.nations.keys():
+            line = "%s, %s real" % (line, n)
+        query = "CREATE TABLE nodes(%s)" % line
+        print(query)
+        cur.execute(query)
+        conn.commit()
+         
+        for n in self.graph:
+            line = "'%s'" % n.name 
+            for nt in self.nations.keys():
+                try: pop = float(n.conf["population"][nt])
+                except KeyError: pop = 0.0
+                line = "%s, %f" % (line, pop)   
+
+            query = "INSERT INTO nodes VALUES (%s)" % line
+            # print(query)
+            cur.execute(query)
+        conn.commit()
+
+        query = "CREATE TABLE atoms(x int, y int, node int, terrain int)"
+        print(query)
+        cur.execute(query)
+        conn.commit()
+
+        for row in self.diagram:
+            for a in row:
+                t = int([self.terrains[k] for k in self.terrains.keys()].index(a.t))
+                n = int(self.graph.index(a.n))
+                query = "INSERT INTO atoms VALUES (%d, %d, %d, %d)" % (a.x, a.y, n, t)
+                # print(query)
+                cur.execute(query)
+
+        conn.commit()
+        conn.close()

@@ -18,6 +18,10 @@ class EmpNode(set):
         if not "population" in self.conf.keys():
             self.conf["population"] = {}
 
+    def list_population(self):
+        for k in self.conf["population"].keys():
+            print("", k, self.conf["population"][k])
+        
     def get_population(self):
         return sum([v for v in self.conf["population"].values()])
     
