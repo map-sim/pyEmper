@@ -100,19 +100,20 @@ class EmpWorld:
         conn.commit()
 
         
-        query = "CREATE TABLE terrains(name text UNIQUE, color text, conduct1 real, conduct2 real, infrcost real)"
+        query = "CREATE TABLE terrains(name text UNIQUE, color text UNIQUE, conduct1 real, conduct2 real, infrcost real)"
         print(query)
         cur.execute(query)
         conn.commit()
         # SELECT * FROM terrains LIMIT 1 OFFSET 5;
-        
-        for k in self.terrains.keys():
+
+        for k in sorted(self.terrains.keys()):
             color = "%02X%02X%02X" % self.terrains[k].rgb
             con1 = self.terrains[k].con_base
             con2 = self.terrains[k].con_delta
             infc = self.terrains[k].infr_cost
-
-            values = "'%s', '%s', %g, %g, %g" % (k, color, con1, con2, infc)
+            name = self.terrains[k].name
+            
+            values = "'%s', '%s', %g, %g, %g" % (name, color, con1, con2, infc)
             query = "INSERT INTO terrains VALUES (%s)" % values
             # print(query)
             cur.execute(query)
@@ -157,16 +158,17 @@ class EmpWorld:
             cur.execute(query)
         conn.commit()
 
-        query = "CREATE TABLE atoms(x int, y int, node int, terrain int)"
+        query = "CREATE TABLE atoms(x int, y int, node text, color text)"
         print(query)
         cur.execute(query)
         conn.commit()
 
         for row in self.diagram:
             for a in row:
-                t = int([self.terrains[k] for k in self.terrains.keys()].index(a.t))
-                n = int(self.graph.index(a.n))
-                query = "INSERT INTO atoms VALUES (%d, %d, %d, %d)" % (a.x, a.y, n, t)
+                color = "%02X%02X%02X" % a.t.rgb                
+                name = a.n.name
+                       
+                query = "INSERT INTO atoms VALUES (%d, %d, '%s', '%s')" % (a.x, a.y, name, color)
                 # print(query)
                 cur.execute(query)
 
