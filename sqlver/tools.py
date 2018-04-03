@@ -7,6 +7,18 @@
 # opensource licence: GPL-3.0
 
 import os
+import sys
+from termcolor import colored
+
+def print_error(info):
+    prefix = colored("(error)", "red")
+    out = "%s %s\n" % (prefix, info)
+    sys.stderr.write(out)
+
+def print_info(info):
+    prefix = colored("(info)", "green")
+    out = "%s %s\n" % (prefix, info)
+    sys.stderr.write(out)
 
 def get_parameter(cur, name):
     query = "SELECT value FROM parameters WHERE name='%s'" % name 

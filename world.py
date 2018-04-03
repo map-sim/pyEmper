@@ -120,18 +120,14 @@ class EmpWorld:
         conn.commit()
 
 
-        query = "CREATE TABLE nations(name text UNIQUE, prower real, product real, fert real, accept real)"
+        query = "CREATE TABLE nations(name text UNIQUE, martial real, product real, fert real, loyal real, migrate real)"
         print(query)
         cur.execute(query)
         conn.commit()
         
         for n in self.nations.keys():
-            pw = float(self.nations[n].conf["prowess"])
-            pr = float(self.nations[n].conf["productivity"])
-            ft = float(self.nations[n].conf["fertility"])
-            ac = float(self.nations[n].conf["acceptability"])
 
-            values = "'%s', %g, %g, %g, %g" % (n, pw, pr, ft, ac)
+            values = "'%s', %g, %g, %g, %g, %g" % (n, 1, 1, 1, 1, 1)
             query = "INSERT INTO nations VALUES (%s)" % values
             # print(query)
             cur.execute(query)
