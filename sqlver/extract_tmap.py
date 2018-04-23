@@ -13,25 +13,23 @@ import sqlite3
 from tools import str_to_rgb
 from tools import print_info
 from tools import print_error
-from tools import get_parameter
 
-if not os.path.exists(sys.argv[1]):
-    print_error("path %s not exists!" % sys.argv[1])
-    raise ValueError("database not exists")
+from EmperSQL import EmperSQL
 
-conn = sqlite3.connect(sys.argv[1])
-print_info("database: %s" % sys.argv[1])
-cur = conn.cursor()
 
-width = int(get_parameter(cur, "width"))
-height = int(get_parameter(cur, "height"))
+if len(sys.argv) != 2:
+    print_error("USAGE: %s <database>" % sys.argv[0])
+    raise ValueError("wrong args number")
+else:
+    handler = EmperSQL(sys.argv[1])
+
+width = int(handler.get_parameter("width"))
+height = int(handler.get_parameter("height"))
 print_info("size: %d x %d" % (width, height))
 
-query = "SELECT x,y,color FROM atoms"
-cur.execute(query)
 xyterr = {}
-
-for x,y,c in cur.fetchall():
+query = "SELECT x,y,color FROM atoms"
+for x,y,c in handler.select_many(query):
     xyterr[(x,y)] = c
 
 sys.stdout.write("P3\n%d %d\n255\n" % (width, height))
@@ -39,6 +37,5 @@ for y in range(height):
     for x in range(width):
         sys.stdout.write("%d\n%d\n%d\n" % str_to_rgb(xyterr[(x,y)]))
 
-conn.close()
 
 

@@ -12,21 +12,18 @@ import sqlite3
 
 from tools import print_info
 from tools import print_error
-from tools import get_parameter
 
-if not os.path.exists(sys.argv[1]):
-    print_error("path %s not exists!" % sys.argv[1])
-    raise ValueError("database not exists")
+from EmperSQL import EmperSQL
 
-conn = sqlite3.connect(sys.argv[1])
-print_info("database: %s" % sys.argv[1])
-cur = conn.cursor()
 
-query = "SELECT * FROM nations"
-cur.execute(query)
-natffer = cur.fetchall()
+if len(sys.argv) != 2:
+    print_error("USAGE: %s <database>" % sys.argv[0])
+    raise ValueError("wrong args number")
+else:
+    handler = EmperSQL(sys.argv[1])
 
-nations = int(get_parameter(cur, "nations"))
+natffer = handler.select_many("SELECT * FROM nations")
+nations = handler.get_parameter("nations")
 print_info("nations: %d" % nations)
 
 if len(natffer) != nations:
@@ -35,7 +32,6 @@ if len(natffer) != nations:
 
 for i,n in enumerate(natffer):
     query = "SELECT %s FROM nodes WHERE %s>0" % (n[0], n[0])
-    cur.execute(query)
-    popffer = cur.fetchall()
-    pop = sum([c[0] for c in popffer])
+    poppernode = handler.select_many(query)
+    pop = sum([c[0] for c in poppernode])
     print(i, n[0], int(pop))
