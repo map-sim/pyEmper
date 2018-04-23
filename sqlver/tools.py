@@ -20,18 +20,17 @@ def print_info(info):
     out = "%s %s\n" % (prefix, info)
     sys.stderr.write(out)
 
-def get_parameter(cur, name):
-    query = "SELECT value FROM parameters WHERE name='%s'" % name 
-    cur.execute(query)
-    return cur.fetchone()[0]
-
 def str_to_rgb(strrgb):
     r = int(strrgb[0:2], 16)
     g = int(strrgb[2:4], 16)
     b = int(strrgb[4:], 16)
     return r, g, b
 
-
+def xy_gener(width, height):
+    for y in range(height):
+        for x in range(width):
+            yield x, y
+            
 def sub_rgb(rgb1, rgb2):
     out = 0
     for i, j in zip(rgb1, rgb2):
