@@ -34,7 +34,9 @@ try:
 except ValueError:
     nodename = sys.argv[2]    
 noderow = handler.select_node(nodename)
-    
 points = handler.select_points(noderow[0])
+scale =  handler.get_parameter("scale")
+
 print("name:", noderow[0])    
-print("area:", len(points))    
+print("atoms:", len(points))
+print("area:", scale * len(points))
