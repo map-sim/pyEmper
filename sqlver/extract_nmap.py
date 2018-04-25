@@ -23,8 +23,8 @@ if len(sys.argv) != 3:
     raise ValueError("wrong args number")
 else:
     handler = EmperSQL(sys.argv[1])
-    handler.enable_diagram()
 
+handler.enable_diagram()
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
 print_info("size: %d x %d" % (width, height))

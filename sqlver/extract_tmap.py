@@ -26,8 +26,8 @@ else:
 
 if "-b" in sys.argv:
     print_info("print borders")
-    handler.enable_diagram()
 
+handler.enable_diagram()
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
 print_info("size: %d x %d" % (width, height))
