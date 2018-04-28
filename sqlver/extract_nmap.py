@@ -20,25 +20,28 @@ from tools import xy_gener
 from EmperSQL import EmperSQL
 
 
-if len(sys.argv) != 3:
-    print_error("USAGE: %s <database> <node>" % sys.argv[0])
+if len(sys.argv) < 3:
+    print_error("USAGE: %s <database> <node1> ... <nodeN>" % sys.argv[0])
     raise ValueError("wrong args number")
 else:
     handler = EmperSQL(sys.argv[1])
 handler.enable_diagram()
-
-try: nodename = handler.get_nodename(int(sys.argv[2]))
-except ValueError: nodename = sys.argv[2]    
         
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
 sys.stdout.write("P3\n%d %d\n255\n" % (width, height))
 
+nodes = []
+for node in sys.argv[2:]:
+    try: nodename = handler.get_nodename(int(node))
+    except ValueError: nodename = node    
+    nodes.append(nodename)
+    
 for x, y in xy_gener (width, height):
     if handler.is_border(x, y):
         sys.stdout.write("%d\n%d\n%d\n" % (0, 0, 0))
 
-    elif handler.is_node(x, y, nodename):
+    elif [True for node in nodes if handler.is_node(x, y, node)]:
         if handler.is_buildable(x, y):
             sys.stdout.write("%d\n%d\n%d\n" % (255, 0, 0))
         else: sys.stdout.write("%d\n%d\n%d\n" % (0, 0, 255))
