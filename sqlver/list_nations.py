@@ -6,6 +6,8 @@
 # brief: economic and strategic simulator
 # opensource licence: GPL-3.0
 
+from time import time
+start_time = time() 
 
 import sys, os
 import sqlite3
@@ -35,3 +37,9 @@ for i,n in enumerate(natffer):
     poppernode = handler.select_many(query)
     pop = sum([c[0] for c in poppernode])
     print(i, n[0], int(pop))
+
+del handler
+stop_time = time()
+delta_time = stop_time - start_time     
+print_info("duration: %.3f s" % delta_time)
+

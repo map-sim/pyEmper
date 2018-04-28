@@ -6,6 +6,8 @@
 # brief: economic and strategic simulator
 # opensource licence: GPL-3.0
 
+from time import time
+start_time = time() 
 
 import sys, os
 import sqlite3
@@ -34,8 +36,6 @@ else:
 
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
-print_info("size: %d x %d" % (width, height))
-
 m_width, m_height, generator = ppm_loader(sys.argv[2])
 if int(m_width) < 0 or width != m_width:
     print_error("tmap has wrong sizes")
@@ -75,7 +75,10 @@ handler.execute("DELETE FROM atoms")
 for xy in buffer.keys():
     query = "INSERT INTO atoms VALUES (%d, %d, '%s', '%s')" % (xy[0], xy[1], buffer[xy][0], buffer[xy][1])
     handler.execute(query)
-handler.commit()
 
+del handler
 
+stop_time = time()
+delta_time = stop_time - start_time     
+print_info("duration: %.3f s" % delta_time)
 
