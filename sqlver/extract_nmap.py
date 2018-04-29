@@ -11,6 +11,8 @@ start_time = time()
 
 import sys, os
 import sqlite3
+import getopt
+import json
 
 from tools import str_to_rgb
 from tools import print_info
@@ -21,35 +23,55 @@ from EmperSQL import EmperSQL
 
 
 if len(sys.argv) < 3:
-    print_error("USAGE: %s <database> <node1> ... <nodeN>" % sys.argv[0])
+    rest = "<database> --palette=<pfile> <node1> <node2:color1>..."
+    print_error("USAGE: %s %s" % (sys.argv[0], rest))
     raise ValueError("wrong args number")
-else:
-    handler = EmperSQL(sys.argv[1])
+
+longopts = ["palette="]
+opts, args = getopt.getopt(sys.argv[2:], "", longopts)
+for opt,arg in opts:
+    if opt == "--palette":
+        if not os.path.exists(arg):
+            print_error("PALETTE does not exist: %s" % arg)
+            raise ValueError("wrong arg value")
+            
+        with open(arg) as f:
+            palette = json.load(f)
+
+handler = EmperSQL(sys.argv[1])
 handler.enable_diagram()
-        
+
+nodes = []
+combos = {}
+for node in args:
+    try:
+        nodename, color = node.split(":")
+        combos[nodename] = str_to_rgb(color)
+    except ValueError: 
+        try: nodename = handler.get_nodename(int(node))
+        except ValueError: nodename = node    
+        nodes.append(nodename)
+
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
 sys.stdout.write("P3\n%d %d\n255\n" % (width, height))
-
-nodes = []
-for node in sys.argv[2:]:
-    try: nodename = handler.get_nodename(int(node))
-    except ValueError: nodename = node    
-    nodes.append(nodename)
     
 for x, y in xy_gener (width, height):
     if handler.is_border(x, y):
-        sys.stdout.write("%d\n%d\n%d\n" % (0, 0, 0))
+        sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["BORDERS"]))
+
+    elif handler.diagram[(x,y)][0] in combos.keys():
+        sys.stdout.write("%d\n%d\n%d\n" % combos[handler.diagram[(x,y)][0]])
 
     elif [True for node in nodes if handler.is_node(x, y, node)]:
         if handler.is_buildable(x, y):
-            sys.stdout.write("%d\n%d\n%d\n" % (255, 0, 0))
-        else: sys.stdout.write("%d\n%d\n%d\n" % (0, 0, 255))
+            sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["MARKED-LANDS"]))
+        else: sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["MARKED-WATERS"]))
         
     else: 
         if handler.is_buildable(x, y):
-            sys.stdout.write("%d\n%d\n%d\n" % (255, 200, 200))
-        else: sys.stdout.write("%d\n%d\n%d\n" % (200, 200, 255))        
+            sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["LANDS"]))
+        else: sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["WATERS"]))        
 
 del handler
 stop_time = time()

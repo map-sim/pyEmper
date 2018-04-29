@@ -35,12 +35,11 @@ except ValueError: proxyname = sys.argv[3]
 try: stopname = handler.get_nodename(int(sys.argv[4]))
 except ValueError: stopname = sys.argv[4]    
 
-terrdict = handler.get_terrdict()
+print_info("%s -> %s -> %s" % (startname, proxyname, stopname))
+
+# terrdict = handler.get_terrdict()
 # print(handler.diagram)
 # print(terrdict)
-
-s = "%s -> %s -> %s" % (startname, proxyname, stopname)
-print_info(s)
 
 startpoints = []
 g = handler.xynode_generator(startname)
