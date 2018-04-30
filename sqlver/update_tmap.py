@@ -25,8 +25,6 @@ from EmperSQL import EmperSQL
 if len(sys.argv) != 3:
     print_error("USAGE: %s <database> <tmap>" % sys.argv[0])
     raise ValueError("wrong args number")
-else:
-    handler = EmperSQL(sys.argv[1])
 
 if not os.path.exists(sys.argv[2]):
     print_error("path %s not exists!" % sys.argv[2])
@@ -34,8 +32,10 @@ if not os.path.exists(sys.argv[2]):
 else:
     print_info("tmap input: %s" % sys.argv[2])
 
+handler = EmperSQL(sys.argv[1])
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
+
 m_width, m_height, generator = ppm_loader(sys.argv[2])
 if int(m_width) < 0 or width != m_width:
     print_error("tmap has wrong sizes")

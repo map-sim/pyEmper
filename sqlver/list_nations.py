@@ -21,8 +21,8 @@ from EmperSQL import EmperSQL
 if len(sys.argv) != 2:
     print_error("USAGE: %s <database>" % sys.argv[0])
     raise ValueError("wrong args number")
-else:
-    handler = EmperSQL(sys.argv[1])
+
+handler = EmperSQL(sys.argv[1])
 
 natffer = handler.select_many("SELECT * FROM nations")
 nations = handler.get_parameter("nations")

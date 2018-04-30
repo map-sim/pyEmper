@@ -21,8 +21,8 @@ from EmperSQL import EmperSQL
 if len(sys.argv) != 4:
     print_error("USAGE: %s <database> <param> <value>" % sys.argv[0])
     raise ValueError("wrong args number")
-else:
-    handler = EmperSQL(sys.argv[1])
+
+handler = EmperSQL(sys.argv[1])
 
 query = "SELECT * FROM parameters WHERE name='%s'" % sys.argv[2]
 exists = len(handler.select_many(query))

@@ -21,8 +21,8 @@ from EmperSQL import EmperSQL
 if len(sys.argv) != 3:
     print_error("USAGE: %s <database> <node>" % sys.argv[0])
     raise ValueError("wrong args number")
-else:
-    handler = EmperSQL(sys.argv[1])
+
+handler = EmperSQL(sys.argv[1])
 handler.enable_diagram()
 
 try: nodename = handler.get_nodename(int(sys.argv[2]))
@@ -37,6 +37,14 @@ if pnumber == 0:
 print("name:", nodename)    
 print("atoms:", pnumber)
 print("area: %g" % (scale * pnumber))
+
+print("population:")
+natffer = handler.select_many("SELECT name FROM nations")
+for nation in natffer:
+    query = "SELECT %s FROM nodes WHERE name='%s'" % (nation[0], nodename)
+    number = handler.select_row(query, 0)
+    if int(number[0]) > 0:
+        print("\t%s: %d" % (nation[0], number[0]))
 
 buffer = {}
 g = handler.xynode_generator(nodename)

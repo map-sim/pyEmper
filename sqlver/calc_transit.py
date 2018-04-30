@@ -37,10 +37,6 @@ except ValueError: stopname = sys.argv[4]
 
 print_info("%s -> %s -> %s" % (startname, proxyname, stopname))
 
-# terrdict = handler.get_terrdict()
-# print(handler.diagram)
-# print(terrdict)
-
 startpoints = []
 g = handler.xynode_generator(startname)
 for x,y in g:    
@@ -51,6 +47,29 @@ for x,y in g:
         except KeyError: continue
 
 print_info("starting points: %d" % len(startpoints))
+
+terrdict = handler.get_terrdict()
+active = set()
+plazma = {}
+
+for xy in startpoints:
+    plazma[xy] = (1.0, None)
+    active.add(xy)
+
+while active:
+    try: xy = active.pop()
+    except KeyError: break
+
+    for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
+        x, y = xy[0] + dx, xy[1] + dy
+
+        try:
+            if handler.diagram[(x, y)][0] != proxyname and \
+               handler.diagram[xy][0] != proxyname:
+                continue
+        except KeyError: continue
+
+......
 
 del handler
 stop_time = time()

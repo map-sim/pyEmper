@@ -37,7 +37,7 @@ class EmperSQL:
     def execute(self, query):
         self.cur.execute(query)
 
-    def select_row(self, query, number):        
+    def select_row(self, query, number=0):
         self.cur.execute("%s LIMIT 1 OFFSET %d" % (query, number))
         return self.cur.fetchone()
     
