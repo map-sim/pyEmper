@@ -23,11 +23,12 @@ from EmperSQL import EmperSQL
 
 
 if len(sys.argv) < 3:
-    rest = "<database> --palette=<pfile> <node1> <node2:color1>..."
+    rest = "<database> --palette=<pfile> --resize=<int> <node1> <node2:color1>..."
     print_error("USAGE: %s %s" % (sys.argv[0], rest))
     raise ValueError("wrong args number")
 
-longopts = ["palette="]
+map_resize = 1
+longopts = ["palette=", "resize="]
 opts, args = getopt.getopt(sys.argv[2:], "", longopts)
 for opt,arg in opts:
     if opt == "--palette":
@@ -37,7 +38,10 @@ for opt,arg in opts:
             
         with open(arg) as f:
             palette = json.load(f)
-
+    if opt == "--resize":
+        map_resize = int(arg)
+        print_info("resize map: %d" % map_resize)
+        
 handler = EmperSQL(sys.argv[1])
 handler.enable_diagram()
 
@@ -54,9 +58,9 @@ for node in args:
 
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
-sys.stdout.write("P3\n%d %d\n255\n" % (width, height))
+sys.stdout.write("P3\n%d %d\n255\n" % (map_resize * width, map_resize * height))
     
-for x, y in xy_gener (width, height):
+for x, y in xy_gener (width, height, map_resize):
     if handler.is_border(x, y):
         sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["BORDERS"]))
 

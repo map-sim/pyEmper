@@ -26,10 +26,12 @@ def str_to_rgb(strrgb):
     b = int(strrgb[4:], 16)
     return r, g, b
 
-def xy_gener(width, height):
+def xy_gener(width, height, resize=1):
     for y in range(height):
-        for x in range(width):
-            yield x, y
+        for yy in range(resize):
+            for x in range(width):
+                for xx in range(resize):
+                    yield x, y
             
 def sub_rgb(rgb1, rgb2):
     out = 0

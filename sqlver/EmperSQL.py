@@ -8,9 +8,28 @@
 
 import sys, os
 import sqlite3
+import math
 
 from tools import print_info
 from tools import print_error
+
+class TerrDict(dict):
+    def __init__(self, cur):
+        self.cur = cur
+        super().__init__()
+        
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        
+        except KeyError:
+            query = "SELECT color,conduct1,conduct2,infruse FROM terrains"
+            self.cur.execute(query)
+            raw = self.cur.fetchall()
+            for color,c1,c2,i3 in raw:
+                self[color] = (c1, c2, i3)
+        return super().__getitem__(key)
+    
 
 class EmperSQL:
 
@@ -23,11 +42,13 @@ class EmperSQL:
         self.conn = sqlite3.connect(fname)
         print_info("database: %s" % fname)
         self.cur = self.conn.cursor()
-        self.diagram = {}
 
         width = int(self.get_parameter("width"))
         height = int(self.get_parameter("height"))
         print_info("size: %d x %d" % (width, height))
+        
+        self.terrdict = TerrDict(self.cur)
+        self.diagram = {}
         
     def __del__(self):
         self.conn.commit()
@@ -46,13 +67,13 @@ class EmperSQL:
         self.cur.execute(query)
         return self.cur.fetchone()[0]
 
-    def select_node(self, node):
+    def select_node(self, node, columns="*"):
         try:
             nodename = self.get_nodename(int(node))
         except ValueError:
             nodename = node
             
-        query = "SELECT * FROM nodes WHERE name='%s'" % node
+        query = "SELECT %s FROM nodes WHERE name='%s'" % (columns, node)
         self.cur.execute(query)
         return self.cur.fetchone()
 
@@ -67,16 +88,6 @@ class EmperSQL:
     
     def commit(self):
         self.conn.commit()
-
-    def get_terrdict(self):
-        query = "SELECT color,conduct1,conduct2 FROM terrains"
-        self.cur.execute(query)
-        raw = self.cur.fetchall()
-
-        out = {}
-        for color,c1,c2 in raw:
-            out[color] = (c1, c2)
-        return out
 
     def enable_diagram(self):
         self.diagram = {}
@@ -105,13 +116,103 @@ class EmperSQL:
             except KeyError: pass
         return False
 
+    def is_river(self, x, y):
+        c1, c2, i3 = self.get_terrparams(x, y)
+        if float(c1) > 0.75: return False
+        else: return True
+        
     def is_buildable(self, x, y):
-        color = self.diagram[(x,y)][1]        
-        query = "SELECT conduct1 FROM terrains WHERE color='%s'" % color
-        self.cur.execute(query)
-        ter = self.cur.fetchone()
-        if float(ter[0]) == 0.0:
-            return False
+        c1, c2, i3 = self.get_terrparams(x, y)
+        if float(c1) == 0.0: return False
         else: return True
     
+    def get_terrparams(self, x, y):
+        color = self.diagram[(x, y)][1]
+        return self.terrdict[color]
 
+
+    def get_common_points(self, startname, stopname):
+        g = self.xynode_generator(startname)
+        commonpoints = set()
+        for x,y in g:    
+            for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
+                try:
+                    if self.is_node(x+dx, y+dy, stopname):
+                        commonpoints.add((x+dx, y+dy))
+                except KeyError: continue
+        return commonpoints
+            
+    def calc_transit(self, startname, proxyname, stopname):
+        infra_transport = self.select_node(proxyname, "infra_transport")[0]
+        infra_transship = self.select_node(proxyname, "infra_transship")[0]
+        world_transport = self.get_parameter("transport")
+        world_transship = self.get_parameter("transship")
+        world_scale =  self.get_parameter("scale")
+
+        startpoints = self.get_common_points(startname, proxyname)
+        stoppoints = self.get_common_points(proxyname, stopname)
+		
+        plazma = {}
+        active = set()	
+        for xy in startpoints:
+            plazma[xy] = (1.0, None)
+            active.add(xy)
+	
+        while active:
+            try: xy = active.pop()
+            except KeyError: break
+	
+            for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
+                x, y = xy[0] + dx, xy[1] + dy
+	        
+                try:
+                    
+                    if self.diagram[(x, y)][0] != proxyname and \
+                       self.diagram[xy][0] != proxyname:
+                        continue
+
+                    elif self.is_buildable(*xy) and self.is_buildable(x, y):   
+                        c1, c2, i3 = self.get_terrparams(x, y)
+                        np = plazma[xy][0] * (c1 + c2 * world_transport * i3 * infra_transport)
+
+                        if self.is_river(x, y) and not self.is_river(*xy) or \
+                           not self.is_river(x, y) and self.is_river(*xy):
+                            np *= world_transship * i3 * infra_transship
+
+                    elif not self.is_buildable(*xy) and self.is_buildable(x, y):	                
+                        c1, c2, i3 = self.get_terrparams(x, y)
+                        np = plazma[xy][0] * (c1  + c2 * world_transport * i3 * infra_transport)                
+                        np *= world_transship * i3 * infra_transship
+
+                    elif self.is_buildable(*xy) and not self.is_buildable(x, y):
+                        c1, c2, i3 = self.get_terrparams(*xy)
+                        np = plazma[xy][0] * c2 * world_transport
+                        c1, c2, i3 = self.get_terrparams(x, y)
+                        np *= world_transship * i3 * infra_transship
+                        
+                    else:
+                        c1, c2, i3 = self.get_terrparams(x, y)
+                        np = plazma[xy][0] * c2 * world_transport
+	
+                    if not (x, y) in plazma.keys():
+                        plazma[(x, y)] = (0.0, None) 
+	
+                    if np > plazma[(x, y)][0]:
+                        plazma[(x, y)] = (np, xy)                    
+                        active.add((x, y))
+
+                except KeyError: continue
+	
+        output = 0.0
+        for xy in stoppoints:
+            if not xy in plazma.keys():
+                break
+	
+            while plazma[xy][1]:
+                output += -math.log10(plazma[xy][0])
+                xy = plazma[xy][1]
+	
+        try:
+            return world_scale * output / len(stoppoints)
+        except ZeroDivisionError:
+            return float("inf")

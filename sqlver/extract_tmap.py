@@ -22,18 +22,20 @@ from EmperSQL import EmperSQL
 
 
 if not len(sys.argv) in (2, 3, 4):
-    print_error("USAGE: %s <database> [-b]" % sys.argv[0])
+    print_error("USAGE: %s <database> --border=<float> --resize=<int>" % sys.argv[0])
     raise ValueError("wrong args number")
 
-brightness = 1.0
-longopts = ["border=", "brightness="]
+map_resize = 1
+border_brightness = 1.0
+longopts = ["border=", "resize="]
 opts, args = getopt.getopt(sys.argv[2:], "", longopts)
 for opt,arg in opts:
     if opt == "--border":
-        print_info("print borders")
-        border_color = str_to_rgb(arg)
-    if opt == "--brightness":
-        brightness = float(arg)
+        border_brightness = float(arg)
+        print_info("print borders: %g" % border_brightness)
+    if opt == "--resize":
+        map_resize = int(arg)
+        print_info("resize map: %d" % map_resize)
 
 handler = EmperSQL(sys.argv[1])
 handler.enable_diagram()
@@ -45,16 +47,13 @@ for x,y,c in handler.select_many(query):
 
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
-sys.stdout.write("P3\n%d %d\n255\n" % (width, height))
+sys.stdout.write("P3\n%d %d\n255\n" % (map_resize*width, map_resize*height))
 
-if "border_color" in vars():
-    for x, y in xy_gener (width, height):
-        if handler.is_border(x, y): sys.stdout.write("%d\n%d\n%d\n" % border_color)
-        else:
-            rgb = tuple([int(brightness * c) for c in str_to_rgb(xyterr[(x,y)])])
-            sys.stdout.write("%d\n%d\n%d\n" % rgb)
-else:
-    for x, y in xy_gener (width, height):
+for x, y in xy_gener (width, height, map_resize):
+    if handler.is_border(x, y):
+        rgb = tuple([int(border_brightness * c) for c in str_to_rgb(xyterr[(x,y)])])
+        sys.stdout.write("%d\n%d\n%d\n" % rgb)
+    else:
         sys.stdout.write("%d\n%d\n%d\n" % str_to_rgb(xyterr[(x,y)]))
 
 del handler
