@@ -11,6 +11,7 @@ start_time = time()
 
 import sys, os
 import sqlite3, math
+from tools import print_out
 from tools import print_info
 from tools import print_error
 
@@ -35,7 +36,7 @@ except ValueError: stopname = sys.argv[4]
 
 print_info("%s -> %s -> %s" % (startname, proxyname, stopname))
 transit_cost = handler.calc_transit(startname, proxyname, stopname)
-print_info("transit cost: %s" % transit_cost)
+print_out("transit cost: %s" % transit_cost)
 
 del handler
 stop_time = time()

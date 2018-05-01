@@ -12,7 +12,8 @@
 ./calc_transit.py example.db ANK RCL DUQ
 ./calc_transit.py example.db DUQ RCL ANK
 
-# ./extract_nmap.py example.db --resize=1 --palette=red-blue.json MAG FLE DQW AVI FPQ NWA RUO REQ > node.ppm
-
+# ./extract_nmap.py example.db --resize=1 --palette=red-blue.json  AVI MAG FPQ > node.ppm
+./calc_transit.py example.db AVI MAG FPQ
+./calc_transit.py example.db FPQ MAG AVI
 
 # geeqie node.ppm

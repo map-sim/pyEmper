@@ -12,6 +12,7 @@ start_time = time()
 import sys, os
 import sqlite3
 
+from tools import print_out
 from tools import print_info
 from tools import print_error
 
@@ -32,11 +33,11 @@ if len(natffer) != nations:
     print_error("%d nations registred!" % len(natffer))
     raise ValueError("nations number not correct")
 
-for i,n in enumerate(natffer):
+for n in natffer:
     query = "SELECT n_%s FROM nodes WHERE n_%s>0" % (n[0], n[0])
     poppernode = handler.select_many(query)
     pop = sum([c[0] for c in poppernode])
-    print(i, n[0], int(pop))
+    print_out("%s: %d" % (n[0], int(pop)))
 
 del handler
 stop_time = time()

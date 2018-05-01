@@ -20,6 +20,11 @@ def print_info(info):
     out = "%s %s\n" % (prefix, info)
     sys.stderr.write(out)
 
+def print_out(info):
+    prefix = colored("(out)", "magenta")
+    out = "%s %s\n" % (prefix, info)
+    sys.stdout.write(out)
+
 def str_to_rgb(strrgb):
     r = int(strrgb[0:2], 16)
     g = int(strrgb[2:4], 16)

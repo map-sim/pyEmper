@@ -12,6 +12,7 @@ start_time = time()
 import sys, os
 import sqlite3
 
+from tools import print_out
 from tools import print_info
 from tools import print_error
 
@@ -25,7 +26,7 @@ if len(sys.argv) != 2:
 handler = EmperSQL(sys.argv[1])
 terrs = handler.select_many("SELECT * FROM terrains")
 for t in terrs:
-    print(*t)
+    print_out("%s (%s):\t%g\t%g\t%g" % t)
 
 del handler
 stop_time = time()

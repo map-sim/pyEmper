@@ -14,28 +14,30 @@ import sqlite3
 import getopt
 import json
 
-from tools import str_to_rgb
+from tools import print_out
 from tools import print_info
 from tools import print_error
+from tools import str_to_rgb
 from tools import xy_gener
 
 from EmperSQL import EmperSQL
 
 
-if len(sys.argv) < 3:
-    rest = "<database> --palette=<pfile> --resize=<int> <node1> <node2:color1>..."
-    print_error("USAGE: %s %s" % (sys.argv[0], rest))
+if len(sys.argv) < 4:
+    rest = "--palette=<pfile> --resize=<int> <node1> <node2:color1> ..."
+    print_error("USAGE: %s <database> <outimg> %s" % (sys.argv[0], rest))
     raise ValueError("wrong args number")
 
 map_resize = 1
 longopts = ["palette=", "resize="]
-opts, args = getopt.getopt(sys.argv[2:], "", longopts)
+opts, args = getopt.getopt(sys.argv[3:], "", longopts)
 for opt,arg in opts:
     if opt == "--palette":
         if not os.path.exists(arg):
             print_error("PALETTE does not exist: %s" % arg)
             raise ValueError("wrong arg value")
             
+        print_info("palette: %s" % arg)
         with open(arg) as f:
             palette = json.load(f)
     if opt == "--resize":
@@ -58,24 +60,27 @@ for node in args:
 
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
-sys.stdout.write("P3\n%d %d\n255\n" % (map_resize * width, map_resize * height))
+print_out("out image: %s" % sys.argv[2])
+
+with open(sys.argv[2], "w") as fd:
+    fd.write("P3\n%d %d\n255\n" % (map_resize * width, map_resize * height))
     
-for x, y in xy_gener (width, height, map_resize):
-    if handler.is_border(x, y):
-        sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["BORDERS"]))
+    for x, y in xy_gener (width, height, map_resize):
+        if handler.is_border(x, y):
+            fd.write("%d\n%d\n%d\n" % tuple(palette["BORDERS"]))
 
-    elif handler.diagram[(x,y)][0] in combos.keys():
-        sys.stdout.write("%d\n%d\n%d\n" % combos[handler.diagram[(x,y)][0]])
+        elif handler.diagram[(x,y)][0] in combos.keys():
+            fd.write("%d\n%d\n%d\n" % combos[handler.diagram[(x,y)][0]])
 
-    elif [True for node in nodes if handler.is_node(x, y, node)]:
-        if handler.is_buildable(x, y):
-            sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["MARKED-LANDS"]))
-        else: sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["MARKED-WATERS"]))
+        elif [True for node in nodes if handler.is_node(x, y, node)]:
+            if handler.is_buildable(x, y):
+                fd.write("%d\n%d\n%d\n" % tuple(palette["MARKED-LANDS"]))
+            else: fd.write("%d\n%d\n%d\n" % tuple(palette["MARKED-WATERS"]))
         
-    else: 
-        if handler.is_buildable(x, y):
-            sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["LANDS"]))
-        else: sys.stdout.write("%d\n%d\n%d\n" % tuple(palette["WATERS"]))        
+        else: 
+            if handler.is_buildable(x, y):
+                fd.write("%d\n%d\n%d\n" % tuple(palette["LANDS"]))
+            else: fd.write("%d\n%d\n%d\n" % tuple(palette["WATERS"]))        
 
 del handler
 stop_time = time()

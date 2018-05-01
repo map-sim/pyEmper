@@ -97,13 +97,14 @@ class EmperSQL:
         print_info("diagram loaded")
 
     def calc_points(self, nodename):
-        g = self.xynode_generator(nodename)
+        g = self.nodepoints_generator(nodename)
         return len(tuple(g))
     
-    def xynode_generator(self, nodename):
-        for x,y in self.diagram.keys():
-            if self.is_node(x, y, nodename):
-                yield x,y
+    def nodepoints_generator(self, nodename):
+        query = "SELECT x,y FROM atoms WHERE node='%s'" % nodename
+        points = self.select_many(query)
+        for x,y in points:
+            yield x,y
     
     def is_node(self, x, y, nodename):
         return self.diagram[(x,y)][0] == nodename
@@ -132,12 +133,11 @@ class EmperSQL:
 
 
     def get_common_points(self, startname, stopname):
-        g = self.xynode_generator(startname)
         commonpoints = set()
-        for x,y in g:    
+        for x,y in self.nodepoints_generator(stopname):    
             for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
                 try:
-                    if self.is_node(x+dx, y+dy, stopname):
+                    if self.is_node(x+dx, y+dy, startname):
                         commonpoints.add((x+dx, y+dy))
                 except KeyError: continue
         return commonpoints

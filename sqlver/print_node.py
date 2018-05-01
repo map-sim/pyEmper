@@ -12,6 +12,7 @@ start_time = time()
 import sys
 import sqlite3
 
+from tools import print_out
 from tools import print_info
 from tools import print_error
 
@@ -34,21 +35,20 @@ if pnumber == 0:
     print_error("NO NODE: %s (%s)" % (sys.argv[2], nodename))
     raise ValueError("wrong arg")
 
-print("name:", nodename)    
-print("atoms:", pnumber)
-print("area: %g" % (scale * pnumber))
+print_out("name: %s" % nodename)    
+print_out("atoms: %s" % pnumber)
+print_out("area: %g" % (scale * pnumber))
 
-print("population:")
+print_out("population:")
 natffer = handler.select_many("SELECT name FROM nations")
 for nation in natffer:
     query = "SELECT n_%s FROM nodes WHERE name='%s'" % (nation[0], nodename)
     number = handler.select_row(query, 0)
     if int(number[0]) > 0:
-        print("\t%s: %d" % (nation[0], number[0]))
+        print_out("\t%s: %d" % (nation[0], number[0]))
 
 buffer = {}
-g = handler.xynode_generator(nodename)
-for x,y in g:    
+for x,y in handler.nodepoints_generator(nodename):    
     for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
         try:
             if handler.is_node(x+dx, y+dy, nodename):
@@ -58,9 +58,9 @@ for x,y in g:
         try: buffer[othernode] += 1
         except KeyError: buffer[othernode] = 1
 
-print("borders:")
+print_out("borders:")
 for name in buffer.keys():
-    print("\t%s: %d" % (name, buffer[name]))
+    print_out("\t%s: %d" % (name, buffer[name]))
 
 del handler
 stop_time = time()

@@ -13,22 +13,24 @@ import sys, os
 import sqlite3
 import getopt
 
-from tools import str_to_rgb
+from tools import print_out
 from tools import print_info
 from tools import print_error
+from tools import str_to_rgb
 from tools import xy_gener
 
 from EmperSQL import EmperSQL
 
 
-if not len(sys.argv) in (2, 3, 4):
-    print_error("USAGE: %s <database> --border=<float> --resize=<int>" % sys.argv[0])
+if not len(sys.argv) in (3, 4, 5):
+    rest = "<database> <outimg> --border=<float> --resize=<int>"
+    print_error("USAGE: %s %s" % (sys.argv[0], rest))
     raise ValueError("wrong args number")
 
 map_resize = 1
 border_brightness = 1.0
 longopts = ["border=", "resize="]
-opts, args = getopt.getopt(sys.argv[2:], "", longopts)
+opts, args = getopt.getopt(sys.argv[3:], "", longopts)
 for opt,arg in opts:
     if opt == "--border":
         border_brightness = float(arg)
@@ -40,21 +42,19 @@ for opt,arg in opts:
 handler = EmperSQL(sys.argv[1])
 handler.enable_diagram()
 
-xyterr = {}
-query = "SELECT x,y,color FROM atoms"
-for x,y,c in handler.select_many(query):
-    xyterr[(x,y)] = c
-
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
-sys.stdout.write("P3\n%d %d\n255\n" % (map_resize*width, map_resize*height))
+print_out("out image: %s" % sys.argv[2])
 
-for x, y in xy_gener (width, height, map_resize):
-    if handler.is_border(x, y):
-        rgb = tuple([int(border_brightness * c) for c in str_to_rgb(xyterr[(x,y)])])
-        sys.stdout.write("%d\n%d\n%d\n" % rgb)
-    else:
-        sys.stdout.write("%d\n%d\n%d\n" % str_to_rgb(xyterr[(x,y)]))
+with open(sys.argv[2], "w") as fd:
+    fd.write("P3\n%d %d\n255\n" % (map_resize*width, map_resize*height))
+    for x, y in xy_gener (width, height, map_resize):
+        color = str_to_rgb(handler.diagram[(x,y)][1])
+        if handler.is_border(x, y):
+            color = tuple([int(border_brightness * c) for c in color])
+            fd.write("%d\n%d\n%d\n" % color)
+        else:
+            fd.write("%d\n%d\n%d\n" % color)
 
 del handler
 stop_time = time()
