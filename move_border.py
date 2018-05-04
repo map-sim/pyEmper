@@ -24,7 +24,6 @@ if not len(sys.argv) in (4, 6):
     raise ValueError("wrong args number")
 
 handler = EmperSQL(sys.argv[1])
-handler.enable_diagram()
 
 xlimit = 0
 ylimit = 0
@@ -33,10 +32,10 @@ if len(sys.argv) == 6:
     ylimit = int(sys.argv[5])
     print_info("limit: %d %d" % (xlimit, ylimit))
 
-try: startname = handler.get_nodename(int(sys.argv[2]))
+try: startname = handler.get_node_name(int(sys.argv[2]))
 except ValueError: startname = sys.argv[2]    
 
-try: stopname = handler.get_nodename(int(sys.argv[3]))
+try: stopname = handler.get_node_name(int(sys.argv[3]))
 except ValueError: stopname = sys.argv[3]    
 
 counter = 0

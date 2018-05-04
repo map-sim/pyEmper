@@ -10,28 +10,20 @@ import sys, os
 import sqlite3
 import math
 
+from tools import xy_gener
+from tools import str_to_rgb
+
+from tools import print_out
 from tools import print_info
 from tools import print_error
 
-class TerrDict(dict):
-    def __init__(self, cur):
-        self.cur = cur
-        super().__init__()
-        
-    def __getitem__(self, key):
-        try:
-            return super().__getitem__(key)
-        
-        except KeyError:
-            query = "SELECT color,conduct1,conduct2,infruse FROM terrains"
-            self.cur.execute(query)
-            raw = self.cur.fetchall()
-            for color,c1,c2,i3 in raw:
-                self[color] = (c1, c2, i3)
-        return super().__getitem__(key)
-    
+from NodeDictFactory import NodeDictFactory
 
-class EmperSQL:
+from AutoDicts import TerrainAutoDict
+from AutoDicts import DiagramAutoDict
+
+    
+class EmperSQL(NodeDictFactory):
 
     def __init__(self, fname):
         
@@ -47,8 +39,8 @@ class EmperSQL:
         height = int(self.get_parameter("height"))
         print_info("size: %d x %d" % (width, height))
         
-        self.terrdict = TerrDict(self.cur)
-        self.diagram = {}
+        self.terrdict = TerrainAutoDict(self.cur)
+        self.diagram = DiagramAutoDict(self.cur)
         
     def __del__(self):
         self.conn.commit()
@@ -57,22 +49,24 @@ class EmperSQL:
         
     def execute(self, query):
         self.cur.execute(query)
-
+            
     def select_row(self, query, number=0):
         self.cur.execute("%s LIMIT 1 OFFSET %d" % (query, number))
         return self.cur.fetchone()
     
-    def get_nodename(self, number):
+    def get_node_name(self, number):
         query = "SELECT name FROM nodes LIMIT 1 OFFSET %d" % int(number)
         self.cur.execute(query)
         return self.cur.fetchone()[0]
+    
+    def get_nation_name(self, number):
+        query = "SELECT name FROM nations LIMIT 1 OFFSET %d" % int(number)
+        self.cur.execute(query)
+        return self.cur.fetchone()[0]
 
+
+    
     def select_node(self, node, columns="*"):
-        try:
-            nodename = self.get_nodename(int(node))
-        except ValueError:
-            nodename = node
-            
         query = "SELECT %s FROM nodes WHERE name='%s'" % (columns, node)
         self.cur.execute(query)
         return self.cur.fetchone()
@@ -89,13 +83,6 @@ class EmperSQL:
     def commit(self):
         self.conn.commit()
 
-    def enable_diagram(self):
-        self.diagram = {}
-        query = "SELECT * FROM atoms"
-        for x,y,n,c in self.select_many(query):
-            self.diagram[(x,y)] = (n,c)
-        print_info("diagram loaded")
-
     def calc_points(self, nodename):
         g = self.nodepoints_generator(nodename)
         return len(tuple(g))
@@ -105,6 +92,22 @@ class EmperSQL:
         points = self.select_many(query)
         for x,y in points:
             yield x,y
+            
+    def tmappoints_generator(self, border, resize):
+        width = int(self.get_parameter("width"))
+        height = int(self.get_parameter("height"))
+        if border < 0:
+            for x, y in xy_gener (width, height, resize):
+                color = str_to_rgb(self.diagram[(x,y)][1])
+                if self.is_border(x, y):
+                    color = tuple([int((1+border) * c) for c in color])
+                yield color
+        else:
+            for x, y in xy_gener (width, height, resize):
+                color = str_to_rgb(self.diagram[(x,y)][1])
+                if self.is_border(x, y):
+                    color = tuple([int(c + (border * (255-c))) for c in color])
+                yield color
     
     def is_node(self, x, y, nodename):
         return self.diagram[(x,y)][0] == nodename
@@ -116,11 +119,22 @@ class EmperSQL:
                     return True
             except KeyError: pass
         return False
+    
+    def is_coast(self, x, y):
+        for dx, dy in [(0,1), (0,-1), (1,0), (-1,0)]:
+            try:
+                if self.diagram[(x,y)][0] != self.diagram[(x+dx,y+dy)][0]:
+                    if self.is_buildable(x, y) and not self.is_buildable(x+dx, y+dy):
+                        return True
+                    if not self.is_buildable(x, y) and self.is_buildable(x+dx, y+dy):
+                        return True
+            except KeyError: pass
+        return False
 
     def is_river(self, x, y):
         c1, c2, i3 = self.get_terrparams(x, y)
-        if float(c1) > 0.75: return False
-        else: return True
+        if float(c1) > 0.75: return True
+        else: return False
         
     def is_buildable(self, x, y):
         c1, c2, i3 = self.get_terrparams(x, y)

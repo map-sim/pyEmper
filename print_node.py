@@ -24,9 +24,8 @@ if len(sys.argv) != 3:
     raise ValueError("wrong args number")
 
 handler = EmperSQL(sys.argv[1])
-handler.enable_diagram()
 
-try: nodename = handler.get_nodename(int(sys.argv[2]))
+try: nodename = handler.get_node_name(int(sys.argv[2]))
 except ValueError: nodename = sys.argv[2]    
 
 scale =  handler.get_parameter("scale")

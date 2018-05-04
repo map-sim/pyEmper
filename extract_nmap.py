@@ -24,12 +24,13 @@ from EmperSQL import EmperSQL
 
 
 if len(sys.argv) < 4:
-    rest = "--palette=<pfile> --resize=<int> <node1> <node2:color1> ..."
+    rest = "--palette=<pfile> --resize=<int> --rivers <node1> <node2:color1> ..."
     print_error("USAGE: %s <database> <outimg> %s" % (sys.argv[0], rest))
     raise ValueError("wrong args number")
 
 map_resize = 1
-longopts = ["palette=", "resize="]
+rivers_on = False
+longopts = ["palette=", "resize=", "rivers"]
 opts, args = getopt.getopt(sys.argv[3:], "", longopts)
 for opt,arg in opts:
     if opt == "--palette":
@@ -43,9 +44,11 @@ for opt,arg in opts:
     if opt == "--resize":
         map_resize = int(arg)
         print_info("resize map: %d" % map_resize)
+    if opt == "--rivers":
+        rivers_on = True
+        print_info("rivers: on")
         
 handler = EmperSQL(sys.argv[1])
-handler.enable_diagram()
 
 nodes = []
 combos = {}
@@ -54,7 +57,7 @@ for node in args:
         nodename, color = node.split(":")
         combos[nodename] = str_to_rgb(color)
     except ValueError: 
-        try: nodename = handler.get_nodename(int(node))
+        try: nodename = handler.get_node_name(int(node))
         except ValueError: nodename = node    
         nodes.append(nodename)
 
@@ -67,20 +70,25 @@ with open(sys.argv[2], "w") as fd:
     
     for x, y in xy_gener (width, height, map_resize):
         if handler.is_border(x, y):
-            fd.write("%d\n%d\n%d\n" % tuple(palette["BORDERS"]))
+            if handler.is_coast(x, y):            
+                fd.write("%d\n%d\n%d\n" % tuple(palette["COAST"]))
+            else: fd.write("%d\n%d\n%d\n" % tuple(palette["BORDER"]))
 
+        elif rivers_on and handler.is_river(x, y):
+            fd.write("%d\n%d\n%d\n" % tuple(palette["RIVER"]))
+            
         elif handler.diagram[(x,y)][0] in combos.keys():
             fd.write("%d\n%d\n%d\n" % combos[handler.diagram[(x,y)][0]])
 
         elif [True for node in nodes if handler.is_node(x, y, node)]:
             if handler.is_buildable(x, y):
-                fd.write("%d\n%d\n%d\n" % tuple(palette["MARKED-LANDS"]))
-            else: fd.write("%d\n%d\n%d\n" % tuple(palette["MARKED-WATERS"]))
+                fd.write("%d\n%d\n%d\n" % tuple(palette["MARKED-LAND"]))
+            else: fd.write("%d\n%d\n%d\n" % tuple(palette["MARKED-WATER"]))
         
         else: 
             if handler.is_buildable(x, y):
-                fd.write("%d\n%d\n%d\n" % tuple(palette["LANDS"]))
-            else: fd.write("%d\n%d\n%d\n" % tuple(palette["WATERS"]))        
+                fd.write("%d\n%d\n%d\n" % tuple(palette["LAND"]))
+            else: fd.write("%d\n%d\n%d\n" % tuple(palette["WATER"]))        
 
 del handler
 stop_time = time()

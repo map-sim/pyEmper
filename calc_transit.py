@@ -23,15 +23,14 @@ if len(sys.argv) != 5:
     raise ValueError("wrong args number")
 
 handler = EmperSQL(sys.argv[1])    
-handler.enable_diagram()
 
-try: startname = handler.get_nodename(int(sys.argv[2]))
+try: startname = handler.get_node_name(int(sys.argv[2]))
 except ValueError: startname = sys.argv[2]    
 
-try: proxyname = handler.get_nodename(int(sys.argv[3]))
+try: proxyname = handler.get_node_name(int(sys.argv[3]))
 except ValueError: proxyname = sys.argv[3]    
 
-try: stopname = handler.get_nodename(int(sys.argv[4]))
+try: stopname = handler.get_node_name(int(sys.argv[4]))
 except ValueError: stopname = sys.argv[4]    
 
 print_info("%s -> %s -> %s" % (startname, proxyname, stopname))

@@ -36,9 +36,10 @@ class TMAP_Viewer(Gtk.Window):
     def __init__(self, database, border=0.5, resize=1):
         Gtk.Window.__init__(self, title="EMPER - TMAP VIEWER")
 
-        self.database = database
+        self.resize = int(resize)
+        self.database = str(database)
+        
         self.handler = EmperSQL(database)
-        self.handler.enable_diagram()
 
         fix = Gtk.Fixed()
         self.add(fix)
@@ -50,19 +51,10 @@ class TMAP_Viewer(Gtk.Window):
         self.img = Gtk.Image()
         ebox.add(self.img)
 
-        diagram = []
-        width = int(self.handler.get_parameter("width"))
-        height = int(self.handler.get_parameter("height"))
-
-        self.resize = resize
-        for x, y in xy_gener (width, height, resize):
-            color = str_to_rgb(self.handler.diagram[(x,y)][1])
-            if self.handler.is_border(x, y):
-                color = tuple([int(border * c) for c in color])
-            diagram.extend(color)
-
-        width *= self.resize
-        height *= self.resize
+        diagram = [c for color in self.handler.tmappoints_generator(border, resize) for c in color]
+        height = resize * int(self.handler.get_parameter("height"))
+        width = resize * int(self.handler.get_parameter("width"))
+        
         tmp = GLib.Bytes.new(diagram)
         pbuf = Gpb.Pixbuf.new_from_bytes(tmp, Gpb.Colorspace.RGB, False, 8, width, height, 3*width)
         self.img.set_from_pixbuf(pbuf)        

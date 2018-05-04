@@ -40,7 +40,6 @@ for opt,arg in opts:
         print_info("resize map: %d" % map_resize)
 
 handler = EmperSQL(sys.argv[1])
-handler.enable_diagram()
 
 width = int(handler.get_parameter("width"))
 height = int(handler.get_parameter("height"))
@@ -48,13 +47,8 @@ print_out("out image: %s" % sys.argv[2])
 
 with open(sys.argv[2], "w") as fd:
     fd.write("P3\n%d %d\n255\n" % (map_resize*width, map_resize*height))
-    for x, y in xy_gener (width, height, map_resize):
-        color = str_to_rgb(handler.diagram[(x,y)][1])
-        if handler.is_border(x, y):
-            color = tuple([int(border_brightness * c) for c in color])
-            fd.write("%d\n%d\n%d\n" % color)
-        else:
-            fd.write("%d\n%d\n%d\n" % color)
+    for color in handler.tmappoints_generator(border_brightness, map_resize):    
+        fd.write("%d\n%d\n%d\n" % color)
 
 del handler
 stop_time = time()
