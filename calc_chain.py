@@ -23,7 +23,16 @@ if len(sys.argv) < 5:
     raise ValueError("wrong args number")
 
 handler = EmperSQL(sys.argv[1])    
-total_cost = 0.0
+
+try: startname = handler.get_node_name(int(sys.argv[2]))
+except ValueError: startname = sys.argv[2]
+try: stopname = handler.get_node_name(int(sys.argv[3]))
+except ValueError: stopname = sys.argv[3]
+
+total_cost = handler.calc_enter([stopname], startname)
+args = (startname, stopname, total_cost)
+print_out("transit cost %s -> %s : %g" % args)
+
 startname = None
 proxyname = None
 stopname = None
@@ -40,7 +49,12 @@ for nodename in sys.argv[2:]:
     args = (startname, proxyname, stopname, transit_cost)
     print_out("transit cost %s -> %s -> %s: %g" % args)
     total_cost += transit_cost
+    
+transit_cost = handler.calc_enter([proxyname], stopname)
+args = (proxyname, stopname, transit_cost)
+print_out("transit cost %s -> %s : %g" % args)
 
+total_cost += transit_cost
 print_out("total transit cost: %s" % total_cost)
 
 del handler

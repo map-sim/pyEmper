@@ -22,6 +22,11 @@ class AdvanceMobiler:
         return commonpoints
     
     def calc_transit(self, startname, proxyname, stopname):
+        j1 = self.calc_jump(startname, proxyname, stopname)
+        j2 = self.calc_jump(stopname, proxyname, startname)
+        return j1 + j2
+    
+    def calc_jump(self, startname, proxyname, stopname):
         infra_next_transship = self.select_node(stopname, "infra_transship")[0]
         infra_transport = self.select_node(proxyname, "infra_transport")[0]
         infra_transship = self.select_node(proxyname, "infra_transship")[0]
@@ -31,7 +36,6 @@ class AdvanceMobiler:
 
         startpoints = self.get_common_points(startname, proxyname)
         stoppoints = self.get_common_points(proxyname, stopname)
-        print_info("start points: %d" % len(startpoints))
 		
         plazma = {}
         active = set()	
@@ -66,15 +70,15 @@ class AdvanceMobiler:
 
         output = 0.0
         for xy in stoppoints:
-            output += plazma[xy]
-	
+            try: output += plazma[xy]
+            except KeyError: pass
         try:
             return world_scale * output / len(stoppoints)
         except ZeroDivisionError:
             return float("inf")
 
         
-    def calc_enter(self, startnames, stopname):
+    def calc_enter(self, startnames, stopname, fight=False):
         infra_transport = self.select_node(stopname, "infra_transport")[0]
         infra_transship = self.select_node(stopname, "infra_transship")[0]
         infra_fortress = self.select_node(stopname, "infra_fortress")[0]
@@ -86,7 +90,6 @@ class AdvanceMobiler:
         for nodename in startnames:
             for x,y in self.get_common_points(nodename, stopname):
                 startpoints.add((x,y))
-        print_info("start points: %d" % len(startpoints))
                 
         plazma = {}
         active = set()	
@@ -124,4 +127,5 @@ class AdvanceMobiler:
             if self.diagram[xy][0] == stopname:
                 output += plazma[xy]
 
-        return world_scale * output * (1.0 + infra_fortress)
+        if fight: return world_scale * output * (1.0 + infra_fortress)
+        else: return world_scale * output
