@@ -20,11 +20,11 @@ class TerrainAutoDict(dict):
             return super().__getitem__(key)
         
         except KeyError:
-            query = "SELECT color,conduct1,conduct2,infruse FROM terrains"
+            query = "SELECT color,base,ship,build,cost FROM terrains"
             self.cur.execute(query)
             raw = self.cur.fetchall()
-            for color,c1,c2,i3 in raw:
-                self[color] = (c1, c2, i3)                
+            for color,base,ship,build,cost in raw:
+                self[color] = (base,ship,build,cost)                
             print_info("terrains loaded")
             
             TerrainAutoDict.__getitem__ = dict.__getitem__

@@ -18,12 +18,13 @@ from tools import print_info
 from tools import print_error
 
 from NodeDictFactory import NodeDictFactory
+from AdvanceMobiler import AdvanceMobiler
 
 from AutoDicts import TerrainAutoDict
 from AutoDicts import DiagramAutoDict
 
     
-class EmperSQL(NodeDictFactory):
+class EmperSQL(NodeDictFactory, AdvanceMobiler):
 
     def __init__(self, fname):
         
@@ -132,13 +133,13 @@ class EmperSQL(NodeDictFactory):
         return False
 
     def is_river(self, x, y):
-        c1, c2, i3 = self.get_terrparams(x, y)
-        if float(c1) > 0.75: return True
+        base,ship,build,cost = self.get_terrparams(x, y)
+        if float(build) != 0.0 and base < 1.0: return True
         else: return False
         
     def is_buildable(self, x, y):
-        c1, c2, i3 = self.get_terrparams(x, y)
-        if float(c1) == 0.0: return False
+        base,ship,build,cost = self.get_terrparams(x, y)
+        if float(build) == 0.0: return False
         else: return True
     
     def get_terrparams(self, x, y):
@@ -146,87 +147,4 @@ class EmperSQL(NodeDictFactory):
         return self.terrdict[color]
 
 
-    def get_common_points(self, startname, stopname):
-        commonpoints = set()
-        for x,y in self.nodepoints_generator(stopname):    
-            for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
-                try:
-                    if self.is_node(x+dx, y+dy, startname):
-                        commonpoints.add((x+dx, y+dy))
-                except KeyError: continue
-        return commonpoints
             
-    def calc_transit(self, startname, proxyname, stopname):
-        infra_transport = self.select_node(proxyname, "infra_transport")[0]
-        infra_transship = self.select_node(proxyname, "infra_transship")[0]
-        world_transport = self.get_parameter("transport")
-        world_transship = self.get_parameter("transship")
-        world_scale =  self.get_parameter("scale")
-
-        startpoints = self.get_common_points(startname, proxyname)
-        stoppoints = self.get_common_points(proxyname, stopname)
-		
-        plazma = {}
-        active = set()	
-        for xy in startpoints:
-            plazma[xy] = (1.0, None)
-            active.add(xy)
-	
-        while active:
-            try: xy = active.pop()
-            except KeyError: break
-	
-            for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
-                x, y = xy[0] + dx, xy[1] + dy
-	        
-                try:
-                    
-                    if self.diagram[(x, y)][0] != proxyname and \
-                       self.diagram[xy][0] != proxyname:
-                        continue
-
-                    elif self.is_buildable(*xy) and self.is_buildable(x, y):   
-                        c1, c2, i3 = self.get_terrparams(x, y)
-                        np = plazma[xy][0] * (c1 + c2 * world_transport * i3 * infra_transport)
-
-                        if self.is_river(x, y) and not self.is_river(*xy) or \
-                           not self.is_river(x, y) and self.is_river(*xy):
-                            np *= world_transship * i3 * infra_transship
-
-                    elif not self.is_buildable(*xy) and self.is_buildable(x, y):	                
-                        c1, c2, i3 = self.get_terrparams(x, y)
-                        np = plazma[xy][0] * (c1  + c2 * world_transport * i3 * infra_transport)                
-                        np *= world_transship * i3 * infra_transship
-
-                    elif self.is_buildable(*xy) and not self.is_buildable(x, y):
-                        c1, c2, i3 = self.get_terrparams(*xy)
-                        np = plazma[xy][0] * c2 * world_transport
-                        c1, c2, i3 = self.get_terrparams(x, y)
-                        np *= world_transship * i3 * infra_transship
-                        
-                    else:
-                        c1, c2, i3 = self.get_terrparams(x, y)
-                        np = plazma[xy][0] * c2 * world_transport
-	
-                    if not (x, y) in plazma.keys():
-                        plazma[(x, y)] = (0.0, None) 
-	
-                    if np > plazma[(x, y)][0]:
-                        plazma[(x, y)] = (np, xy)                    
-                        active.add((x, y))
-
-                except KeyError: continue
-	
-        output = 0.0
-        for xy in stoppoints:
-            if not xy in plazma.keys():
-                break
-	
-            while plazma[xy][1]:
-                output += -math.log10(plazma[xy][0])
-                xy = plazma[xy][1]
-	
-        try:
-            return world_scale * output / len(stoppoints)
-        except ZeroDivisionError:
-            return float("inf")

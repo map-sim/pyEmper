@@ -18,24 +18,30 @@ from tools import print_error
 from EmperSQL import EmperSQL
 
 
-if len(sys.argv) != 5:
-    print_error("USAGE: %s <database> <start> <proxy> <stop>" % sys.argv[0])
+if len(sys.argv) < 5:
+    print_error("USAGE: %s <database> <start> <proxy> ... <stop>" % sys.argv[0])
     raise ValueError("wrong args number")
 
 handler = EmperSQL(sys.argv[1])    
+total_cost = 0.0
+startname = None
+proxyname = None
+stopname = None
 
-try: startname = handler.get_node_name(int(sys.argv[2]))
-except ValueError: startname = sys.argv[2]    
+for nodename in sys.argv[2:]:
+    startname = proxyname
+    proxyname = stopname
 
-try: proxyname = handler.get_node_name(int(sys.argv[3]))
-except ValueError: proxyname = sys.argv[3]    
+    try: stopname = handler.get_node_name(int(nodename))
+    except ValueError: stopname = nodename
+    if startname == None: continue
+    
+    transit_cost = handler.calc_transit(startname, proxyname, stopname)
+    args = (startname, proxyname, stopname, transit_cost)
+    print_out("transit cost %s -> %s -> %s: %g" % args)
+    total_cost += transit_cost
 
-try: stopname = handler.get_node_name(int(sys.argv[4]))
-except ValueError: stopname = sys.argv[4]    
-
-print_info("%s -> %s -> %s" % (startname, proxyname, stopname))
-transit_cost = handler.calc_transit(startname, proxyname, stopname)
-print_out("transit cost: %s" % transit_cost)
+print_out("total transit cost: %s" % total_cost)
 
 del handler
 stop_time = time()

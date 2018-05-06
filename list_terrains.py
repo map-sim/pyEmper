@@ -26,7 +26,7 @@ if len(sys.argv) != 2:
 handler = EmperSQL(sys.argv[1])
 terrs = handler.select_many("SELECT * FROM terrains")
 for t in terrs:
-    print_out("%s (%s):\t%g\t%g\t%g" % t)
+    print_out("%s (%s):\t%g\t%g\t%g\t%g" % t)
 
 del handler
 stop_time = time()
