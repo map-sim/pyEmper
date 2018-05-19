@@ -35,7 +35,7 @@ if len(natffer) != nations:
     raise ValueError("nations number not correct")
 
 for n in natffer:
-    query = "SELECT n_%s FROM nodes WHERE n_%s>0" % (n[0], n[0])
+    query = "SELECT %s FROM population WHERE %s>0" % (n[0], n[0])
     poppernode = handler.select_many(query)
     pop = sum([c[0] for c in poppernode])
     print_out("%s: %d" % (n[0], int(pop)))

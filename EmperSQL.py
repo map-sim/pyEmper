@@ -18,13 +18,13 @@ from tools import print_info
 from tools import print_error
 
 from NodeDictFactory import NodeDictFactory
-from AdvanceMobiler import AdvanceMobiler
+from MoveEstimator import MoveEstimator
 
 from AutoDicts import TerrainAutoDict
 from AutoDicts import DiagramAutoDict
 
     
-class EmperSQL(NodeDictFactory, AdvanceMobiler):
+class EmperSQL(NodeDictFactory, MoveEstimator):
 
     def __init__(self, fname):
         
