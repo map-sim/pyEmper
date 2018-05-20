@@ -7,7 +7,10 @@
 # opensource licence: GPL-3.0
 
 ./verify_database.py example.db
-./dump_tables.sh example.db
+
+# ./dump_tables.sh example.db
+# ./find_partial.py example.db
+# ./gener_smap.py example.db RENEW 771188:10 BB22FF:8 COAST:1 BUILDABLE:1
 
 ./list_params.py example.db
 ./list_nations.py example.db
@@ -17,6 +20,7 @@
 ./extract_pmap.py example.db pmap-loo.ppm --palette=default.json --resize=2 --rivers LOO
 ./extract_pmap.py example.db pmap-par.ppm --palette=default.json --resize=2 --rivers PAR
 
+./extract_smap.py example.db smap-gold.ppm --resize=2 --palette=default.json --rivers GOLD
 
 ./extract_nmap.py example.db nmap-2.ppm --resize=1 --palette=default.json --rivers  MZG:880000 HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GDV:880000
 ./calc_chain.py example.db MZG HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GDV
