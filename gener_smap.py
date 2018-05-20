@@ -9,6 +9,7 @@
 from time import time
 start_time = time() 
 
+import math
 import sys, os
 import sqlite3
 
@@ -41,6 +42,7 @@ for nodename in nodes:
 
     mass = 0.0
     for xy in  handler.nodepoints_generator(nodename[0]):
+        current = 0.0
         try:
             if formulae["BUILDABLE"] > 0.5:
                 if not handler.is_buildable(*xy):
@@ -52,14 +54,21 @@ for nodename in nodes:
         
         color = handler.diagram[xy][1]
         try:
-            mass += formulae[color]
+            current += formulae[color]
         except KeyError: pass
         try:
             if handler.is_coast(*xy):
-                mass += formulae["COAST"]
+                current += formulae["COAST"]
         except KeyError: pass
+        try:
+            i = -(xy[1] - formulae["HLINE"])**2
+            f = math.exp(i / formulae["SIGMA"])
+            if f < formulae["THOLD"]: current = 0.0
+            else: current *= f 
+        except KeyError: pass
+        mass += current
 
-    value = mass/pnum
+    value = 0 if mass < 0 else mass/pnum
     args = (sys.argv[2], value, nodename[0])
     handler.execute("UPDATE sources set %s=%g WHERE name='%s'" % args)
     print_out("%s: %g" % (nodename[0], value))
