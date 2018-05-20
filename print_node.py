@@ -41,7 +41,7 @@ print_out("area: %g" % (scale * pnumber))
 print_out("population:")
 natffer = handler.select_many("SELECT name FROM nations")
 for nation in natffer:
-    query = "SELECT n_%s FROM nodes WHERE name='%s'" % (nation[0], nodename)
+    query = "SELECT %s FROM population WHERE name='%s'" % (nation[0], nodename)
     number = handler.select_row(query, 0)
     if int(number[0]) > 0:
         print_out("\t%s: %d" % (nation[0], number[0]))

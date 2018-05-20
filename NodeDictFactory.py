@@ -6,6 +6,7 @@
 # brief: economic and strategic simulator
 # opensource licence: GPL-3.0
 
+from tools import print_error
 
 class NodeDictFactory:
     
@@ -45,3 +46,18 @@ class NodeDictFactory:
             self.__maxgroup = maxnat
             return self.__maxgroup
         
+    def get_source_distribution(self, name):
+        query = "SELECT name,%s FROM sources WHERE %s>0" % (name, name)
+        nodesrc = self.select_many(query)    
+        output = dict(nodesrc)
+
+        if len(nodesrc) == 0:
+            print_error("no enough data")
+            raise ValueError("no data")
+        
+        maxsrc = 0.0
+        for n in nodesrc:                
+            if maxsrc < n[1]:
+                maxsrc = n[1]
+                    
+        return output

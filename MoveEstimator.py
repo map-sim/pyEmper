@@ -27,9 +27,9 @@ class MoveEstimator:
         return j1 + j2
     
     def calc_jump(self, startname, proxyname, stopname):
-        infra_next_transship = self.select_node(stopname, "infra_transship")[0]
-        infra_transport = self.select_node(proxyname, "infra_transport")[0]
-        infra_transship = self.select_node(proxyname, "infra_transship")[0]
+        infra_next_transship = self.select_building(stopname, "transship")
+        infra_transport = self.select_building(proxyname, "transport")
+        infra_transship = self.select_building(proxyname, "transship")
         world_transport = self.get_parameter("transport")
         world_transship = self.get_parameter("transship")
         world_scale =  self.get_parameter("scale")
@@ -79,9 +79,9 @@ class MoveEstimator:
 
         
     def calc_enter(self, startnames, stopname, fight=False):
-        infra_transport = self.select_node(stopname, "infra_transport")[0]
-        infra_transship = self.select_node(stopname, "infra_transship")[0]
-        infra_fortress = self.select_node(stopname, "infra_fortress")[0]
+        infra_transport = self.select_building(stopname, "transport")
+        infra_transship = self.select_building(stopname, "transship")
+        infra_fortress = self.select_building(stopname, "fortress")
         world_transport = self.get_parameter("transport")
         world_transship = self.get_parameter("transship")
         world_scale =  self.get_parameter("scale")

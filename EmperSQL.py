@@ -56,7 +56,7 @@ class EmperSQL(NodeDictFactory, MoveEstimator):
         return self.cur.fetchone()
     
     def get_node_name(self, number):
-        query = "SELECT name FROM nodes LIMIT 1 OFFSET %d" % int(number)
+        query = "SELECT name FROM population LIMIT 1 OFFSET %d" % int(number)
         self.cur.execute(query)
         return self.cur.fetchone()[0]
     
@@ -65,12 +65,10 @@ class EmperSQL(NodeDictFactory, MoveEstimator):
         self.cur.execute(query)
         return self.cur.fetchone()[0]
 
-
-    
-    def select_node(self, node, columns="*"):
-        query = "SELECT %s FROM nodes WHERE name='%s'" % (columns, node)
+    def select_building(self, node, column):
+        query = "SELECT %s FROM building WHERE name='%s'" % (column, node)
         self.cur.execute(query)
-        return self.cur.fetchone()
+        return self.cur.fetchone()[0]
 
     def select_many(self, query):
         self.cur.execute(query)
