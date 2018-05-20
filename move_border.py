@@ -41,6 +41,7 @@ except ValueError: stopname = sys.argv[3]
 counter = 0
 points = handler.get_common_points(stopname, startname)
 for x,y in points:
+    
     if xlimit < 0:
         if x > -xlimit:
             continue

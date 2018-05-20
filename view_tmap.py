@@ -68,7 +68,8 @@ class TMAP_Viewer(Gtk.Window):
         name = self.handler.diagram[(x,y)][0]
         
         if event.button == 1:
-            print_out("nodename: %s" % name)
+            pnum = self.handler.calc_points(name)
+            print_out("nodename: %s (%d)" % (name, pnum))
         elif event.button == 3:
             os.system("python3 print_node.py %s %s" % (self.database, name))
         else:
@@ -98,4 +99,7 @@ win.show_all()
 stop_time = time()
 delta_time = stop_time - start_time     
 print_info("duration: %.3f s" % delta_time)
-Gtk.main()
+try:
+    Gtk.main()
+except KeyboardInterrupt:
+    print("???")

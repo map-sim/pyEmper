@@ -13,7 +13,7 @@ class MoveEstimator:
 
     def get_common_points(self, startname, stopname):
         commonpoints = set()
-        for x,y in self.nodepoints_generator(stopname):    
+        for x,y in self.nodepoints_generator(stopname):
             for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
                 try:
                     if self.is_node(x+dx, y+dy, startname):
