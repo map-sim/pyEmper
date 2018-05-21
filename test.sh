@@ -29,6 +29,8 @@
 ./extract_smap.py example.db smap-gold.ppm --resize=2 --palette=default.json --rivers GOLD
 ./extract_smap.py example.db smap-wood.ppm --resize=2 --palette=default.json --rivers WOOD
 ./extract_smap.py example.db smap-agra.ppm --resize=2 --palette=default.json --rivers AGRA
+./extract_smap.py example.db smap-coal.ppm --resize=2 --palette=default.json --rivers COAL
+./extract_smap.py example.db smap-ore.ppm --resize=2 --palette=default.json --rivers ORE
 
 ./extract_nmap.py example.db nmap-2.ppm --resize=1 --palette=default.json --rivers  MZG:880000 HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GDV:880000
 ./calc_chain.py example.db MZG HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GDV
