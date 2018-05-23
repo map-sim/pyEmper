@@ -54,17 +54,24 @@ if len(terrains_raw) == terrains_nr and terrains_nr > 0:
     print_out("terrains number (%d) ... ok" % terrains_nr)
 else: print_error("worng terrains number ...")
 
-resources_nr = handler.get_parameter("resources")
-resources_raw = handler.select_many("SELECT * FROM resources")
-if len(resources_raw) == resources_nr and resources_nr > 0:
-    print_out("resources rows (%d) ... ok" % resources_nr)
-else: print_error("worng resources number in population...")
-
 nations_nr = handler.get_parameter("nations")
 nations_raw = handler.select_many("SELECT * FROM nations")
 if len(nations_raw) == nations_nr and nations_nr > 0:
     print_out("nations number (%d) ... ok" % nations_nr)
 else: print_error("worng nations number ...")
+
+resources_nr = handler.get_parameter("resources")
+resources_raw = handler.select_many("SELECT * FROM resources")
+if len(resources_raw) == resources_nr and resources_nr > 0:
+    print_out("resources rows (%d) ... ok" % resources_nr)
+else: print_error("worng resources number...")
+
+sources_nr = handler.get_parameter("sources")
+sources_raw = handler.select_many("SELECT * FROM sources")
+if len(sources_raw[0]) - 1 == sources_nr and \
+   resources_nr >= sources_nr > 0:
+    print_out("sources rows (%d) ... ok" % sources_nr)
+else: print_error("worng sources number...")
 
 nodes_nr = handler.get_parameter("nodes")
 sources_raw = handler.select_many("SELECT * FROM sources")
