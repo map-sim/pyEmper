@@ -17,6 +17,7 @@ import json
 from tools import print_out
 from tools import print_info
 from tools import print_error
+from tools import map_medianing
 from tools import str_to_rgb
 from tools import xy_gener
 
@@ -24,14 +25,16 @@ from EmperSQL import EmperSQL
 
 
 if len(sys.argv) < 6:
-    rest = "--palette=<pfile> --resize=<int> --rivers <type> <name>"
+    rest = "--palette=<pfile> --resize=<int> --rivers --median <type> <name>"
     print_error("USAGE: %s <database> <outimg> %s" % (sys.argv[0], rest))
     raise ValueError("wrong args number")
 
 map_resize = 1
 palette = None
-rivers_on = False
-longopts = ["palette=", "resize=", "rivers"]
+rivers_flag = False
+median_flag = False
+
+longopts = ["palette=", "resize=", "rivers", "median"]
 opts, args = getopt.getopt(sys.argv[3:], "", longopts)
 for opt,arg in opts:
     if opt == "--palette":
@@ -48,8 +51,12 @@ for opt,arg in opts:
         print_info("resize map: %d" % map_resize)
         
     if opt == "--rivers":
-        rivers_on = True
+        rivers_flag = True
         print_info("rivers: on")
+        
+    if opt == "--median":
+        median_flag = True
+        print_info("medianing")
 
 if not palette:
     print_error("palette has to be loaded")
@@ -86,7 +93,7 @@ with open(sys.argv[2], "w") as fd:
                 fd.write("%d\n%d\n%d\n" % tuple(palette["COAST"]))
             else: fd.write("%d\n%d\n%d\n" % tuple(palette["BORDER"]))
 
-        elif rivers_on and handler.is_river(x, y):
+        elif rivers_flag and handler.is_river(x, y):
             fd.write("%d\n%d\n%d\n" % tuple(palette["RIVER"]))
             
         elif not handler.is_buildable(x, y):
@@ -107,6 +114,9 @@ with open(sys.argv[2], "w") as fd:
                 color = tuple(palette["OUT"])            
             fd.write("%d\n%d\n%d\n" % color)
 
+if median_flag:
+    map_medianing(sys.argv[2], 2)
+        
 del handler
 stop_time = time()
 delta_time = stop_time - start_time     

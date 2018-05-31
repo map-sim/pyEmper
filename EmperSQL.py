@@ -19,42 +19,24 @@ from tools import print_error
 
 from NodeDictFactory import NodeDictFactory
 from MoveEstimator import MoveEstimator
+from BasicSQL import BasicSQL
 
 from AutoDicts import TerrainAutoDict
 from AutoDicts import DiagramAutoDict
 
     
-class EmperSQL(NodeDictFactory, MoveEstimator):
+class EmperSQL(BasicSQL, NodeDictFactory, MoveEstimator):
 
     def __init__(self, fname):
+        super(EmperSQL, self).__init__(fname)
         
-        if not os.path.exists(fname):
-            print_error("path %s not exists!" % fname)
-            raise ValueError("database not exists")
-
-        self.conn = sqlite3.connect(fname)
-        print_info("database: %s" % fname)
-        self.cur = self.conn.cursor()
-
         width = int(self.get_parameter("width"))
         height = int(self.get_parameter("height"))
         print_info("size: %d x %d" % (width, height))
         
         self.terrdict = TerrainAutoDict(self.cur)
         self.diagram = DiagramAutoDict(self.cur)
-        
-    def __del__(self):
-        self.conn.commit()
-        self.conn.close()
-        print_info("database closed")
-        
-    def execute(self, query):
-        self.cur.execute(query)
-            
-    def select_row(self, query, number=0):
-        self.cur.execute("%s LIMIT 1 OFFSET %d" % (query, number))
-        return self.cur.fetchone()
-    
+                    
     def get_node_name(self, number):
         query = "SELECT name FROM population LIMIT 1 OFFSET %d" % int(number)
         self.cur.execute(query)
@@ -69,26 +51,12 @@ class EmperSQL(NodeDictFactory, MoveEstimator):
         query = "SELECT %s FROM building WHERE name='%s'" % (column, node)
         self.cur.execute(query)
         return self.cur.fetchone()[0]
-
-    def select_many(self, query):
-        self.cur.execute(query)
-        return self.cur.fetchall()
-
-    def get_table_columns(self, table):
-        query = "PRAGMA table_info('%s')" % table
-        self.cur.execute(query)
-        info = self.cur.fetchall()
-        names = [i[1] for i in info]
-        return names
     
     def get_parameter(self, name):
         query = "SELECT value FROM parameters WHERE name='%s'" % name 
         self.cur.execute(query)
         return self.cur.fetchone()[0]
     
-    def commit(self):
-        self.conn.commit()
-
     def calc_points(self, nodename):
         g = self.nodepoints_generator(nodename)
         return len(tuple(g))

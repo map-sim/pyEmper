@@ -17,6 +17,7 @@ import json
 from tools import print_out
 from tools import print_info
 from tools import print_error
+from tools import map_medianing
 from tools import str_to_rgb
 from tools import xy_gener
 
@@ -24,13 +25,16 @@ from EmperSQL import EmperSQL
 
 
 if len(sys.argv) < 4:
-    rest = "--palette=<pfile> --resize=<int> --rivers <node1> <node2:color1> ..."
+    rest = "--palette=<pfile> --resize=<int> --rivers --median <node1> <node2:color1> ..."
     print_error("USAGE: %s <database> <outimg> %s" % (sys.argv[0], rest))
     raise ValueError("wrong args number")
 
 map_resize = 1
+palette = None
+rivers_flag = False
 rivers_on = False
-longopts = ["palette=", "resize=", "rivers"]
+
+longopts = ["palette=", "resize=", "rivers", "median"]
 opts, args = getopt.getopt(sys.argv[3:], "", longopts)
 for opt,arg in opts:
     if opt == "--palette":
@@ -41,12 +45,18 @@ for opt,arg in opts:
         print_info("palette: %s" % arg)
         with open(arg) as f:
             palette = json.load(f)
+            
     if opt == "--resize":
         map_resize = int(arg)
         print_info("resize map: %d" % map_resize)
+        
     if opt == "--rivers":
         rivers_on = True
         print_info("rivers: on")
+        
+    if opt == "--median":
+        median_flag = True
+        print_info("medianing")
         
 handler = EmperSQL(sys.argv[1])
 
@@ -89,6 +99,9 @@ with open(sys.argv[2], "w") as fd:
             if handler.is_buildable(x, y):
                 fd.write("%d\n%d\n%d\n" % tuple(palette["LAND"]))
             else: fd.write("%d\n%d\n%d\n" % tuple(palette["WATER"]))        
+
+if median_flag:
+    map_medianing(sys.argv[2], map_resize)
 
 del handler
 stop_time = time()

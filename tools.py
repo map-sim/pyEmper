@@ -30,6 +30,20 @@ def print_warning(info):
     out = "%s %s\n" % (prefix, info)
     sys.stdout.write(out)
 
+def map_medianing(imgpath, radius=2):
+    try:
+        tmppath = "/tmp/emper-%d.ppm" % os.getpid()
+        
+        args = (imgpath, radius, tmppath)
+        cmd1 = "convert %s -median %d %s" % args
+        os.system(cmd1)
+        
+        cmd2 = "mv %s %s" % (tmppath, imgpath)
+        os.system(cmd2)
+        
+    except OSError:
+        print_warning("medianing: no convert")
+
 def str_to_rgb(strrgb):
     r = int(strrgb[0:2], 16)
     g = int(strrgb[2:4], 16)

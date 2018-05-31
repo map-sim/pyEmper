@@ -16,7 +16,7 @@ import getopt
 from tools import print_out
 from tools import print_info
 from tools import print_error
-from tools import print_warning
+from tools import map_medianing
 from tools import str_to_rgb
 from tools import xy_gener
 
@@ -31,15 +31,18 @@ if not len(sys.argv) in (3, 4, 5, 6):
 map_resize = 1
 median_flag = False
 border_brightness = 1.0
+
 longopts = ["border=", "resize=", "median"]
 opts, args = getopt.getopt(sys.argv[3:], "", longopts)
 for opt,arg in opts:
     if opt == "--border":
         border_brightness = float(arg)
         print_info("print borders: %g" % border_brightness)
+        
     if opt == "--resize":
         map_resize = int(arg)
         print_info("resize map: %d" % map_resize)
+        
     if opt == "--median":
         median_flag = True
         print_info("medianing")
@@ -56,13 +59,7 @@ with open(sys.argv[2], "w") as fd:
         fd.write("%d\n%d\n%d\n" % color)
 
 if median_flag:
-    try:
-        cmd1 = "convert %s -median %d /tmp/tmp.ppm" % (sys.argv[2], map_resize+1)
-        cmd2 = "mv /tmp/tmp.ppm %s" % sys.argv[2]
-        os.system(cmd1)
-        os.system(cmd2)
-    except OSError:
-        print_warning("medianing: no convert")
+    map_medianing(sys.argv[2], map_resize+1)
 
 del handler
 stop_time = time()
