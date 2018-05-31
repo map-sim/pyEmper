@@ -127,6 +127,6 @@ class MoveEstimator:
             if self.diagram[xy][0] == stopname:
                 output += plazma[xy]
 
-        factor = 0.1 * world_scale
-        if fight: return factor * output * (1.0 + infra_fortress)
-        else: return factor * output
+        output **= self.get_parameter("entrance")
+        if fight: return world_scale * output * (1.0 + infra_fortress)
+        else: return world_scale * output

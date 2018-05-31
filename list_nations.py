@@ -26,15 +26,15 @@ if len(sys.argv) != 2:
 
 handler = EmperSQL(sys.argv[1])
 
-natffer = handler.select_many("SELECT * FROM nations")
-nations = handler.get_parameter("nations")
-print_info("nations: %d" % nations)
+nations = handler.select_many("SELECT * FROM nations")
+nations_nr = handler.get_parameter("nations")
+print_info("nations: %d" % nations_nr)
 
-if len(natffer) != nations:
-    print_error("%d nations registred!" % len(natffer))
+if len(nations) != nations_nr:
+    print_error("%d nations registred!" % len(nations))
     raise ValueError("nations number not correct")
 
-for n in natffer:
+for n in nations:
     query = "SELECT %s FROM population WHERE %s>0" % (n[0], n[0])
     poppernode = handler.select_many(query)
     pop = sum([c[0] for c in poppernode])

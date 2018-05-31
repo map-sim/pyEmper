@@ -74,6 +74,13 @@ class EmperSQL(NodeDictFactory, MoveEstimator):
         self.cur.execute(query)
         return self.cur.fetchall()
 
+    def get_table_columns(self, table):
+        query = "PRAGMA table_info('%s')" % table
+        self.cur.execute(query)
+        info = self.cur.fetchall()
+        names = [i[1] for i in info]
+        return names
+    
     def get_parameter(self, name):
         query = "SELECT value FROM parameters WHERE name='%s'" % name 
         self.cur.execute(query)
