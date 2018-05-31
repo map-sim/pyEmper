@@ -38,7 +38,7 @@
 ./extract_pmap.py example.db pmap-par.ppm --palette=default.json --resize=2 --rivers --median PAR
 ./extract_pmap.py example.db pmap-foy.ppm --palette=default.json --resize=2 --rivers --median FOY
 
-# ./gener_smap.py example.db RENEW 771188:10 BB22FF:8 FFAA11:5 FFDD44:3 COAST:3 BUILDABLE:1
+# ./gener_smap.py example.db RENEW 771188:10 BB22FF:8 FFAA11:5 FFDD44:3 FF4400:2 884400:1 COAST:3 BUILDABLE:1
 # ./gener_smap.py example.db STONE 440022:50 884400:50 FF4400:10 FFAA11:1 FFDD44:0.3 TUNDR:0.2 COAST:0.2 BUILDABLE:1
 # ./gener_smap.py example.db AGRA 771188:25 BB22FF:25 448844:5 33BB33:20 FFAA11:10 884400:-0.1 FFDD44:0.07 COAST:20 HLINE:210 SIGMA:9600 THOLD:0.06 BUILDABLE:1
 # ./gener_smap.py example.db WOOD 771188:30 BB22FF:30 448844:30 33BB33:18 FFAA11:2 COAST:20 AAAA99:-20 FFDD44:-0.2 HLINE:230 SIGMA:9200 THOLD:0.2 BUILDABLE:1

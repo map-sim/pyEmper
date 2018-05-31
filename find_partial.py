@@ -19,7 +19,7 @@ if len(sys.argv) != 2:
     raise ValueError("wrong args number")
 
 handler = EmperSQL(sys.argv[1])
-query = "SELECT name FROM population"
+query = "SELECT node FROM population"
 nodes = handler.select_many(query)
 
 for nodename in nodes:

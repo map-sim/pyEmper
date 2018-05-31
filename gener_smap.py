@@ -26,7 +26,7 @@ for kv in sys.argv[3:]:
 
 handler = EmperSQL(sys.argv[1])
 
-query = "SELECT name FROM population"
+query = "SELECT node FROM population"
 nodes = handler.select_many(query)
 
 for nodename in nodes:
@@ -65,7 +65,7 @@ for nodename in nodes:
 
     value = 0 if mass < 0 else mass/pnum
     args = (sys.argv[2], value, nodename[0])
-    handler.execute("UPDATE sources set %s=%g WHERE name='%s'" % args)
+    handler.execute("UPDATE sources set %s=%g WHERE node='%s'" % args)
     print_out("%s: %g" % (nodename[0], value))
     
 del handler

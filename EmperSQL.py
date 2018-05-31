@@ -31,7 +31,7 @@ class EmperSQL(BasicSQL, NodeDictFactory, MoveEstimator):
         self.diagram = DiagramAutoDict(self.cur)
                     
     def get_node_name(self, number):
-        query = "SELECT name FROM population LIMIT 1 OFFSET %d" % int(number)
+        query = "SELECT node FROM population LIMIT 1 OFFSET %d" % int(number)
         self.cur.execute(query)
         return self.cur.fetchone()[0]
     
@@ -41,7 +41,7 @@ class EmperSQL(BasicSQL, NodeDictFactory, MoveEstimator):
         return self.cur.fetchone()[0]
 
     def select_building(self, node, column):
-        query = "SELECT %s FROM building WHERE name='%s'" % (column, node)
+        query = "SELECT %s FROM building WHERE node='%s'" % (column, node)
         self.cur.execute(query)
         return self.cur.fetchone()[0]
     

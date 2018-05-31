@@ -17,7 +17,7 @@ class NodeDictFactory:
 
         maxnat = 0
         for n in self.cur.fetchall():
-            query = "SELECT name,%s FROM population WHERE %s>0" % (n[0], n[0])
+            query = "SELECT node,%s FROM population WHERE %s>0" % (n[0], n[0])
             nodenat = self.select_many(query)
             
             if n[0] == name:
@@ -38,7 +38,7 @@ class NodeDictFactory:
 
             maxnat = 0
             for n in self.cur.fetchall():
-                query = "SELECT name,%s FROM population WHERE %s>0" % (n[0], n[0])
+                query = "SELECT node,%s FROM population WHERE %s>0" % (n[0], n[0])
                 nodenat = self.select_many(query)
             for p in nodenat:                
                 if maxnat < p[1]:
@@ -48,7 +48,7 @@ class NodeDictFactory:
             return self.__maxgroup
         
     def get_source_distribution(self, name):
-        query = "SELECT name,%s FROM sources WHERE %s>0" % (name, name)
+        query = "SELECT node,%s FROM sources WHERE %s>0" % (name, name)
         nodesrc = self.select_many(query)    
         output = dict(nodesrc)
 
