@@ -21,7 +21,12 @@ def print_info(info):
     sys.stderr.write(out)
 
 def print_out(info):
-    prefix = colored("(out)", "magenta")
+    prefix = colored("(output)", "magenta")
+    out = "%s %s\n" % (prefix, info)
+    sys.stdout.write(out)
+
+def print_warning(info):
+    prefix = colored("(warning)", "yellow")
     out = "%s %s\n" % (prefix, info)
     sys.stdout.write(out)
 

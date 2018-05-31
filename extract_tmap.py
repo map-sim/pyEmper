@@ -16,20 +16,22 @@ import getopt
 from tools import print_out
 from tools import print_info
 from tools import print_error
+from tools import print_warning
 from tools import str_to_rgb
 from tools import xy_gener
 
 from EmperSQL import EmperSQL
 
 
-if not len(sys.argv) in (3, 4, 5):
-    rest = "<database> <outimg> --border=<float> --resize=<int>"
+if not len(sys.argv) in (3, 4, 5, 6):
+    rest = "<database> <outimg> --border=<float> --resize=<int> --median"
     print_error("USAGE: %s %s" % (sys.argv[0], rest))
     raise ValueError("wrong args number")
 
 map_resize = 1
+median_flag = False
 border_brightness = 1.0
-longopts = ["border=", "resize="]
+longopts = ["border=", "resize=", "median"]
 opts, args = getopt.getopt(sys.argv[3:], "", longopts)
 for opt,arg in opts:
     if opt == "--border":
@@ -38,6 +40,9 @@ for opt,arg in opts:
     if opt == "--resize":
         map_resize = int(arg)
         print_info("resize map: %d" % map_resize)
+    if opt == "--median":
+        median_flag = True
+        print_info("medianing")
 
 handler = EmperSQL(sys.argv[1])
 
@@ -49,6 +54,15 @@ with open(sys.argv[2], "w") as fd:
     fd.write("P3\n%d %d\n255\n" % (map_resize*width, map_resize*height))
     for color in handler.tmappoints_generator(border_brightness, map_resize):    
         fd.write("%d\n%d\n%d\n" % color)
+
+if median_flag:
+    try:
+        cmd1 = "convert %s -median %d /tmp/tmp.ppm" % (sys.argv[2], map_resize+1)
+        cmd2 = "mv /tmp/tmp.ppm %s" % sys.argv[2]
+        os.system(cmd1)
+        os.system(cmd2)
+    except OSError:
+        print_warning("medianing: no convert")
 
 del handler
 stop_time = time()
