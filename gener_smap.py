@@ -11,12 +11,7 @@ start_time = time()
 
 import math
 import sys, os
-import sqlite3
-
-from tools import print_out
-from tools import print_info
-from tools import print_error
-
+from tools import *
 from EmperSQL import EmperSQL
 
 
@@ -72,11 +67,7 @@ for nodename in nodes:
     args = (sys.argv[2], value, nodename[0])
     handler.execute("UPDATE sources set %s=%g WHERE name='%s'" % args)
     print_out("%s: %g" % (nodename[0], value))
-
     
 del handler
-
-stop_time = time()
-delta_time = stop_time - start_time     
-print_info("duration: %.3f s" % delta_time)
+measure_time(start_time)
 

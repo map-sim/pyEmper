@@ -24,12 +24,7 @@ from gi.repository import GdkPixbuf as Gpb
 from gi.repository import GLib
 from gi.repository import Gtk
 
-from tools import print_out
-from tools import print_info
-from tools import print_error
-from tools import str_to_rgb
-from tools import xy_gener
-
+from tools import *
 from EmperSQL import EmperSQL
 
 class TMAP_Viewer(Gtk.Window):
@@ -94,12 +89,10 @@ for opt,arg in opts:
 
 win = TMAP_Viewer(sys.argv[1], border_brightness, map_resize)              
 win.connect("delete-event", Gtk.main_quit)
-win.show_all()
 
-stop_time = time()
-delta_time = stop_time - start_time     
-print_info("duration: %.3f s" % delta_time)
-try:
-    Gtk.main()
+win.show_all()
+measure_time(start_time)
+
+try: Gtk.main()
 except KeyboardInterrupt:
     print("???")

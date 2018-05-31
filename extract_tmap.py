@@ -9,17 +9,10 @@
 from time import time
 start_time = time() 
 
+import getopt
 import sys, os
 import sqlite3
-import getopt
-
-from tools import print_out
-from tools import print_info
-from tools import print_error
-from tools import map_medianing
-from tools import str_to_rgb
-from tools import xy_gener
-
+from tools import *
 from EmperSQL import EmperSQL
 
 
@@ -30,7 +23,7 @@ if not len(sys.argv) in (3, 4, 5, 6):
 
 map_resize = 1
 median_flag = False
-border_brightness = 1.0
+border_brightness = 0
 
 longopts = ["border=", "resize=", "median"]
 opts, args = getopt.getopt(sys.argv[3:], "", longopts)
@@ -62,6 +55,4 @@ if median_flag:
     map_medianing(sys.argv[2], map_resize+1)
 
 del handler
-stop_time = time()
-delta_time = stop_time - start_time     
-print_info("duration: %.3f s" % delta_time)
+measure_time(start_time)

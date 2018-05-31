@@ -7,7 +7,8 @@
 # opensource licence: GPL-3.0
 
 
-from tools import print_info
+from tools import *
+
 
 class MoveEstimator:
 

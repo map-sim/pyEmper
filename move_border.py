@@ -11,11 +11,7 @@ start_time = time()
 
 import sys
 import sqlite3
-
-from tools import print_out
-from tools import print_info
-from tools import print_error
-
+from tools import *
 from EmperSQL import EmperSQL
 
 
@@ -63,6 +59,4 @@ for x,y in points:
 print_out("moved: %d / %d" % (counter, len(points)))
 
 del handler
-stop_time = time()
-delta_time = stop_time - start_time     
-print_info("duration: %.3f s" % delta_time)
+measure_time(start_time)

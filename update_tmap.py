@@ -11,14 +11,7 @@ start_time = time()
 
 import sys, os
 import sqlite3
-
-from tools import print_info
-from tools import print_error
-
-from tools import ppm_loader
-from tools import str_to_rgb
-from tools import get_nearest_rgb
-
+from tools import *
 from EmperSQL import EmperSQL
 
 
@@ -77,8 +70,5 @@ for xy in buffer.keys():
     handler.execute(query)
 
 del handler
-
-stop_time = time()
-delta_time = stop_time - start_time     
-print_info("duration: %.3f s" % delta_time)
+measure_time(start_time)
 

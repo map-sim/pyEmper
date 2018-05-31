@@ -8,18 +8,11 @@
 
 import sys, os
 import sqlite3
-import math
 
-from tools import xy_gener
-from tools import str_to_rgb
-
-from tools import print_out
-from tools import print_info
-from tools import print_error
-
-from NodeDictFactory import NodeDictFactory
-from MoveEstimator import MoveEstimator
+from tools import *
 from BasicSQL import BasicSQL
+from MoveEstimator import MoveEstimator
+from NodeDictFactory import NodeDictFactory
 
 from AutoDicts import TerrainAutoDict
 from AutoDicts import DiagramAutoDict

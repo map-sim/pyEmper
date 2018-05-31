@@ -11,11 +11,7 @@ start_time = time()
 
 import sys
 import sqlite3
-
-from tools import print_out
-from tools import print_info
-from tools import print_error
-
+from tools import *
 from EmperSQL import EmperSQL
 
 
@@ -46,6 +42,17 @@ for nation in natffer:
     if int(number[0]) > 0:
         print_out("\t%s: %d" % (nation[0], number[0]))
 
+print_out("sources:")
+srcnames = handler.get_table_columns("sources")
+for src in srcnames:
+    if src == "name":
+        continue
+    
+    args = (src, nodename)
+    query = "SELECT %s FROM sources WHERE name='%s'" % args
+    val = handler.select_many(query)
+    print_out("\t%s: %d" % (src, val[0][0]))
+
 buffer = {}
 for x,y in handler.nodepoints_generator(nodename):    
     for dx,dy in [(0,1), (0,-1), (1,0), (-1,0)]:
@@ -62,6 +69,4 @@ for name in buffer.keys():
     print_out("\t%s: %d" % (name, buffer[name]))
 
 del handler
-stop_time = time()
-delta_time = stop_time - start_time     
-print_info("duration: %.3f s" % delta_time)
+measure_time(start_time)

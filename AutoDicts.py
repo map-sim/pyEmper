@@ -6,7 +6,7 @@
 # brief: economic and strategic simulator
 # opensource licence: GPL-3.0
 
-from tools import print_info
+from tools import *
 
 
 class TerrainAutoDict(dict):
@@ -20,6 +20,7 @@ class TerrainAutoDict(dict):
             return super().__getitem__(key)
         
         except KeyError:
+            
             query = "SELECT color,base,ship,build,cost FROM terrains"
             self.cur.execute(query)
             raw = self.cur.fetchall()
@@ -42,6 +43,7 @@ class DiagramAutoDict(dict):
             return super().__getitem__(key)
         
         except KeyError:
+            
             query = "SELECT x,y,node,color FROM atoms"
             self.cur.execute(query)
             raw = self.cur.fetchall()

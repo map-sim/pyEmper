@@ -6,9 +6,9 @@
 # brief: economic and strategic simulator
 # opensource licence: GPL-3.0
 
-import os
-import sys
+import time, sys, os
 from termcolor import colored
+
 
 def print_error(info):
     prefix = colored("(error)", "red")
@@ -29,6 +29,10 @@ def print_warning(info):
     prefix = colored("(warning)", "yellow")
     out = "%s %s\n" % (prefix, info)
     sys.stdout.write(out)
+
+def measure_time(start_time):
+    delta_time = time.time() - start_time     
+    print_info("duration: %.3f s" % delta_time)
 
 def map_medianing(imgpath, radius=2):
     try:

@@ -9,18 +9,10 @@
 from time import time
 start_time = time() 
 
-import sys, os
-import sqlite3
-import getopt
 import json
-
-from tools import print_out
-from tools import print_info
-from tools import print_error
-from tools import map_medianing
-from tools import str_to_rgb
-from tools import xy_gener
-
+import getopt
+import sys, os
+from tools import *
 from EmperSQL import EmperSQL
 
 
@@ -104,7 +96,5 @@ if median_flag:
     map_medianing(sys.argv[2], map_resize)
 
 del handler
-stop_time = time()
-delta_time = stop_time - start_time     
-print_info("duration: %.3f s" % delta_time)
+measure_time(start_time)
 

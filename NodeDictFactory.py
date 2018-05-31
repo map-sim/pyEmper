@@ -6,7 +6,8 @@
 # brief: economic and strategic simulator
 # opensource licence: GPL-3.0
 
-from tools import print_error
+from tools import *
+
 
 class NodeDictFactory:
     

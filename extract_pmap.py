@@ -7,7 +7,7 @@
 # opensource licence: GPL-3.0
 
 import sys, os
-from tools import print_info
+from tools import *
 
 cmd = ["python3 extract_map.py"]
 for arg in sys.argv[1:]: 
