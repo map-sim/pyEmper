@@ -19,11 +19,13 @@
 ./list_processes.py example.db
 
 
-./extract_nmap.py example.db nmap-1.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GXR WVI:880000
-./calc_chain.py example.db MZG HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GXR WVI
 
-./extract_nmap.py example.db nmap-2.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 ANK QNT GTP JJA ZYQ YQF GYW XSC WVI:880000
-./calc_chain.py example.db MZG ANK QNT GTP JJA ZYQ YQF GYW XSC WVI
+
+./extract_nmap.py example.db nmap-1.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 HMB   XYZ DUK ULC MSU   GOP OXS MRH BJO ZBD GXR WVI:880000
+./calc_chain.py example.db MZG HMB  XYZ DUK ULC MSU GOP OXS MRH BJO ZBD GXR WVI
+
+./extract_nmap.py example.db nmap-2.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 ANK NZY GTP JJA ZYQ YQF NYU BFN XJK WVI:880000
+./calc_chain.py example.db MZG ANK NZY GTP JJA ZYQ YQF NYU BFN XJK WVI
 
 ./extract_nmap.py example.db nmap-3.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 BYG QDF IQA NCO TCA NQB VYW XBS GXR WVI:880000
 ./calc_chain.py example.db MZG BYG QDF IQA NCO TCA NQB VYW XBS GXR WVI

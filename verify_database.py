@@ -33,6 +33,7 @@ check_table_exists(handler, "nations")
 check_table_exists(handler, "terrains")
 check_table_exists(handler, "parameters")
 check_table_exists(handler, "population")
+check_table_exists(handler, "processes")
 check_table_exists(handler, "resources")
 check_table_exists(handler, "building")
 check_table_exists(handler, "sources")
@@ -62,6 +63,12 @@ if len(resources_raw) == resources_nr and resources_nr > 0:
     print_out("resources rows (%d) ... ok" % resources_nr)
 else: print_error("worng resources number...")
 
+processes_nr = handler.get_parameter("processes")
+processes_raw = handler.select_many("SELECT * FROM processes")
+if len(processes_raw) == processes_nr and processes_nr > 0:
+    print_out("processes rows (%d) ... ok" % processes_nr)
+else: print_error("worng processes number...")
+
 sources_nr = handler.get_parameter("sources")
 sources_raw = handler.select_many("SELECT * FROM sources")
 if len(sources_raw[0]) - 1 == sources_nr and \
@@ -84,6 +91,11 @@ population_raw = handler.select_many("SELECT * FROM population")
 if len(population_raw) == nodes_nr:
     print_out("population rows (%d) ... ok" % nodes_nr)
 else: print_error("worng nodes number in population...")
+
+stock_raw = handler.select_many("SELECT * FROM stock")
+if len(stock_raw) == nodes_nr:
+    print_out("stock rows (%d) ... ok" % nodes_nr)
+else: print_error("worng nodes number in stock...")
 
 
 del handler
