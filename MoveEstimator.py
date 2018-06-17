@@ -37,7 +37,7 @@ class MoveEstimator:
 
         startpoints = self.get_common_points(startname, proxyname)
         stoppoints = self.get_common_points(proxyname, stopname)
-		
+
         plazma = {}
         active = set()	
         for xy in startpoints:
@@ -85,6 +85,7 @@ class MoveEstimator:
         infra_fortress = self.select_building(stopname, "fortress")
         world_transport = self.get_parameter("transport")
         world_transship = self.get_parameter("transship")
+        world_fortress = self.get_parameter("fortress")
         world_scale =  self.get_parameter("scale")
 
         startpoints = set()
@@ -129,5 +130,5 @@ class MoveEstimator:
                 output += plazma[xy]
 
         output **= self.get_parameter("entrance")
-        if fight: return world_scale * output * (1.0 + infra_fortress)
+        if fight: return world_scale * output * (1.0 + infra_fortress * world_fortress)
         else: return world_scale * output

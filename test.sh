@@ -16,6 +16,19 @@
 ./list_building.py example.db
 ./list_terrains.py example.db
 ./list_resources.py example.db
+./list_processes.py example.db
+
+
+./extract_nmap.py example.db nmap-1.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GXR WVI:880000
+./calc_chain.py example.db MZG HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GXR WVI
+
+./extract_nmap.py example.db nmap-2.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 ANK QNT GTP JJA ZYQ YQF GYW XSC WVI:880000
+./calc_chain.py example.db MZG ANK QNT GTP JJA ZYQ YQF GYW XSC WVI
+
+./extract_nmap.py example.db nmap-3.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 BYG QDF IQA NCO TCA NQB VYW XBS GXR WVI:880000
+./calc_chain.py example.db MZG BYG QDF IQA NCO TCA NQB VYW XBS GXR WVI
+
+exit
 
 ./extract_tmap.py example.db tmap.ppm --resize=2 --border=0.5 --median
 
@@ -54,14 +67,5 @@
 ./extract_smap.py example.db smap-fish.ppm --resize=2 --palette=default.json --median --rivers FISH
 ./extract_smap.py example.db smap-ore.ppm --resize=2 --palette=default.json --median --rivers ORE
 ./extract_smap.py example.db smap-oil.ppm --resize=2 --palette=default.json --median --rivers OIL
-
-./extract_nmap.py example.db nmap-1.ppm --resize=1 --palette=default.json --rivers --median MZG:880000 HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GXR GDV:880000
-./calc_chain.py example.db MZG HMB DUQ BGY GOU GOP OXS MRH BJO ZBD GXR GDV
-
-./extract_nmap.py example.db nmap-2.ppm --resize=1 --palette=default.json --rivers --median MZG:880000 ANK QNT GTP JJA ZYQ YQF NYU BFN XJK ODT GDV:880000
-./calc_chain.py example.db MZG ANK QNT GTP JJA ZYQ YQF NYU BFN XJK ODT GDV
-
-./extract_nmap.py example.db nmap-3.ppm --resize=1 --palette=default.json --rivers --median MZG:880000 BYG QDF IQA NCO TCA NQB VYW XBS GXR GDV:880000
-./calc_chain.py example.db MZG BYG QDF IQA NCO TCA NQB VYW XBS GXR GDV
 
 
