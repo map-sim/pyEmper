@@ -34,9 +34,12 @@ for proc in processes:
     counter = 0
     for n, p in enumerate(proc):
         arg = names[n], str(p)
-        if p is None:
-            continue
-        elif counter < 2:
+        if p is None: continue
+        try:
+            if float(p) == 0.0:
+                continue
+        except ValueError: pass
+        if counter < 1:
             print_out("%s: %s" % arg)
         else:            
             print_out("\t%s: %s" % arg)

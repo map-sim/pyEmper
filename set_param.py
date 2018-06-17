@@ -33,7 +33,7 @@ handler.execute(query)
 handler.commit()
 
 val = handler.get_parameter(sys.argv[2])
-print_info("%s: %g" % (sys.argv[2], val))
+print_out("%s: %g" % (sys.argv[2], val))
 
 del handler
 measure_time(start_time)
