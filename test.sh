@@ -30,7 +30,7 @@
 ./extract_nmap.py example.db nmap-3.ppm --resize=2 --palette=default.json --rivers --median MZG:880000 BYG QDF IQA NCO TCA NQB VYW XBS GXR WVI:880000
 ./calc_chain.py example.db MZG BYG QDF IQA NCO TCA NQB VYW XBS GXR WVI
 
-exit
+# exit
 
 ./extract_tmap.py example.db tmap.ppm --resize=2 --border=0.5 --median
 
