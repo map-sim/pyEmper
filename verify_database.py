@@ -14,29 +14,48 @@ import sqlite3
 from tools import *
 from EmperSQL import EmperSQL
 
-
 if len(sys.argv) != 2:
     print_error("USAGE: %s <database>" % sys.argv[0])
     raise ValueError("wrong args number")
 
-def check_table_exists(handler, tablename):
-    try:
-        handler.execute("SELECT 1 FROM %s" % tablename)
-        print_out("%s table exists ... ok" % tablename)
-    except sqlite3.OperationalError:
-        print_error("%s table does not exist ..." % tablename)
 
 handler = EmperSQL(sys.argv[1])
 
-check_table_exists(handler, "atoms")
-check_table_exists(handler, "nations")
-check_table_exists(handler, "terrains")
-check_table_exists(handler, "parameters")
-check_table_exists(handler, "population")
-check_table_exists(handler, "processes")
-check_table_exists(handler, "resources")
-check_table_exists(handler, "building")
-check_table_exists(handler, "sources")
+handler.check_table_exists("atoms")
+handler.check_table_exists("nations")
+handler.check_table_exists("terrains")
+handler.check_table_exists("parameters")
+handler.check_table_exists("population")
+handler.check_table_exists("processes")
+handler.check_table_exists("resources")
+handler.check_table_exists("building")
+handler.check_table_exists("sources")
+
+columns = ["x", "y", "node", "color"]
+handler.check_table_has_columns("atoms", columns)
+
+columns = ["name"]
+handler.check_table_has_columns("nations", columns)
+
+columns = ["name", "color", "base", "ship", "build", "cost"]
+handler.check_table_has_columns("terrains", columns)
+
+columns = ["node"]
+handler.check_table_has_columns("population", columns)
+
+columns = ["name", "LIVING", "BUILDING", "ENERGY"]
+handler.check_table_has_columns("processes", columns)
+
+columns = ["name", "toll", "decay"]
+handler.check_table_has_columns("resources", columns)
+
+columns = ["node"]
+handler.check_table_has_columns("building", columns)
+
+columns = ["node"]
+handler.check_table_has_columns("sources", columns)
+
+# print(handler.get_table_columns("resources"))
 
 width = handler.get_parameter("width")
 height = handler.get_parameter("height")

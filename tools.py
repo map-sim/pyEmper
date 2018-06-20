@@ -110,3 +110,4 @@ def ppm_loader(fname):
     deep = readline(fd)
 
     return width, height, rgb_reader(fd)
+

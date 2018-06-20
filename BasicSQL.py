@@ -46,3 +46,24 @@ class BasicSQL:
         info = self.cur.fetchall()
         names = [i[1] for i in info]
         return names
+    
+    def check_table_exists(self, table, debug=True):
+        try:
+            self.execute("SELECT * FROM %s" % table)
+            if debug: print_out("%s table exists ... ok" % table)
+            return True
+        except sqlite3.OperationalError:
+            if debug: print_error("%s table does not exist ..." % table)
+            return False
+        
+    def check_table_has_columns(self, table, columns, debug=True):
+
+        allcolumns = self.get_table_columns(table)
+        for column in columns:
+            if not (column in allcolumns):            
+                if debug:
+                    args = (column, table)
+                    print_error("%s column does not exist in %s ..." % args)
+                return False
+        if debug: print_out("{} table has {} columns ... ok".format(table, columns))
+        return True
