@@ -21,14 +21,9 @@ if len(sys.argv) != 2:
 
 handler = EmperSQL(sys.argv[1])
 
+names = handler.get_all_table_titles("processes")
 processes = handler.select_many("SELECT * FROM processes")
-names = handler.get_table_columns("processes")
-
 print_info("processes number: %s" % len(processes))
-
-# if len(resources) != resources_nr:
-#     print_error("%d resources registred!" % len(resources))
-#     raise ValueError("resources number not correct")
 
 for proc in processes:
     counter = 0

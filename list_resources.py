@@ -29,7 +29,7 @@ if len(resources) != resources_nr:
     print_error("%d resources registred!" % len(resources))
     raise ValueError("resources number not correct")
 
-sources = handler.get_table_columns("sources")
+sources = handler.get_all_table_titles("sources")
 for r in resources:
     if r[0] in sources:
         print_out("%s\t[*]" % r[0])

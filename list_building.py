@@ -20,7 +20,7 @@ if len(sys.argv) != 2:
 
 handler = EmperSQL(sys.argv[1])
 
-building = handler.get_table_columns("building")
+building = handler.get_all_table_titles("building")
 for build in building:
     if build == "name": continue
     print_out("%s" % build)

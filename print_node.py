@@ -43,7 +43,7 @@ for nation in natffer:
         print_out("\t%s: %d" % (nation[0], number[0]))
 
 print_out("sources:")
-srcnames = handler.get_table_columns("sources")
+srcnames = handler.get_all_table_columns("sources")
 for src in srcnames:
     if src == "node":
         continue

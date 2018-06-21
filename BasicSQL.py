@@ -40,7 +40,12 @@ class BasicSQL:
         self.cur.execute("%s LIMIT 1 OFFSET %d" % (query, number))
         return self.cur.fetchone()
 
-    def get_table_columns(self, table):
+    def get_column(self, table, title):
+        query = "SELECT %s FROM %s" % (title, table)
+        col = self.select_many(query)
+        return [c[0] for c in col]
+    
+    def get_all_table_titles(self, table):
         query = "PRAGMA table_info('%s')" % table
         self.cur.execute(query)
         info = self.cur.fetchall()
@@ -58,12 +63,16 @@ class BasicSQL:
         
     def check_table_has_columns(self, table, columns, debug=True):
 
-        allcolumns = self.get_table_columns(table)
+        allcolumns = self.get_all_table_titles(table)
         for column in columns:
             if not (column in allcolumns):            
                 if debug:
                     args = (column, table)
                     print_error("%s column does not exist in %s ..." % args)
                 return False
-        if debug: print_out("{} table has {} columns ... ok".format(table, columns))
+        if debug:
+            for column in columns:
+                print_out("\t{} ...".format(column))
+            print_out("{} table has all given columns ... ok".format(table))
+
         return True

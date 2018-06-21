@@ -28,34 +28,30 @@ handler.check_table_exists("parameters")
 handler.check_table_exists("population")
 handler.check_table_exists("processes")
 handler.check_table_exists("resources")
+handler.check_table_exists("skilling")
 handler.check_table_exists("building")
 handler.check_table_exists("sources")
+handler.check_table_exists("stock")
 
-columns = ["x", "y", "node", "color"]
-handler.check_table_has_columns("atoms", columns)
 
-columns = ["name"]
-handler.check_table_has_columns("nations", columns)
+handler.check_table_has_columns("nations", ["name"])
+handler.check_table_has_columns("sources", ["node"])
+handler.check_table_has_columns("parameters", ["name", "value"])
+handler.check_table_has_columns("atoms", ["x", "y", "node", "color"])
+handler.check_table_has_columns("resources", ["name", "toll", "decay"])
+handler.check_table_has_columns("terrains", ["name", "color", "base", "ship", "build", "cost"])
 
-columns = ["name", "color", "base", "ship", "build", "cost"]
-handler.check_table_has_columns("terrains", columns)
+nations = handler.get_column("nations", "name")
+resources = handler.get_column("resources", "name")
+processes = handler.get_column("processes", "name")
 
-columns = ["node"]
-handler.check_table_has_columns("population", columns)
+handler.check_table_has_columns("stock", ["node", *resources])
+handler.check_table_has_columns("population", ["node", *nations])
+handler.check_table_has_columns("processes", ["name", "LIVING", "BUILDING", "ENERGY", *resources])
 
-columns = ["name", "LIVING", "BUILDING", "ENERGY"]
-handler.check_table_has_columns("processes", columns)
+handler.check_table_has_columns("skilling", ["node", *processes])
+handler.check_table_has_columns("building", ["node", *processes])
 
-columns = ["name", "toll", "decay"]
-handler.check_table_has_columns("resources", columns)
-
-columns = ["node"]
-handler.check_table_has_columns("building", columns)
-
-columns = ["node"]
-handler.check_table_has_columns("sources", columns)
-
-# print(handler.get_table_columns("resources"))
 
 width = handler.get_parameter("width")
 height = handler.get_parameter("height")
