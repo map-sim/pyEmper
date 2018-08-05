@@ -15,7 +15,7 @@ for arg in sys.argv[1:]:
 
 cmd[-1] = "pmap"
 cmd.append(sys.argv[-1])
-strcmd = "".join([c+" " for c in cmd])
+strcmd = " ".join(cmd)
 
 print_info(strcmd)
 os.system(strcmd)

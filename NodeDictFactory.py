@@ -56,9 +56,15 @@ class NodeDictFactory:
             print_error("no enough data")
             raise ValueError("no data")
         
-        maxsrc = 0.0
-        for n in nodesrc:                
-            if maxsrc < n[1]:
-                maxsrc = n[1]
-                    
+        return output
+
+    def get_building_distribution(self, name):
+        query = "SELECT node,%s FROM building WHERE %s>0" % (name, name)
+        nodesrc = self.select_many(query)    
+        output = dict(nodesrc)
+
+        if len(nodesrc) == 0:
+            print_error("no enough data")
+            raise ValueError("no data")
+        
         return output

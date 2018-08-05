@@ -28,7 +28,6 @@ handler.check_table_exists("parameters")
 handler.check_table_exists("population")
 handler.check_table_exists("processes")
 handler.check_table_exists("resources")
-handler.check_table_exists("skilling")
 handler.check_table_exists("building")
 handler.check_table_exists("sources")
 handler.check_table_exists("stock")
@@ -49,7 +48,6 @@ handler.check_table_has_columns("stock", ["node", *resources])
 handler.check_table_has_columns("population", ["node", *nations])
 handler.check_table_has_columns("processes", ["name", "LIVING", "BUILDING", "ENERGY", *resources])
 
-handler.check_table_has_columns("skilling", ["node", *processes])
 handler.check_table_has_columns("building", ["node", *processes])
 
 

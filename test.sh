@@ -70,4 +70,4 @@
 ./extract_smap.py example.db smap-ore.ppm --resize=2 --palette=default.json --median --rivers ORE
 ./extract_smap.py example.db smap-oil.ppm --resize=2 --palette=default.json --median --rivers OIL
 
-
+./extract_bmap.py example.db smap-oil.ppm --resize=2 --palette=default.json --median --rivers transport
