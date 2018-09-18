@@ -1,0 +1,17 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE terrain_ct(name text UNIQUE, color text UNIQUE, drag real, charge real);
+INSERT INTO terrain_ct VALUES('OCEAN', '0000CC',  -0.01, 0.0);
+INSERT INTO terrain_ct VALUES('C-SEA', '0044FF',  -0.02, 0.0);
+INSERT INTO terrain_ct VALUES('ICE-S', '0077FF',  -0.1,  0.0);
+INSERT INTO terrain_ct VALUES('G-RIV', '771188',  -0.15, 5.0);
+INSERT INTO terrain_ct VALUES('N-RIV', 'BB22FF',  -0.3,  3.0);
+INSERT INTO terrain_ct VALUES('FLAT',  '33BB33',   1.2,  1.0);
+INSERT INTO terrain_ct VALUES('TUNDR', 'AAAA99',  12.0,  4.5);
+INSERT INTO terrain_ct VALUES('DESRT', 'FFDD44',  10.0,  2.0);
+INSERT INTO terrain_ct VALUES('SWAMP', '448844', -80.0,  3.5);
+INSERT INTO terrain_ct VALUES('PLATE', 'FFAA11',   5.0,  1.5);
+INSERT INTO terrain_ct VALUES('HILL',  'FF4400',  25.0,  2.5);
+INSERT INTO terrain_ct VALUES('H-MNT', '884400', 100.0,  4.0);
+INSERT INTO terrain_ct VALUES('L-MNT', '440022', 500.0,  8.0);
+COMMIT;
