@@ -12,6 +12,9 @@ from globsimTools import printDebug
 from globsimTools import printInfo
 
 class BasicSQL:
+    direct = True
+    debug = True
+    
     def __init__(self, fname):
         if not os.path.exists(fname):
             print_error("path %s not exists!" % fname)
@@ -29,9 +32,10 @@ class BasicSQL:
     def commit(self):
         self.conn.commit()
         
-    def execute(self, query):
-        self.cur.execute(query)                
-        printDebug(query)
+    def execute(self, query):        
+        self.cur.execute(query)
+        if self.debug:
+            printDebug(query)
         
     def select(self, table, content="*", test=None, extra=""):        
         if test:
@@ -45,10 +49,12 @@ class BasicSQL:
     def update(self, table, content, test):        
         query = f"UPDATE {table} SET {content} WHERE {test}"
         self.execute(query)
-        self.commit()
+        if self.direct:
+            self.commit()
         
     def insert(self, table, content):        
         query = f"INSERT INTO {table} VALUES({content})"
         self.execute(query)
-        self.commit()
+        if self.direct:
+            self.commit()
  

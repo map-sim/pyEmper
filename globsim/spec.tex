@@ -190,7 +190,7 @@ All data, including maps, shall be organized in tables. Each table has to contai
     transship\_gain  & building gain for land-see$/$see-land transport\\
     transport\_gain  & building gain for civillian transport\\
     product\_gain  & building gain for production\\
-    market\_gain  & reduction of distribution cost from infrastructure\\      
+    depot\_gain  & depot capacity (mean amount of stock per depot)\\      
     house\_gain  & house capacity (mean number of people per house)\\      
     \hline
     build\_staff & mean number of people needed to building maintenance\\      
@@ -367,12 +367,12 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \vspace{-0.5cm}
 \begin{longtable}{ |c|l| }    
   \LTHeaderII{Content}{name}{building brief}                    
-  fortress & fortress used for defence during battle (critical)\\
   transship & transship infrastructure (critical)\\
   transport & transport infrastructure (critical)\\
-  market & trade infrastructure (allows stock distribution)\\
-  media & information infrastructure (permament impact)\\
+  fortress & fortress used for defence during battle (critical)\\
+  media & information infrastructure (impact)\\
   house & housing infrastructure (capacity)\\
+  depot & depot infrastructure (capacity)\\
 \end{longtable}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
