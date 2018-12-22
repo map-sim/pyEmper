@@ -5,10 +5,10 @@
 # opensource licence: GPL-3.0
 # application: GLOBSIM
 
-from configSQL import ConfigSQL
-from globsimTools import printError
-from globsimTools import str2rgb
 import math
+from configSQL import ConfigSQL
+from basicToolBox import printError
+from basicToolBox import str2rgb
 
 class DiagramSQL(ConfigSQL, dict):
 
@@ -38,32 +38,124 @@ class DiagramSQL(ConfigSQL, dict):
         else: return dict.__getitem__(self, (x, y))
         
     def __setitem__(self, key, value):
-        if len(value) != 4:
-            printError("diagram has to have 4-length items!")
+        x, y = key
+        x %= self.width
+        if y < 0 or y >= self.height:
+            return        
+        
+        test = f"x={x} AND y={y}"
+        nval = f"node='{value[0]}', color='{value[1]}'"         
+        if len(value) == 4:         
+            dict.__setitem__(self, (x, y), value)
+            dnum = f"dx={value[2]}, dy={value[3]}"
+            self.update("diagram_cm", f"{dnum}, {nval}", test)
+
+        elif len(value) == 2:
+            val = *value, self[x,y][2], self[x,y][3]
+            dict.__setitem__(self, (x, y), val)
+            self.update("diagram_cm", f"{nval}", test)
+            
+        else:
+            printError("diagram has to have 4/2-length items!")
             raise TypeError("item len")
 
-        x, y = key
-        if y < 0 or y >= self.height:
-            return
-        
-        x %= self.width
-        key = x, y
-        
-        dict.__setitem__(self, key, value)
-        test = f"x={key[0]} AND y={key[1]}"
-        dnum = f"dx={value[2]}, dy={value[3]}"
-        nval = f"{dnum}, node='{value[0]}', color='{value[1]}'"         
-        self.update("diagram_cm", f"{nval}", test)
-            
     def getNodeSet(self):
         outSet = set()        
         for x,y in self.keys():
             outSet.add(self[x,y][0])
         return outSet
     
+    def checkNext(self, x, y, node):
+        if node == self[x+1,y][0]: return True
+        if node == self[x-1,y][0]: return True
+        try:
+            if node == self[x,y+1][0]: return True
+        except TypeError: pass
+        try:
+            if node == self[x,y-1][0]: return True
+        except TypeError: pass
+        return False
+    
     def getNode(self, x, y):
         return self[x,y][0]
+    
+    def getStream(self, x, y):
+        return self[x,y][2], self[x,y][3]
+    
+    def isRiver(self, x, y):
+        color = self[x,y][1]
+        drag = self.terrains[color][1]
+        charge = self.terrains[color][2]
+        if bool(charge) and drag < 0:
+            return True
+        return False
+        
+    def isLand(self, nx, y=None):
+        if y is None:
+            x, y = self.getFirstAtom(nx)
+        else: x = nx
+        
+        color = self[x,y][1]
+        charge = self.terrains[color][2]
+        return bool(charge)
 
+    def isSee(self, nx, y=None):
+        if y is None:
+            x, y = self.getFirstAtom(nx)
+        else: x = nx
+        
+        color = self[x,y][1]
+        charge = self.terrains[color][2]
+        return not bool(charge)
+
+    def getFirstAtom(self, node):
+        test = f"node='{node}'"
+        rows = self.select("diagram_cm", "x,y", test=test)        
+        return rows[0][0], rows[0][1]
+
+    def getInBorderAtoms(self, start, stop):        
+        test = f"node='{start}'"
+        rows = self.select("diagram_cm", "x,y", test=test)
+        inBorder = set()
+        for x,y in rows:
+            x1, x2 = x + 1, x - 1
+            y1, y2 = y + 1, y - 1
+            for xo, yo in [(x, y1), (x, y2), (x1, y), (x2, y)]:
+                try:
+                    if self[xo, yo][0] == stop:
+                        inBorder.add((x, y))
+                        continue
+                except KeyError: pass                
+        return inBorder
+    
+    def checkBeach(self, x, y):        
+        return self.isRiver(x, y) or self.checkCoast(x, y)
+        
+    def checkBorder(self, x, y):
+        x1, x2 = x + 1, x - 1
+        y1 = (y + 1) % self.height
+        y2 = (y - 1) % self.height
+        OUT, LMask, UMask, DMask, RMask = 0, 8, 4, 2, 1        
+        if self[x, y][0] != self[x1, y][0]: OUT |= RMask 
+        elif self[x, y][0] != self[x2, y][0]: OUT |= LMask
+        elif self[x, y][0] != self[x, y1][0]: OUT |= UMask 
+        elif self[x, y][0] != self[x, y2][0]: OUT |= DMask 
+        return OUT
+
+    def checkCoast(self, x, y):
+        x1, x2 = x + 1, x - 1 
+        y1 = (y + 1) % self.height
+        y2 = (y - 1) % self.height
+        OUT, LMask, UMask, DMask, RMask = 0, 8, 4, 2, 1        
+        if self.isLand(x, y) != self.isLand(x1, y): OUT |= RMask 
+        elif self.isLand(x, y) != self.isLand(x2, y): OUT |= LMask
+        elif self.isLand(x, y) != self.isLand(x, y1): OUT |= UMask 
+        elif self.isLand(x, y) != self.isLand(x, y2): OUT |= DMask 
+        return OUT
+    
+    def getTerrColor(self, x, y):
+        return str2rgb(self[x,y][1])
+    
     def getCurrColor(self, x, y):
         if self[x,y][2] == 0 and self[x,y][3] == 0:
             color = self[x,y][1]
@@ -99,72 +191,8 @@ class DiagramSQL(ConfigSQL, dict):
                 b = 255 * a            
                 
             module = math.sqrt(self[x,y][2]**2 + self[x,y][3]**2)
-
             r = r + (255.9 - r) * (1.0 - module)
             g = g + (255.9 - g) * (1.0 - module)
             b = b + (255.9 - b) * (1.0 - module)
             
         return int(r), int(g), int(b)
-    
-    def getTerrColor(self, x, y):
-        return str2rgb(self[x,y][1])
-    
-    def getStream(self, x, y):
-        return self[x,y][2], self[x,y][3]
-    
-    def isRiver(self, x, y):
-        color = self[x,y][1]
-        drag = self.terrains[color][1]
-        charge = self.terrains[color][2]
-        if bool(charge) and drag < 0:
-            return True
-        return False
-        
-    def isLand(self, nx, y=None):
-        if y is None:
-            x, y = self.getFirstXY(nx)
-        else: x = nx
-        
-        color = self[x,y][1]
-        charge = self.terrains[color][2]
-        return bool(charge)
-
-    def isSee(self, nx, y=None):
-        if y is None:
-            x, y = self.getFirstXY(nx)
-        else: x = nx
-        
-        color = self[x,y][1]
-        charge = self.terrains[color][2]
-        return not bool(charge)
-
-    def getFirstXY(self, node):
-        test = f"node='{node}'"
-        rows = self.select("diagram_cm", "x,y", test=test)        
-        return rows[0][0], rows[0][1]
-
-    def checkBeach(self, x, y):        
-        return self.isRiver(x, y) or self.checkCoast(x, y)
-        
-    def checkBorder(self, x, y):
-        x1, x2 = x + 1, x - 1
-        y1 = (y + 1) % self.height
-        y2 = (y - 1) % self.height
-        OUT, LMask, UMask, DMask, RMask = 0, 8, 4, 2, 1        
-        if self[x, y][0] != self[x1, y][0]: OUT |= RMask 
-        elif self[x, y][0] != self[x2, y][0]: OUT |= LMask
-        elif self[x, y][0] != self[x, y1][0]: OUT |= UMask 
-        elif self[x, y][0] != self[x, y2][0]: OUT |= DMask 
-        return OUT
-
-    def checkCoast(self, x, y):
-        x1 = (x + 1) % self.width
-        y1 = (y + 1) % self.height
-        x2 = (x - 1 + self.width) % self.width
-        y2 = (y - 1 + self.height) % self.height
-        OUT, LMask, UMask, DMask, RMask = 0, 8, 4, 2, 1        
-        if self.isLand(x, y) != self.isLand(x1, y): OUT |= RMask 
-        elif self.isLand(x, y) != self.isLand(x2, y): OUT |= LMask
-        elif self.isLand(x, y) != self.isLand(x, y1): OUT |= UMask 
-        elif self.isLand(x, y) != self.isLand(x, y2): OUT |= DMask 
-        return OUT

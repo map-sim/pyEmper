@@ -7,10 +7,10 @@
 
 
 from globsimSQL import GlobSimSQL
-from globsimTools import printDebug
-from globsimTools import printInfo
-from globsimTools import rgb2str
-from globsimTools import str2rgb
+from basicToolBox import printDebug
+from basicToolBox import printInfo
+from basicToolBox import rgb2str
+from basicToolBox import str2rgb
 
 import random
 import string
@@ -40,7 +40,7 @@ class DiagramViewer(Gtk.Window):
 
         self.savx = None
         self.savy = None
-        self.angle = None
+        self.tmpAngle = None
         self.tmpColor = None
         self.tmpNode = None
         
@@ -105,7 +105,8 @@ class DiagramViewer(Gtk.Window):
             self.onTerrCross(box, event)
         elif self.getColor == self.handler.diagram.getCurrColor:
             self.onCurrCross(box, event)
-        else: print("-E-")
+        else:
+            self.onROCross(box, event)
             
     def onScroll(self, box, event):
         if event.delta_y > 0:
@@ -114,48 +115,45 @@ class DiagramViewer(Gtk.Window):
             self.value *= 1.1            
         print("value:", float(self.value))
         
+    def printHelp(self):
+        printInfo("1 - draw map of terrains")
+        printInfo("2 - draw map of currents")
+        printInfo("r - refresh screen (redraw, sync from DB)")
+        printInfo("n - create new node with random name")
+        printInfo("s - smooth borders (sync to DB)")
+        printInfo("b - toogle borders")
+        printInfo("u - smooth current diagram (it can takes a few minutes)")
+        printInfo("t - print info about terrains (selected is marked by star)")
+        printInfo("c - change terrain (go to next)")
+        printInfo("q - angule reset")
+        printInfo("p - print tmp info")
+        printInfo("h - this help")
+            
     def onPress(self, widget, event):
         print("Key val: ", event.keyval)    
         print("Key name: ", Gdk.keyval_name(event.keyval))    
 
+        if Gdk.keyval_name(event.keyval) == "h":
+            self.printHelp()
+            return
+            
         if Gdk.keyval_name(event.keyval) == "1":
             self.checkLine = self.handler.diagram.checkBorder
             self.getColor = self.handler.diagram.getTerrColor        
             self.refrechScreen()
+            return
             
         if Gdk.keyval_name(event.keyval) == "2":
             self.checkLine = self.handler.diagram.checkCoast
             self.getColor = self.handler.diagram.getCurrColor        
             self.refrechScreen()                    
+            return
 
         if Gdk.keyval_name(event.keyval) == "r":
             printDebug("refresh screen")
             self.refrechScreen()
-            
-        if Gdk.keyval_name(event.keyval) == "n":
-            charset = string.ascii_uppercase
-            nodeset = self.handler.diagram.getNodeSet()
-            newname = ''.join(random.sample(charset*3, 3))
-            while newname in nodeset: 
-                newname = ''.join(random.sample(charset*3, 3))
-            self.tmpNode = newname
-            printDebug(f"new node: {newname}")
-            
-        if Gdk.keyval_name(event.keyval) == "s":
-            n = self.handler.diagram.smoothBorder()
-            printDebug(f"smooth border: {n}")
-            
-        if Gdk.keyval_name(event.keyval) == "b":
-            if self.checkLine == self.handler.diagram.checkCoast:
-                self.checkLine = self.handler.diagram.checkBorder
-            else: self.checkLine = self.handler.diagram.checkCoast
-            self.refrechScreen()                    
-            printDebug("toogle border")
+            return
 
-        if Gdk.keyval_name(event.keyval) == "u":
-            self.handler.diagram.smoothCurrent()
-            printDebug(f"smooth current...")
-            
         if Gdk.keyval_name(event.keyval) == "t":
             try:
                 pattern = rgb2str(self.tmpColor)
@@ -165,7 +163,16 @@ class DiagramViewer(Gtk.Window):
                 prom = "*" if color == pattern else "-" 
                 terr = self.handler.diagram.terrains[color]
                 printInfo(f"{prom} {color}: {terr[0]} {terr[1]} {terr[2]}")
+            return
 
+        if Gdk.keyval_name(event.keyval) == "b":
+            if self.checkLine == self.handler.diagram.checkCoast:
+                self.checkLine = self.handler.diagram.checkBorder
+            else: self.checkLine = self.handler.diagram.checkCoast
+            self.refrechScreen()                    
+            printDebug("toogle border")
+            return
+            
         if Gdk.keyval_name(event.keyval) == "c":
             try:
                 pattern = rgb2str(self.tmpColor)
@@ -183,29 +190,71 @@ class DiagramViewer(Gtk.Window):
                 if color == pattern: flag = True
             colors = self.handler.diagram.terrains.keys()
             self.tmpColor = str2rgb(list(colors)[0])
+            return
                     
         if Gdk.keyval_name(event.keyval) == "q":
-            self.angle = None
+            self.tmpAngle = None
+            return
 
+        if Gdk.keyval_name(event.keyval) == "p":
+            printInfo(f"node: {self.tmpNode} color: {self.tmpColor} | angle: {self.tmpAngle}")
+            return
+
+        if len(sys.argv) <= 3:
+            printDebug("read-only mode!")
+            return
+        elif len(sys.argv) > 3:
+            if sys.argv[3] != "--edit":
+                printDebug("read-only mode!")
+                return
+            
+        if Gdk.keyval_name(event.keyval) == "n":
+            charset = string.ascii_uppercase
+            nodeset = self.handler.diagram.getNodeSet()
+            newname = ''.join(random.sample(charset*3, 3))
+            while newname in nodeset: 
+                newname = ''.join(random.sample(charset*3, 3))
+            self.tmpNode = newname
+            printDebug(f"new node: {newname}")
+            
+        if Gdk.keyval_name(event.keyval) == "s":            
+            n = self.handler.diagram.smoothBorder()
+            printDebug(f"smooth border: {n}")
+            
+        if Gdk.keyval_name(event.keyval) == "u":
+            self.handler.diagram.smoothCurrent()
+            printDebug(f"smooth current...")
+            
     def onExit(self, win, event):
         del(self.handler)
         Gtk.main_quit()
 
-    def onCurrCross(self, box, event):            
+    def extractXY(self, event):
         y = int(event.y / self.resize)
         x = int(event.x / self.resize)
         x = (x + self.offset) % self.width
         # printDebug(f"click: {x} x {y}")
-
+        return x, y
+    
+    def onCurrCross(self, box, event):            
         if event.button == 2:
             printDebug("refresh screen")
             self.refrechScreen()
             return
+        x, y = self.extractXY(event)        
 
+        if len(sys.argv) <= 3:
+            printDebug("read-only mode!")
+            return
+        elif len(sys.argv) > 3:
+            if sys.argv[3] != "--edit":
+                printDebug("read-only mode!")
+                return
+        
         if event.button == 1:
             self.savx = x
             self.savy = y
-            if self.angle is None:
+            if self.tmpAngle is None:
                 n,t,dx,dy = self.handler.diagram[self.savx,self.savy]
                 self.handler.diagram[self.savx, self.savy] = n,t,0,0
                 n,t,dx,dy = self.handler.diagram[self.savx+1,self.savy]
@@ -220,15 +269,15 @@ class DiagramViewer(Gtk.Window):
 
         if event.button == 3:
             if self.savx is None or  self.savy is None: return
-            self.angle = math.atan2(self.savy-y, self.savx-x)
+            self.tmpAngle = math.atan2(self.savy-y, self.savx-x)
             printDebug("new angle")            
             
         if self.value > 1: radius = 1
         else: radius = self.value
         
         n,t,dx,dy = self.handler.diagram[self.savx,self.savy]
-        dy = -radius * math.sin(self.angle)
-        dx = radius * math.cos(self.angle)
+        dy = -radius * math.sin(self.tmpAngle)
+        dx = radius * math.cos(self.tmpAngle)
         printDebug("dx: {}".format(dx))
         printDebug("dy: {}".format(dy))
 
@@ -243,31 +292,37 @@ class DiagramViewer(Gtk.Window):
         if val: self.handler.diagram[self.savx, self.savy-1] = val[0],val[1],dx,dy
         
     def onTerrCross(self, box, event):            
-        y = int(event.y / self.resize)
-        x = int(event.x / self.resize)
-        x = (x + self.offset) % self.width
-        # printDebug(f"click: {x} x {y}")
+        if event.button == 2:
+            printDebug("refresh screen")
+            self.refrechScreen()
+            return
+        x, y = self.extractXY(event)
+        
+        if event.button == 3:
+            self.tmpNode = self.handler.diagram.getNode(x,y)
+            self.tmpColor = self.handler.diagram.getTerrColor(x,y)
+            printInfo(f"node: {self.tmpNode} color: {self.tmpColor}")
+
+        if len(sys.argv) <= 3:
+            printDebug("read-only mode!")
+            return
+        elif len(sys.argv) > 3:
+            if sys.argv[3] != "--edit":
+                printDebug("read-only mode!")
+                return
         
         if event.button == 1:
             if not self.tmpNode: return
             if not self.tmpColor: return
-            dxy = self.handler.diagram.getStream(x, y)
+            # dxy = self.handler.diagram.getStream(x, y)
             nt = self.tmpNode, rgb2str(self.tmpColor)
-            self.handler.diagram[x, y] = *nt, *dxy
-            self.handler.diagram[x+1, y] = *nt, *dxy
-            self.handler.diagram[x-1, y] = *nt, *dxy
-            self.handler.diagram[x, y+1] = *nt, *dxy
-            self.handler.diagram[x, y-1] = *nt, *dxy
-                        
-        elif event.button == 2:
-            printDebug(" refresh screen")
-            self.refrechScreen()
-                
-        elif event.button == 3:
-            self.tmpNode = self.handler.diagram.getNode(x,y)
-            self.tmpColor = self.handler.diagram.getTerrColor(x,y)
-            printInfo(f"node: {self.tmpNode} color: {self.tmpColor}")
-            
+            self.handler.diagram[x, y] = nt
+            self.handler.diagram[x+1, y] = nt
+            self.handler.diagram[x-1, y] = nt
+            self.handler.diagram[x, y+1] = nt
+            self.handler.diagram[x, y-1] = nt
+                                        
+
 try:
     offset = int(sys.argv[2])
     win = DiagramViewer(sys.argv[1], offset)

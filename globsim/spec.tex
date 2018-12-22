@@ -107,9 +107,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}
 \section{Authorship Note}
-List of authors:
+%List of authors:
+The author is
 \begin{itemize}
-\item Krzysztof Czarnecki, czarnecki.krzysiek@gmail.com
+\item Krzysztof Czarnecki, czarnecki.krzysiek@gmail.com, Gdansk, Poland
 \end{itemize}
 \section{Version Note}
 
@@ -122,6 +123,7 @@ Version of this document: 0.01
 \item Scientific and other publications, which provide results obtained by using the presented model or any part of this model, should have an appropriate note (including all authors names and surrnames) about this fact at least in bibliography.
 \end{enumerate}
 
+\newpage
 \section{Terms Definition}
 \begin{enumerate}
   \setlength{\itemsep}{0pt}
@@ -137,7 +139,7 @@ Version of this document: 0.01
   -- any selected force (force process)
 \item \textbf{action} -- a type of acting, it gives possibility to imact on a model
 \item \textbf{controller} -- an object giving access for human player or controled by AI
-\item \textbf{force} -- a type of power which represets quantitative impact on a node
+\item \textbf{force} -- a type of power (both civilian and military) which represets quantitative impact on a node
 \item \textbf{attitude} -- quantitative representation of sympathies or dislikes from a nation to a controller   
 \item \textbf{noospher} -- sphere of human thought, it represents control of population using media
 \item \textbf{current} -- this quantity characterizes strength (steepness) and direction of:\\
@@ -205,7 +207,7 @@ All data, including maps, shall be organized in tables. Each table has to contai
     leader\_attitude & impact on nation from leadership\\      
     nation\_attitude & impact on noospher from nation\\      
     \hline
-    human\_living & amount of living stock needed for people\\      
+    human\_consumption & amount of stock needed for people for life\\      
     employ\_impact & employ impact on birth rate\\ 
     attitude\_impact & attitude impact on birth rate\\ 
     birth\_rate & base birth rate\\ 
@@ -399,7 +401,7 @@ All data, including maps, shall be organized in tables. Each table has to contai
   \LTHeaderIV{Content}{name}{decay range}{toll range}{stock brief}                    
   energy & 1 & $(0, \infty)$ & energy which can be consumed in the current round\\
   building & 1 & $\infty$ & building possible to develop in the current round\\
-  living & 1 & $\infty$  & living represents consumption in the current round\\
+  consumption & 1 & $\infty$  & it represents consumption in the current round\\
 \end{longtable}
 
 
@@ -459,8 +461,8 @@ All data, including maps, shall be organized in tables. Each table has to contai
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
   name & string & key & process name\\
   energy & float $(-\infty, \infty)$ & value & energy amount \\
-  living & float $[0, \infty)$ & value & living amount \\
   building & float $[0, \infty)$ & value & building  amount \\
+  consumption & float $[0, \infty)$ & value & consumption amount \\
   $\forall$ name $\in$ stock\_ct & float $(-\infty, \infty)$ & value & stock amount\\
   \multicolumn{4}{|l|}{\textit{Each process can have any combinations of stocks.}}\\
 \end{longtable}        
@@ -650,12 +652,12 @@ All data, including maps, shall be organized in tables. Each table has to contai
 
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
-  x & int & part of key & x coortinate $[0, \infty$)\\
-  y & int & part of key & y coortinate $[0, \infty$)\\
+  x & int $[0, \infty$) & part of key & x coortinate\\
+  y & int $[0, \infty$) & part of key & y coortinate\\
   terrain & string & value & terrain name\\
   node & string & value & node name\\
-  dx & float & value & vector x component ($-\infty$, $\infty$)\\
-  dy & float & value & vector y component ($-\infty$, $\infty$)\\
+  dx & float ($-\infty$, $\infty$) & value & vector x component\\
+  dy & float ($-\infty$, $\infty$) & value & vector y component\\
 \end{longtable}        
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -671,7 +673,7 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
   node & string & key & node name\\
-  $\forall$ name $\in$ stock\_ct & float & value & yield of stock $[0, \infty)$ \\
+  $\forall$ name $\in$ stock\_ct & float $[0, \infty)$ & value & yield of stock \\
   \multicolumn{4}{|l|}{\textit{Each node can be a source of any stock from stock\_ct.}}\\
 \end{longtable}        
 
@@ -692,7 +694,7 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
   node & string & key & node name\\
-  $\forall$ name $\in$ nation\_st & int & value & number of people $[0, \infty)$ \\
+  $\forall$ name $\in$ nation\_st & int $[0, \infty)$ & value & number of people \\
   \multicolumn{4}{|l|}{\textit{Each nation has a specific distribution over nodes.}}\\
 \end{longtable}        
 
@@ -709,10 +711,10 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
   node & string & key & node name\\
-  $\forall$ name $\in$ building\_ft & int & value & number of buildings $[0, \infty)$ \\
-  $\forall$ name $\in$ process\_ct & int & value & number of buildings $[0, \infty)$ \\
-  $\forall$ name $\in$ force\_ft & int & value & number of buildings $[0, \infty)$ \\
-  $\forall$ name $\in$ stock\_ct & int & value & number of buildings $[0, \infty)$ \\
+  $\forall$ name $\in$ building\_ft & int $[0, \infty)$ & value & number of buildings \\
+  $\forall$ name $\in$ process\_ct & int $[0, \infty)$ & value & number of buildings \\
+  $\forall$ name $\in$ force\_ft & int $[0, \infty)$ & value & number of buildings \\
+  $\forall$ name $\in$ stock\_ct & int $[0, \infty)$ & value & number of buildings \\
   \multicolumn{4}{|l|}{\textit{Each building has a specific distribution over nodes.}}\\
 \end{longtable}        
 
@@ -729,7 +731,7 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
   node & string & key & node name\\
-  $\forall$ name $\in$ contol\_st & float & value & share $[0, 1]$ \\
+  $\forall$ name $\in$ contol\_st & float $[0, 1]$ & value & share \\
   \multicolumn{4}{|l|}{\textit{Each controller can have a specific distribution of impact over nodes.}}\\
 \end{longtable}        
 
@@ -746,8 +748,8 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
   node & string & key & node name\\
-  $\forall$ name $\in$ stock\_ft & float & value & amount $[0, \infty)$ \\
-  $\forall$ name $\in$ stock\_ct & float & value & amount $[0, \infty)$ \\
+  $\forall$ name $\in$ stock\_ft & float $[0, \infty)$ & value & amount \\
+  $\forall$ name $\in$ stock\_ct & float $[0, \infty)$ & value & amount \\
   \multicolumn{4}{|l|}{\textit{Each stock can have a specific distribution over nodes.}}\\
 \end{longtable}        
 

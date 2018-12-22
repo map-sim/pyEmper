@@ -8,8 +8,8 @@
 import os
 import sqlite3
 
-from globsimTools import printDebug
-from globsimTools import printInfo
+from basicToolBox import printDebug
+from basicToolBox import printInfo
 
 class BasicSQL:
     direct = True

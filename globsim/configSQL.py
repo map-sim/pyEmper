@@ -6,8 +6,8 @@
 # application: GLOBSIM
 
 from basicSQL import BasicSQL
-from globsimTools import printError
-from globsimTools import printInfo
+from basicToolBox import printError
+from basicToolBox import printInfo
 
 
 class ConfigSQL(BasicSQL):
@@ -20,12 +20,19 @@ class ConfigSQL(BasicSQL):
     
     def __init__(self, fname):
         super(ConfigSQL, self).__init__(fname)
+        self.__cache = dict()
+
+    def getParam(self, name):
+        try:
+            return self.__cache[name]
+        except KeyError: pass
         
-    def getParam(self, name):        
         out = self.select("config_ft", "value", f"name='{name}'")
         try:
-            if name in self.intConf: value = int(out[0][0])
+            if name in self.intConf:
+                value = int(out[0][0])
             else: value = float(out[0][0])
+            self.__cache[name] = value
             return value
         
         except IndexError:

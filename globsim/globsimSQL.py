@@ -5,10 +5,10 @@
 # opensource licence: GPL-3.0
 # application: GLOBSIM
 
-from configSQL import ConfigSQL
-from eDiagramSQL import eDiagramSQL
-from globsimTools import printInfo
 from time import time
+from configSQL import ConfigSQL
+from xDiagramSQL import xDiagramSQL
+from basicToolBox import printInfo
 
 
 class GlobSimSQL(ConfigSQL):
@@ -16,7 +16,7 @@ class GlobSimSQL(ConfigSQL):
     def __init__(self, fname):
         self.__startTime = time()
         super(GlobSimSQL, self).__init__(fname)
-        self.diagram = eDiagramSQL(fname)
+        self.diagram = xDiagramSQL(fname)
                     
     def __del__(self):
         super(GlobSimSQL, self).__del__()
