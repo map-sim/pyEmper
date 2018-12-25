@@ -5,40 +5,43 @@
 # opensource licence: GPL-3.0
 # application: GLOBSIM
 
-import os
+import os, sys
 import sqlite3
 
+import basicToolBox
+basicToolBox.debug = False
 from basicToolBox import printDebug
-from basicToolBox import printInfo
+from basicToolBox import printError
 
 class BasicSQL:
     direct = True
-    debug = True
     
     def __init__(self, fname):
         if not os.path.exists(fname):
-            print_error("path %s not exists!" % fname)
-            raise ValueError("database not exists")
+            printError(f"path {fname} not exists!")
+            sys.exit(-1)
 
+        printDebug("database: %s" % fname)
         self.conn = sqlite3.connect(fname)
-        printInfo("database: %s" % fname)
         self.cur = self.conn.cursor()
 
     def __del__(self):
-        self.conn.commit()
-        self.conn.close()
-        printInfo("database: closed...")
+        try:
+            self.conn.commit()
+            self.conn.close()
+            printDebug("database: closed...")
+        except AttributeError:
+            pass
         
     def commit(self):
         self.conn.commit()
         
     def execute(self, query):        
         self.cur.execute(query)
-        if self.debug:
-            printDebug(query)
+        printDebug(query)
         
     def select(self, table, content="*", test=None, extra=""):        
-        if test:
+        if not (test is None):
             query = f"SELECT {content} FROM {table} WHERE {test}"
         else: query = f"SELECT {content} FROM {table}"
             

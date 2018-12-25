@@ -22,8 +22,8 @@
 \contentsline {section}{\numberline {2.4}Dynamic Tables (DT)}{8}
 \contentsline {subsection}{\numberline {2.4.1}Action Dynamic Table}{8}
 \contentsline {subsection}{\numberline {2.4.2}Force Dynamic Table}{8}
-\contentsline {subsection}{\numberline {2.4.3}Stock Dynamic Table}{9}
-\contentsline {subsection}{\numberline {2.4.4}Stream Dynamic Table}{9}
+\contentsline {subsection}{\numberline {2.4.3}Stream Dynamic Table}{9}
+\contentsline {subsection}{\numberline {2.4.4}Flow Dynamic Table}{9}
 \contentsline {subsection}{\numberline {2.4.5}Market Dynamic Table}{9}
 \contentsline {section}{\numberline {2.5}Constant Maps (CM)}{9}
 \contentsline {subsection}{\numberline {2.5.1}Diagram Constant Map}{10}

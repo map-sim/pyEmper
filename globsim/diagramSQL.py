@@ -108,6 +108,18 @@ class DiagramSQL(ConfigSQL, dict):
         charge = self.terrains[color][2]
         return not bool(charge)
 
+    def calcMean(self, node):
+        test = f"node='{node}'"
+        rows = self.select("diagram_cm", "x,y", test=test)
+        xm, ym, count = 0.0, 0.0, 0
+        for x,y in rows:
+            count += 1
+            xm += x
+            ym += y
+        xm /= count
+        ym /= count
+        return xm, ym
+    
     def getFirstAtom(self, node):
         test = f"node='{node}'"
         rows = self.select("diagram_cm", "x,y", test=test)        

@@ -20,19 +20,21 @@ class ConfigSQL(BasicSQL):
     
     def __init__(self, fname):
         super(ConfigSQL, self).__init__(fname)
-        self.__cache = dict()
 
+    def printAllParams(self):
+        out = self.select("config_ft", "name,value", extra="ORDER BY name")
+        for item in out:
+            if item[0] in self.intConf:
+                printInfo(f"{item[0]} = {int(item[1])}")
+            else: printInfo(f"{item[0]} = {item[1]}")
+            
     def getParam(self, name):
-        try:
-            return self.__cache[name]
-        except KeyError: pass
         
         out = self.select("config_ft", "value", f"name='{name}'")
         try:
             if name in self.intConf:
                 value = int(out[0][0])
             else: value = float(out[0][0])
-            self.__cache[name] = value
             return value
         
         except IndexError:
@@ -46,7 +48,7 @@ class ConfigSQL(BasicSQL):
             
         except IndexError:            
             self.insert("config_ft", f"'{name}',{value}")
-
+            
     def requireMapProjection(self, code):
         project = self.getParam("map_project")
         if project != code:

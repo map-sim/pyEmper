@@ -4,6 +4,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 
+\usepackage{color} 
+
 \usepackage{a4wide} 
 \usepackage{longtable} 
 \usepackage{fullpage}
@@ -183,11 +185,10 @@ All data, including maps, shall be organized in tables. Each table has to contai
     map\_height  & map height (rounded to int)\\
     map\_project  & code of map projection (rounded to int, only 0)\\
     \hline
-    transship\_fee  & cost metric for land-see$/$see-land transport\\
-    transport\_fee  & cost metric for civillian transport\\
-    fortress\_fee  & cost metric for units moving during a battle\\      
-    base\_fee  & base cost metric for moving\\      
-    current\_base  & base of current\\      
+    toll\_transship  & cost metric for land-see$/$see-land transport\\
+    toll\_transport  & cost metric for civillian transport\\
+    toll\_fortress  & cost metric for units moving during a battle\\      
+    toll\_current  & cost metric for currents\\      
     \hline
     transship\_gain  & building gain for land-see$/$see-land transport\\
     transport\_gain  & building gain for civillian transport\\
@@ -392,8 +393,8 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}
   name & string & key & stock name\\
-  decay & float & value & decay $(0, 1]$ of the stock per each round\\
-  toll & float & value & toll $(0, \infty)$ for stock transport\\
+  decay & float $(0, 1]$ & value & decay of the stock per each round\\
+  toll & float $(0, \infty)$ & value & toll for stock transport\\
 \end{longtable}        
 
 \vspace{-0.5cm}
@@ -487,7 +488,7 @@ All data, including maps, shall be organized in tables. Each table has to contai
   name & string & key & controller name\\
   nation & string & value & nation of leader\\
   capitol & string & value & base node name of the controller\\
-  employment & float & value & model of employment (0, 1]\\
+  employment & float (0, 1] & value & model of employment \\
   $\forall$ name $\in$ control\_st & bool & value & war declaration\\
   \multicolumn{4}{|l|}{\textit{Each controller can declare war for any other controller.}}\\
 \end{longtable}        
@@ -506,7 +507,7 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
   name & string & key & nation name\\
-  employment & float & value & fraction of employment\\
+  employment & float (0, 1] & value & fraction of employment\\
   $\forall$ name $\in$ control\_st  & float $[-1, 1]$ & value & attitude\\
   \multicolumn{4}{|l|}{\textit{Each nation has specified attitude to all controllers.}}\\
 \end{longtable}        
@@ -576,29 +577,11 @@ All data, including maps, shall be organized in tables. Each table has to contai
   owner & string & value & controller name\\
   node & string & value & node name\\
   force & char & value & force code -- defined by Tab. \ref{force_ft}\\
-  amount & float & value & force amount\\
+  amount & float $(0, \infty)$ & value & force amount\\
 \end{longtable}        
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Stock Dynamic Table}
-\begin{itemize}
-  \setlength{\itemsep}{0pt}
-  \setlength{\parskip}{0pt}
-\item table name: stock\_dt  
-\item table type: dynamic table   
-\item brief: a list of stocks over controllers
-\end{itemize}
 
-\vspace{-0.5cm}
-\begin{longtable}{ |c|c|c|l| } 
-  \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
-  owner & string & value & controller name\\
-  node & string & value & node name\\
-  stock & string & value & stock name\\
-  amount & float & value & stock amount\\
-\end{longtable}        
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Stream Dynamic Table}
 \begin{itemize}
   \setlength{\itemsep}{0pt}
@@ -611,12 +594,32 @@ All data, including maps, shall be organized in tables. Each table has to contai
 \vspace{-0.5cm}
 \begin{longtable}{ |c|c|c|l| } 
   \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
+  id & int $[0, \infty)$ & key & stream identifier\\
   owner & string & value & controller name\\
   stock & string & value & stock name\\
   start & string & value & starting node name\\
   stop & string & value & destination node name\\
   amount & float & value & stock amount \\
 \end{longtable}        
+
+
+\subsection{Flow Dynamic Table}
+\begin{itemize}
+  \setlength{\itemsep}{0pt}
+  \setlength{\parskip}{0pt}
+\item table name: flow\_dt  
+\item table type: dynamic table   
+\item brief: a list of components of streams
+\end{itemize}
+
+\vspace{-0.5cm}
+\begin{longtable}{ |c|c|c|l| } 
+  \LTHeaderIV{Header}{column title}{column type}{column role}{column brief}                    
+  id & int $[0, \infty)$ & value & stream identifier\\
+  start & string & value & starting node name\\
+  stop & string & value & destination node name\\
+\end{longtable}        
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Market Dynamic Table}

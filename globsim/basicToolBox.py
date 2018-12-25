@@ -8,18 +8,27 @@
 import sys
 from termcolor import colored
 
+debug = True
 
 def printInfo(info):
     prefix = colored("(info)", "green")
     out = "%s %s\n" % (prefix, info)
-    sys.stderr.write(out)
+    sys.stdout.write(out)
 
 def printError(info):
     prefix = colored("(error)", "red")
     out = "%s %s\n" % (prefix, info)
     sys.stderr.write(out)
 
+def printWarning(info):
+    prefix = colored("(warning)", "yellow")
+    out = "%s %s\n" % (prefix, info)
+    sys.stderr.write(out)
+
 def printDebug(info):
+    if not debug:
+        return
+    
     prefix = colored("(debug)", "cyan")
     out = "%s %s\n" % (prefix, info)
     sys.stderr.write(out)

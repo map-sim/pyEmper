@@ -5,13 +5,14 @@
 # opensource licence: GPL-3.0
 # application: GLOBSIM
 
-
 from globsimSQL import GlobSimSQL
 from basicToolBox import printDebug
+from basicToolBox import printWarning
 from basicToolBox import printInfo
 from basicToolBox import rgb2str
 from basicToolBox import str2rgb
 
+import basicToolBox
 import random
 import string
 import math
@@ -48,9 +49,10 @@ class DiagramViewer(Gtk.Window):
         self.value = 1.0
         self.database = str(database)        
         self.handler = GlobSimSQL(database)
+        # basicToolBox.debug = True
 
-        self.width = self.handler.getParam("map_width")
         self.height = self.handler.getParam("map_height")
+        self.width = self.handler.getParam("map_width")
         project = self.handler.getParam("map_project")
         self.handler.requireMapProjection(0)
 
@@ -113,7 +115,7 @@ class DiagramViewer(Gtk.Window):
             self.value /= 1.1
         else:
             self.value *= 1.1            
-        print("value:", float(self.value))
+        printInfo(f"value: {float(self.value)}")
         
     def printHelp(self):
         printInfo("1 - draw map of terrains")
@@ -130,8 +132,8 @@ class DiagramViewer(Gtk.Window):
         printInfo("h - this help")
             
     def onPress(self, widget, event):
-        print("Key val: ", event.keyval)    
-        print("Key name: ", Gdk.keyval_name(event.keyval))    
+        printDebug(f"Key val: {event.keyval}")    
+        printDebug(f"Key name: {Gdk.keyval_name(event.keyval)}")    
 
         if Gdk.keyval_name(event.keyval) == "h":
             self.printHelp()
@@ -150,7 +152,7 @@ class DiagramViewer(Gtk.Window):
             return
 
         if Gdk.keyval_name(event.keyval) == "r":
-            printDebug("refresh screen")
+            printInfo("refresh screen")
             self.refrechScreen()
             return
 
@@ -170,7 +172,7 @@ class DiagramViewer(Gtk.Window):
                 self.checkLine = self.handler.diagram.checkBorder
             else: self.checkLine = self.handler.diagram.checkCoast
             self.refrechScreen()                    
-            printDebug("toogle border")
+            printInfo("toogle border")
             return
             
         if Gdk.keyval_name(event.keyval) == "c":
@@ -201,11 +203,11 @@ class DiagramViewer(Gtk.Window):
             return
 
         if len(sys.argv) <= 3:
-            printDebug("read-only mode!")
+            printWarning("read-only mode!")
             return
         elif len(sys.argv) > 3:
             if sys.argv[3] != "--edit":
-                printDebug("read-only mode!")
+                printWarning("read-only mode!")
                 return
             
         if Gdk.keyval_name(event.keyval) == "n":
@@ -215,20 +217,20 @@ class DiagramViewer(Gtk.Window):
             while newname in nodeset: 
                 newname = ''.join(random.sample(charset*3, 3))
             self.tmpNode = newname
-            printDebug(f"new node: {newname}")
+            printInfo(f"new node: {newname}")
             return
             
         if Gdk.keyval_name(event.keyval) == "s":            
             n = self.handler.diagram.smoothBorder()
-            printDebug(f"smooth border: {n}")
+            printInfo(f"smooth border: {n}")
             return
             
         if Gdk.keyval_name(event.keyval) == "u":
             self.handler.diagram.smoothCurrent()
-            printDebug(f"smooth current...")
+            printInfo(f"smooth current...")
             return
             
-        printDebug("not defined key!")
+        printWarning("not defined key!")
             
     def onExit(self, win, event):
         del(self.handler)
@@ -238,7 +240,7 @@ class DiagramViewer(Gtk.Window):
         y = int(event.y / self.resize)
         x = int(event.x / self.resize)
         x = (x + self.offset) % self.width
-        # printDebug(f"click: {x} x {y}")
+        printInfo(f"click: {x} x {y}")
         return x, y
     
     def onCurrCross(self, box, event):            
@@ -249,11 +251,11 @@ class DiagramViewer(Gtk.Window):
         x, y = self.extractXY(event)        
 
         if len(sys.argv) <= 3:
-            printDebug("read-only mode!")
+            printWarning("read-only mode!")
             return
         elif len(sys.argv) > 3:
             if sys.argv[3] != "--edit":
-                printDebug("read-only mode!")
+                printWarning("read-only mode!")
                 return
         
         if event.button == 1:
@@ -309,11 +311,11 @@ class DiagramViewer(Gtk.Window):
             printInfo(f"node: {self.tmpNode} color: {self.tmpColor}")
 
         if len(sys.argv) <= 3:
-            printDebug("read-only mode!")
+            printWarning("read-only mode!")
             return
         elif len(sys.argv) > 3:
             if sys.argv[3] != "--edit":
-                printDebug("read-only mode!")
+                printWarning("read-only mode!")
                 return
         
         if event.button == 1:
@@ -327,7 +329,6 @@ class DiagramViewer(Gtk.Window):
             self.handler.diagram[x, y+1] = nt
             self.handler.diagram[x, y-1] = nt
                                         
-
 try:
     offset = int(sys.argv[2])
     win = DiagramViewer(sys.argv[1], offset)
@@ -336,4 +337,4 @@ except IndexError:
     
 try: Gtk.main()
 except KeyboardInterrupt:
-    print("???")
+    printInfo("break by keyboard")
