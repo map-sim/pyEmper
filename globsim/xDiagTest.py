@@ -12,7 +12,6 @@ from globsimSQL import GlobSimSQL
 from basicToolBox import printInfo
 
 handler = GlobSimSQL(database)
-handler.setParam("toll_current", 1.0)
 
 inBorder = handler.diagram.getInBorderAtoms("AGK", "NFY")
 length = len(inBorder)

@@ -108,6 +108,22 @@ class DiagramSQL(ConfigSQL, dict):
         capacity = self.terrains[color][3]
         return not bool(capacity)
 
+    def calcArea(self, node):
+        test = f"node='{node}'"
+        rows = self.select("diagram_cm", "x,y", test=test)
+        return len(rows) * self.getParam("map_scale") 
+    
+    def calcCapacity(self, node):
+        test = f"node='{node}'"
+        rows = self.select("diagram_cm", "color", test=test)
+        capacity = 0.0
+        for color in rows:
+            test = f"color='{color[0]}'"
+            rows = self.select("terrain_ct", "capacity", test=test)
+            capacity += rows[0][0]
+            
+        return capacity * self.getParam("map_scale") 
+    
     def calcMean(self, node):
         test = f"node='{node}'"
         rows = self.select("diagram_cm", "x,y", test=test)

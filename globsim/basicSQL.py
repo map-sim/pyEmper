@@ -44,7 +44,7 @@ class BasicSQL:
         if not (test is None):
             query = f"SELECT {content} FROM {table} WHERE {test}"
         else: query = f"SELECT {content} FROM {table}"
-            
+        
         self.execute(f"{query} {extra}")
         out = self.cur.fetchall()
         return out

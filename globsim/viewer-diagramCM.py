@@ -17,7 +17,7 @@ import random
 import string
 import math
 import sys
-import gi
+import gi, os
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -308,7 +308,9 @@ class DiagramViewer(Gtk.Window):
         if event.button == 3:
             self.tmpNode = self.handler.diagram.getNode(x,y)
             self.tmpColor = self.handler.diagram.getTerrColor(x,y)
-            printInfo(f"node: {self.tmpNode} color: {self.tmpColor}")
+            area = self.handler.diagram.calcArea(self.tmpNode)
+            capacity = self.handler.diagram.calcCapacity(self.tmpNode)
+            printInfo(f"node: {self.tmpNode} ({area}|{capacity}) color: {self.tmpColor}")
 
         if len(sys.argv) <= 3:
             printWarning("read-only mode!")
