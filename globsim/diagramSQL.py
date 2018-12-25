@@ -26,8 +26,8 @@ class DiagramSQL(ConfigSQL, dict):
         self.terrains = dict()
         self.maxdrag = 0.0
         rows = self.select("terrain_ct")        
-        for name, color, drag, charge in rows:
-            self.terrains[color] = name, drag, charge
+        for name, color, drag, charge, capacity in rows:
+            self.terrains[color] = name, drag, charge, capacity
             if abs(drag) > self.maxdrag:
                 self.maxdrag = abs(drag)
                 
@@ -85,8 +85,8 @@ class DiagramSQL(ConfigSQL, dict):
     def isRiver(self, x, y):
         color = self[x,y][1]
         drag = self.terrains[color][1]
-        charge = self.terrains[color][2]
-        if bool(charge) and drag < 0:
+        capacity = self.terrains[color][3]
+        if bool(capacity) and drag < 0:
             return True
         return False
         
@@ -96,8 +96,8 @@ class DiagramSQL(ConfigSQL, dict):
         else: x = nx
         
         color = self[x,y][1]
-        charge = self.terrains[color][2]
-        return bool(charge)
+        capacity = self.terrains[color][3]
+        return bool(capacity)
 
     def isSee(self, nx, y=None):
         if y is None:
@@ -105,8 +105,8 @@ class DiagramSQL(ConfigSQL, dict):
         else: x = nx
         
         color = self[x,y][1]
-        charge = self.terrains[color][2]
-        return not bool(charge)
+        capacity = self.terrains[color][3]
+        return not bool(capacity)
 
     def calcMean(self, node):
         test = f"node='{node}'"

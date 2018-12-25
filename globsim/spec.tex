@@ -425,8 +425,9 @@ All data, including maps, shall be organized in tables. Each table has to contai
   \LTHeaderIV{Header}{column title}{column type}{role}{brief}                    
   name & string & key & terrain name\\
   color & string  & key & RGB in HEX\\
-  drag & float & value & resistance $(0, \infty)$\\
-  charge & float & value & building maintenance charge $(0, \infty)$\\
+  drag & float $(0, \infty)$ & value & drag $/$ resistance\\
+  charge & float $(0, \infty)$ & value & building maintenance charge\\
+  capacity & float $[0, \infty)$ & value & capacity for stock and people\\
 \end{longtable}        
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
