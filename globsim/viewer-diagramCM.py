@@ -16,8 +16,8 @@ import basicToolBox
 import random
 import string
 import math
-import sys
-import gi, os
+import sys, os
+import gi, re
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -34,7 +34,7 @@ from gi.repository import GLib
 class DiagramViewer(Gtk.Window):
     borderRGB = 0, 0, 0
     
-    def __init__(self, database, offset=0):
+    def __init__(self, database, offset=0, flags={}):
         Gtk.Window.__init__(self, title="EMPER - TMAP VIEWER")
         self.connect("key-press-event",self.onPress)
         self.connect("delete-event", self.onExit)
@@ -56,6 +56,9 @@ class DiagramViewer(Gtk.Window):
         project = self.handler.getParam("map_project")
         self.handler.requireMapProjection(0)
 
+        self.offset = offset
+        printInfo(f"offset: {offset}")
+
         fix = Gtk.Fixed()
         self.add(fix)
 
@@ -72,7 +75,14 @@ class DiagramViewer(Gtk.Window):
         self.img = Gtk.Image()
         ebox.add(self.img)
 
-        self.offset = offset
+        if flags["cmode"]:
+            self.checkLine = self.handler.diagram.checkCoast
+            self.getColor = self.handler.diagram.getCurrColor        
+            self.refrechScreen()                    
+        
+        if flags["bmode"]:
+            self.borderToogle()
+
         self.refrechScreen()        
         self.show_all()
 
@@ -168,11 +178,7 @@ class DiagramViewer(Gtk.Window):
             return
 
         if Gdk.keyval_name(event.keyval) == "b":
-            if self.checkLine == self.handler.diagram.checkCoast:
-                self.checkLine = self.handler.diagram.checkBorder
-            else: self.checkLine = self.handler.diagram.checkCoast
-            self.refrechScreen()                    
-            printInfo("toogle border")
+            self.borderToogle()
             return
             
         if Gdk.keyval_name(event.keyval) == "c":
@@ -236,6 +242,13 @@ class DiagramViewer(Gtk.Window):
         del(self.handler)
         Gtk.main_quit()
 
+    def borderToogle(self):
+        if self.checkLine == self.handler.diagram.checkCoast:
+            self.checkLine = self.handler.diagram.checkBorder
+        else: self.checkLine = self.handler.diagram.checkCoast
+        self.refrechScreen()                    
+        printInfo("toogle border")
+        
     def extractXY(self, event):
         y = int(event.y / self.resize)
         x = int(event.x / self.resize)
@@ -323,7 +336,6 @@ class DiagramViewer(Gtk.Window):
         if event.button == 1:
             if not self.tmpNode: return
             if not self.tmpColor: return
-            # dxy = self.handler.diagram.getStream(x, y)
             nt = self.tmpNode, rgb2str(self.tmpColor)
             self.handler.diagram[x, y] = nt
             self.handler.diagram[x+1, y] = nt
@@ -332,11 +344,32 @@ class DiagramViewer(Gtk.Window):
             self.handler.diagram[x, y-1] = nt
                                         
 try:
-    offset = int(sys.argv[2])
-    win = DiagramViewer(sys.argv[1], offset)
-except IndexError:
-    win = DiagramViewer(sys.argv[1])
+    flags = {}
+    if "c" in sys.argv[2]:
+        flags["cmode"] = True
+    else: flags["cmode"] = False      
+    if "b" in sys.argv[2]: 
+        flags["bmode"] = True
+    else: flags["bmode"] = False
     
+    fregexp = lambda x: re.search("[0-9]", x)
+    filtered = filter(fregexp, sys.argv[2])
+    offset = int("".join(list(filtered)))
+    
+    win = DiagramViewer(sys.argv[1], offset, flags)
+    
+except IndexError:
+    flags = {"cmode": False, "bmode": False}
+    win = DiagramViewer(sys.argv[1], flags=flags)
+
+if len(sys.argv) > 3:
+    fname = sys.argv[3]
+    if re.search("^.*[.](png|PNG)$", fname):
+        pb = win.img.get_pixbuf()
+        pb.savev(fname, "png", "", "")
+        printInfo(f"save as: {fname}")
+        sys.exit(0)
+        
 try: Gtk.main()
 except KeyboardInterrupt:
     printInfo("break by keyboard")
