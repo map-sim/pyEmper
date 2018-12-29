@@ -23,6 +23,7 @@ class BasicSQL:
 
         printDebug("database: %s" % fname)
         self.conn = sqlite3.connect(fname)
+        self.conn.row_factory = sqlite3.Row
         self.cur = self.conn.cursor()
 
     def __del__(self):
@@ -61,3 +62,8 @@ class BasicSQL:
         if self.direct:
             self.commit()
  
+    def check_existence(self, table):        
+        query = f"SELECT name FROM sqlite_master WHERE name='{table}'"
+        self.execute(query)
+        rows = self.cur.fetchall()
+        return bool(len(rows))

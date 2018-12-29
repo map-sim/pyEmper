@@ -17,18 +17,19 @@ def addNation(database, nation):
         query = "CREATE TABLE nation_sm (node text unique)"
         handler.execute(query)
     except sqlite3.OperationalError:
-        printWarning("already exists?")
+        printWarning("nation_sm already exists?")
     
     try:
         query = "CREATE TABLE nation_st (name text unique, employment real)"
         handler.execute(query)
     except sqlite3.OperationalError:
-        printWarning("already exists?")
+        printWarning("nation_st already exists?")
     
     rows = handler.select("diagram_cm", "node")
     nodenames = set()
     for row in rows:
         nodenames.add(row[0])
+    printInfo(f"node number: {len(nodenames)}")
     
     for node in nodenames:
         try:
@@ -37,7 +38,7 @@ def addNation(database, nation):
         except sqlite3.OperationalError: pass
         except sqlite3.IntegrityError: pass
             
-    query = f"ALTER TABLE nation_sm ADD COLUMN {nation} int"
+    query = f"ALTER TABLE nation_sm ADD COLUMN {nation} real"
     handler.execute(query)
     
     query = f"INSERT INTO nation_st VALUES ('{nation}', 0.75)"
@@ -49,7 +50,25 @@ def addNation(database, nation):
 import sys
 database = sys.argv[1]
 
-addNation(database, "VCT")
-addNation(database, "HLN")
-addNation(database, "JNN")
-addNation(database, "KFR")
+import random
+import string    
+
+nations = set()
+nations.add("KAFR")
+nations.add("VICT")
+nations.add("TROJ")
+nations.add("LAZR")
+nations.add("SCEP")
+nations.add("GERS")
+
+while len(nations) < 16:
+    nationname = ""
+    for _ in range(4):
+        letter = random.choice(string.ascii_uppercase)
+        nationname = nationname + letter
+    nations.add(nationname) 
+    
+for nationname in nations:
+    addNation(database, nationname)
+    printInfo(f"nation: {nationname}")
+    

@@ -7,8 +7,10 @@
 
 import math
 from configSQL import ConfigSQL
-from basicToolBox import printError
 from basicToolBox import str2rgb
+
+from basicToolBox import printError
+from basicToolBox import printWarning
 
 class DiagramSQL(ConfigSQL, dict):
 
@@ -23,8 +25,8 @@ class DiagramSQL(ConfigSQL, dict):
         for x,y,n,t,dx,dy in rows:
             dict.__setitem__(self, (x,y), (n,t,dx,dy))
 
-        self.terrains = dict()
         self.maxdrag = 0.0
+        self.terrains = dict()
         rows = self.select("terrain_ct")        
         for name, color, drag, charge, capacity in rows:
             self.terrains[color] = name, drag, charge, capacity
@@ -33,6 +35,7 @@ class DiagramSQL(ConfigSQL, dict):
                 
     def __getitem__(self, key):
         x, y = key
+        x += self.width
         x %= self.width
         if y < 0 or y >= self.height: return None
         else: return dict.__getitem__(self, (x, y))
@@ -59,15 +62,15 @@ class DiagramSQL(ConfigSQL, dict):
             printError("diagram has to have 4/2-length items!")
             raise TypeError("item len")
 
-    def getNodeSet(self):
+    def getNodeSet(self): # TO UPDATE
         outSet = set()        
         for x,y in self.keys():
             outSet.add(self[x,y][0])
         return outSet
     
     def checkNext(self, x, y, node):
-        if node == self[x+1,y][0]: return True
-        if node == self[x-1,y][0]: return True
+        if node == self[x+1,y][0]: return True    
+        if node == self[x-1,y][0]: return True            
         try:
             if node == self[x,y+1][0]: return True
         except TypeError: pass
@@ -149,6 +152,7 @@ class DiagramSQL(ConfigSQL, dict):
             x1, x2 = x + 1, x - 1
             y1, y2 = y + 1, y - 1
             for xo, yo in [(x, y1), (x, y2), (x1, y), (x2, y)]:
+                if yo < 0 or yo >= self.height: continue
                 try:
                     if self[xo, yo][0] == stop:
                         inBorder.add((x, y))
@@ -184,43 +188,126 @@ class DiagramSQL(ConfigSQL, dict):
     def getTerrColor(self, x, y):
         return str2rgb(self[x,y][1])
     
-    def getCurrColor(self, x, y):
-        if self[x,y][2] == 0 and self[x,y][3] == 0:
-            color = self[x,y][1]
-            drag = self.terrains[color][1]
-            
-            if drag < 0.0:
-                r = 191 + 40 * (self.maxdrag+drag) / self.maxdrag
-                g = 191 + 40 * (self.maxdrag+drag) / self.maxdrag
-                b = 191 + 40 * (self.maxdrag+drag) / self.maxdrag
-            else:
-                r = 215 - 40 * drag / self.maxdrag
-                g = 215 - 40 * drag / self.maxdrag
-                b = 215 - 40 * drag / self.maxdrag
+    def __calcResistance(self, xo, yo, xe, ye):
+        nO,tO,dxO,dyO = self[xo, yo]           
+        nE,tE,dxE,dyE = self[xe, ye]
+        rO = self.terrains[tO][1]
+        rE = self.terrains[tE][1]
 
-        else:
-            angle = math.atan2(self[x,y][2], self[x,y][3])
-            angle /= math.pi
-            r, g, b = 0, 0, 0
-            if angle > 0 and angle <= 0.5:
-                r = 255
-                b = 255 * angle * 2
-            elif angle > 0.5:
-                r = 255 * (0.5 - (angle - 0.5)) * 2 
-                b = 255
-            elif angle > -0.5:
-                a = - 2 * angle
-                r = 255 - 128 * a
-                g = 200 * a
-            else:
-                a = - 2 * (angle + 0.5)
-                g = 200 * (1 - a)
-                r = 170 * (1 - a)
-                b = 255 * a            
-                
-            module = math.sqrt(self[x,y][2]**2 + self[x,y][3]**2)
-            r = r + (255.9 - r) * (1.0 - module)
-            g = g + (255.9 - g) * (1.0 - module)
-            b = b + (255.9 - b) * (1.0 - module)
+        rOUT = abs(rE) * self.getParam("toll_transport")
+
+        cX = math.copysign(1, (xe - xo) * dxE)
+        cY = math.copysign(1, (ye - yo) * dyE)
+        currf = self.getParam("toll_current")
+        cX *= currf
+        cY *= currf
+
+        rOUT **= (1.0 + cX)
+        rOUT **= (1.0 + cY)
+        
+        if rO * rE < 0:
+            rOUT += abs(rO - rE) * self.getParam("toll_transship")
             
-        return int(r), int(g), int(b)
+        return rOUT
+
+    def __plazming(self, startPoints, nodeName):
+        active = set()
+        plazma = dict()        
+        for x,y in startPoints:            
+            n,t,dx,dy = self[x, y]            
+            r = self.terrains[t][1]
+            plazma[x, y] = abs(r)
+            active.add((x, y))
+            
+        while active:
+            try: x, y = active.pop()
+            except KeyError: break
+            
+            for jx,jy in [(0,1), (0,-1), (1,0), (-1,0)]:                
+                nx, ny = (x + jx+ self.width) % self.width, y + jy
+                if ny < 0 or ny >= self.height: continue
+                if not self.checkNext(nx, ny, nodeName):
+                    continue
+                                
+                uR = self.__calcResistance(x, y, nx, ny)
+                nR = plazma[x, y] + uR
+                if not (nx, ny) in plazma.keys():
+                    plazma[nx, ny] = nR
+                    active.add((nx, ny))     
+                elif nR < plazma[nx, ny]:
+                    plazma[nx, ny] = nR
+                    active.add((nx, ny))
+        return plazma
+    
+    def calcTransitResistance(self, start, tranz, stop):
+        inBorder = self.getInBorderAtoms(start, tranz)
+        outBorder = self.getInBorderAtoms(stop, tranz)
+        if not len(inBorder):
+            printWarning(f"no common points: {start}-{tranz}")            
+            return 0
+        if not len(outBorder):
+            printWarning(f"no common points: {tranz}-{stop}")            
+            return 0
+
+        plazma = self.__plazming(inBorder, tranz)
+        
+        out = 0.0
+        for x,y in outBorder:
+            out += plazma[x, y]
+
+        out *= self.getParam("map_scale")
+        out /= len(outBorder)
+        return out 
+
+    def calcEnterResistance(self, starts, stop):
+        inBorder = set()
+        for start in starts:
+            dBorder = self.getInBorderAtoms(start, stop)
+            if len(dBorder) == 0:
+                printWarning(f"no common points: {start}-{stop}")
+
+            inBorder.update(dBorder)
+
+        plazma = self.__plazming(inBorder, stop)
+
+        out = 0.0
+        counter = 0
+        test = f"node='{stop}'"
+        rows = self.select("diagram_cm", "x,y", test=test)
+        discontinuity = 0
+        for x,y in rows:
+            try:
+                out += plazma[x, y]
+                counter += 1
+            except KeyError:
+                discontinuity += 1
+        if discontinuity:
+            printWarning(f"{stop} discontinuity: {discontinuity}")
+            
+        out = math.sqrt(out)
+        out *= self.getParam("map_scale")
+        return out
+    
+    def calcDistance(self, start, stop):
+        xo, yo = self.calcMean(start)
+        xe, ye = self.calcMean(stop)
+        
+        d2 = (xo - xe) ** 2 + (yo - ye) ** 2
+        d = math.sqrt(d2) * self.getParam("map_scale")
+        return d
+    
+    def getVicinity(self, node):
+        output = set()
+        test = f"node='{node}'"
+        rows = self.select("diagram_cm", "x,y", test=test)        
+        for x,y in rows:
+            if not self.checkNext(x, y, node):
+                continue
+            for dx, dy in [(0,1), (0,-1), (1,0), (-1,0)]:
+                try:
+                    tnode = self.getNode(x+dx, y+dy)
+                except TypeError: continue
+                
+                if tnode != node:
+                    output.add(tnode)
+        return output

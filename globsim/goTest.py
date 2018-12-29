@@ -12,7 +12,7 @@ from globsimSQL import GlobSimSQL
 from basicToolBox import printInfo
 
 handler = GlobSimSQL(database)
-handler.setParam("toll_current", 1.0)
+# handler.setParam("toll_current", 1.0)
 
 inBorder = handler.diagram.getInBorderAtoms("AGK", "NFY")
 length = len(inBorder)
@@ -55,9 +55,15 @@ printInfo(f"QBX SJO {val}")
 val = handler.diagram.calcEnterResistance(["RFI"], "AZW")
 printInfo(f"RFI AZW {val}")
 
+
+val = handler.diagram.calcEnterResistance(["CWL"], "HOD")
+printInfo(f"QBX SJO {val}")
+
+
 val = handler.diagram.calcDistance("RFI", "AZW")
 printInfo(f"RFI AZW {val}")
 
 val = handler.diagram.calcDistance("CWL", "AUG")
 printInfo(f"CWL AUG {val}")
+
 

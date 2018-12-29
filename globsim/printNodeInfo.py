@@ -16,6 +16,13 @@ handler = GlobSimSQL(database)
 printInfo(f"name: {nodename}")
 
 area = handler.diagram.calcArea(nodename)
+cap = handler.diagram.calcCapacity(nodename)
+mean = handler.diagram.calcMean(nodename)
+
 printInfo(f"area: {area}")
+printInfo(f"capacity: {cap}")
+printInfo(f"mean: {mean}")
+
+
 
 

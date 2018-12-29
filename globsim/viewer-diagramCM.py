@@ -5,76 +5,42 @@
 # opensource licence: GPL-3.0
 # application: GLOBSIM
 
-from globsimSQL import GlobSimSQL
+from diagramGTK import DiagramGTK
 from basicToolBox import printDebug
 from basicToolBox import printWarning
+from basicToolBox import printError
 from basicToolBox import printInfo
 from basicToolBox import rgb2str
 from basicToolBox import str2rgb
 
 import basicToolBox
+import sys, gi, re
 import random
 import string
 import math
-import sys, os
-import gi, re
-
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 
 gi.require_version('Gdk', '3.0')
 from gi.repository import Gdk
 
-gi.require_version('GdkPixbuf', '2.0')
-from gi.repository import GdkPixbuf as Gpb
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
-gi.require_version('GLib', '2.0')
-from gi.repository import GLib
-
-class DiagramViewer(Gtk.Window):
-    borderRGB = 0, 0, 0
-    
+class DiagramCM(DiagramGTK):    
     def __init__(self, database, offset=0, flags={}):
-        Gtk.Window.__init__(self, title="EMPER - TMAP VIEWER")
-        self.connect("key-press-event",self.onPress)
-        self.connect("delete-event", self.onExit)
-
+        super(DiagramCM, self).__init__(database, offset)
+        
         self.savx = None
         self.savy = None
+        self.tmpNode = None
         self.tmpAngle = None
         self.tmpColor = None
-        self.tmpNode = None
+        self.nodeList = []
         
-        self.resize = 2
-        self.value = 1.0
-        self.database = str(database)        
-        self.handler = GlobSimSQL(database)
         # basicToolBox.debug = True
-
-        self.height = self.handler.getParam("map_height")
-        self.width = self.handler.getParam("map_width")
-        project = self.handler.getParam("map_project")
-        self.handler.requireMapProjection(0)
-
-        self.offset = offset
-        printInfo(f"offset: {offset}")
-
-        fix = Gtk.Fixed()
-        self.add(fix)
-
-        ebox = Gtk.EventBox()
-        fix.put(ebox, 0,0)
 
         self.getColor = self.handler.diagram.getTerrColor
         self.checkLine = self.handler.diagram.checkBorder
         
-        ebox.connect('scroll-event', self.onScroll)
-        ebox.connect ('button-press-event', self.onClick)
-        ebox.add_events(Gdk.EventMask.SCROLL_MASK|Gdk.EventMask.SMOOTH_SCROLL_MASK)
-        
-        self.img = Gtk.Image()
-        ebox.add(self.img)
-
         if flags["cmode"]:
             self.checkLine = self.handler.diagram.checkCoast
             self.getColor = self.handler.diagram.getCurrColor        
@@ -86,47 +52,6 @@ class DiagramViewer(Gtk.Window):
         self.refrechScreen()        
         self.show_all()
 
-    def refrechScreen(self):
-        diagramRGB = []
-        for y in range(self.height):
-            top, flo = [], []            
-            for x in range(self.width):
-                x = (x + self.offset) % self.width
-                flag = self.checkLine(x, y)
-                rgb = self.getColor(x, y)
-                
-                lu = self.borderRGB if flag & 8 else rgb 
-                ru = self.borderRGB if flag & 1 else rgb 
-
-                row = [*lu, *ru]
-                top.extend(2 * self.borderRGB if flag & 2 else row)
-                flo.extend(2 * self.borderRGB if flag & 4 else row)
-                
-            diagramRGB.extend(top)
-            diagramRGB.extend(flo)
-            
-        tmp = GLib.Bytes.new(diagramRGB)
-        rowarg = self.resize * 3 * self.width
-        confargs = tmp, Gpb.Colorspace.RGB, False, 8
-        sizeargs = self.resize * self.width, self.resize * self.height
-        pbuf = Gpb.Pixbuf.new_from_bytes(*confargs, *sizeargs, rowarg)        
-        self.img.set_from_pixbuf(pbuf)
-
-    def onClick(self, box, event):
-        if self.getColor == self.handler.diagram.getTerrColor:
-            self.onTerrCross(box, event)
-        elif self.getColor == self.handler.diagram.getCurrColor:
-            self.onCurrCross(box, event)
-        else:
-            self.onROCross(box, event)
-            
-    def onScroll(self, box, event):
-        if event.delta_y > 0:
-            self.value /= 1.1
-        else:
-            self.value *= 1.1            
-        printInfo(f"value: {float(self.value)}")
-        
     def printHelp(self):
         printInfo("1 - draw map of terrains")
         printInfo("2 - draw map of currents")
@@ -140,7 +65,16 @@ class DiagramViewer(Gtk.Window):
         printInfo("q - angule reset")
         printInfo("p - print tmp info")
         printInfo("h - this help")
-            
+        
+    def onClick(self, box, event):
+        if self.getColor == self.handler.diagram.getTerrColor:
+            self.onTerrCross(box, event)
+        elif self.getColor == self.handler.diagram.getCurrColor:
+            self.onCurrCross(box, event)
+        else:
+            printError("ony 2 modes")
+            # self.onROCross(box, event)
+                                
     def onPress(self, widget, event):
         printDebug(f"Key val: {event.keyval}")    
         printDebug(f"Key name: {Gdk.keyval_name(event.keyval)}")    
@@ -202,6 +136,7 @@ class DiagramViewer(Gtk.Window):
                     
         if Gdk.keyval_name(event.keyval) == "q":
             self.tmpAngle = None
+            self.nodeList = []
             return
 
         if Gdk.keyval_name(event.keyval) == "p":
@@ -232,36 +167,28 @@ class DiagramViewer(Gtk.Window):
             return
             
         if Gdk.keyval_name(event.keyval) == "u":
-            self.handler.diagram.smoothCurrent()
+            self.handler.diagram.smoothCurrent(self.nodeList)
             printInfo(f"smooth current...")
             return
             
         printWarning("not defined key!")
             
-    def onExit(self, win, event):
-        del(self.handler)
-        Gtk.main_quit()
-
     def borderToogle(self):
         if self.checkLine == self.handler.diagram.checkCoast:
             self.checkLine = self.handler.diagram.checkBorder
         else: self.checkLine = self.handler.diagram.checkCoast
         self.refrechScreen()                    
         printInfo("toogle border")
-        
-    def extractXY(self, event):
-        y = int(event.y / self.resize)
-        x = int(event.x / self.resize)
-        x = (x + self.offset) % self.width
-        printInfo(f"click: {x} x {y}")
-        return x, y
-    
+            
     def onCurrCross(self, box, event):            
+        x, y = self.extractXY(event)
+        
         if event.button == 2:
-            printDebug("refresh screen")
+            self.nodeList.append(self.handler.diagram[x,y][0])
+            printInfo(self.nodeList)            
+            printInfo("refresh screen")            
             self.refrechScreen()
             return
-        x, y = self.extractXY(event)        
 
         if len(sys.argv) <= 3:
             printWarning("read-only mode!")
@@ -313,7 +240,7 @@ class DiagramViewer(Gtk.Window):
         
     def onTerrCross(self, box, event):            
         if event.button == 2:
-            printDebug("refresh screen")
+            printInfo("refresh screen")
             self.refrechScreen()
             return
         x, y = self.extractXY(event)
@@ -322,8 +249,10 @@ class DiagramViewer(Gtk.Window):
             self.tmpNode = self.handler.diagram.getNode(x,y)
             self.tmpColor = self.handler.diagram.getTerrColor(x,y)
             area = self.handler.diagram.calcArea(self.tmpNode)
+            mx, my = self.handler.diagram.calcMean(self.tmpNode)
             capacity = self.handler.diagram.calcCapacity(self.tmpNode)
-            printInfo(f"node: {self.tmpNode} ({area}|{capacity}) color: {self.tmpColor}")
+            mean = f"{int(mx)}x{int(my)}"
+            printInfo(f"node: {self.tmpNode} ({area}|{capacity}|{mean}) color: {self.tmpColor}")
 
         if len(sys.argv) <= 3:
             printWarning("read-only mode!")
@@ -356,11 +285,11 @@ try:
     filtered = filter(fregexp, sys.argv[2])
     offset = int("".join(list(filtered)))
     
-    win = DiagramViewer(sys.argv[1], offset, flags)
+    win = DiagramCM(sys.argv[1], offset, flags)
     
 except IndexError:
     flags = {"cmode": False, "bmode": False}
-    win = DiagramViewer(sys.argv[1], flags=flags)
+    win = DiagramCM(sys.argv[1], flags=flags)
 
 if len(sys.argv) > 3:
     fname = sys.argv[3]
