@@ -9,8 +9,6 @@ import sys
 database = sys.argv[1]
 
 from configSQL import ConfigSQL
-from basicToolBox import printInfo
-
 conf = ConfigSQL(database)
 conf.printAllParams()
 
