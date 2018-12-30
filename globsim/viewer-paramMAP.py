@@ -32,14 +32,15 @@ class ParamMAP(DiagramGTK):
         # basicToolBox.debug = True
         
         self.modes = ["nation_sm"]
-        self.tmpItems = self.handler.getNationList()
         self.allNodes = self.handler.diagram.getNodeSet()
-        printInfo(self.tmpItems)
 
-        self.modecount = 0
-        self.itemcount = 0
         self.__goCache = {}
-        self.newMode()
+        try:
+            self.newMode(sys.argv[4], sys.argv[5])
+        except IndexError:
+            self.modecount = 0
+            self.itemcount = 0
+            self.newMode()
         
         self.tmpNode = None        
         self.refrechScreen()        
@@ -57,9 +58,9 @@ class ParamMAP(DiagramGTK):
         item = self.tmpItems[self.itemcount]
 
         if event.button == 3:
-            self.value = self.__nodeCache[self.tmpNode, item] 
-            printInfo(f"node: {self.tmpNode}")
-            printInfo(f"{item}: {self.value}")
+            self.value = self.__nodeCache[self.tmpNode, item]
+            capacity = self.handler.diagram.calcCapacity(self.tmpNode)
+            printInfo(f"node: {self.tmpNode} | {item}: {self.value} ~ {self.value/capacity}")
         
         if len(sys.argv) <= 3:
             printWarning("read-only mode!")
@@ -82,6 +83,11 @@ class ParamMAP(DiagramGTK):
         if Gdk.keyval_name(event.keyval) == "i":
             printInfo(f"mode: {self.modes[self.modecount]}")
             printInfo(f"item: {self.tmpItems[self.itemcount]}")
+            return
+        if Gdk.keyval_name(event.keyval) == "l":
+            printInfo(f"mode: {self.modes[self.modecount]}")
+            for i,item in enumerate(self.tmpItems):
+                printInfo(f"{i}: {item}")                
             return
 
         if int(event.keyval) == 65362:
@@ -117,6 +123,36 @@ class ParamMAP(DiagramGTK):
                 return
         
         if Gdk.keyval_name(event.keyval) == "n":
+            if self.modes[self.modecount] != "nation_sm": return
+
+            cache = {}
+            for node in self.allNodes:
+                capacity = self.handler.diagram.calcCapacity(node)
+                if capacity == 0:                     
+                    for nation in self.tmpItems:
+                        self.handler.graph[node, nation] = 0
+                    continue
+
+                total = 0.0
+                for nation in self.tmpItems:
+                    share = self.handler.graph[node, nation]
+                    total += share
+                    
+                for nation in self.tmpItems:
+                    val = capacity * self.handler.graph[node, nation] / total
+                    self.handler.graph[node, nation] = val
+                    try: cache[nation] += val
+                    except KeyError:
+                        cache[nation] = val
+                        
+                printInfo(f"{node}: {total}")
+                
+            printInfo("nations:")
+            for nation in cache.keys():
+                printInfo(f"{nation}: {cache[nation]}")
+            self.newMode()
+            
+        if Gdk.keyval_name(event.keyval) == "m":
             if self.modes[self.modecount] != "nation_sm": return
             nation = self.tmpItems[self.itemcount]
             cacheOut = {}
@@ -156,12 +192,18 @@ class ParamMAP(DiagramGTK):
             printInfo(f"delta: {counter}")
             return
         
-    def newMode(self):
+    def newMode(self, mode=None, item=None):
+        if not mode is None:
+            self.modecount = self.modes.index(mode)
+            
         self.handler.graph.change_table(self.modes[self.modecount])
         if self.modes[self.modecount] == "nation_sm":
             self.tmpItems = self.handler.getNationList()
         else: printError("newMode")
-        self.itemcount %= len(self.tmpItems)
+
+        if not item is None:
+            self.itemcount = self.tmpItems.index(item)
+        else: self.itemcount %= len(self.tmpItems)
         
         self.__nodeCache = {}
         table = self.modes[self.modecount]

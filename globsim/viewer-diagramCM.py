@@ -251,8 +251,10 @@ class DiagramCM(DiagramGTK):
             area = self.handler.diagram.calcArea(self.tmpNode)
             mx, my = self.handler.diagram.calcMean(self.tmpNode)
             capacity = self.handler.diagram.calcCapacity(self.tmpNode)
-            mean = f"{int(mx)}x{int(my)}"
-            printInfo(f"node: {self.tmpNode} ({area}|{capacity}|{mean}) color: {self.tmpColor}")
+            aperture = self.handler.diagram.calcAperture(self.tmpNode)
+            charge = self.handler.diagram.calcCharge(self.tmpNode)
+            info = f"area: {area} aperture: {aperture} capacity: {capacity} charge: {charge}"
+            printInfo(f"node: {self.tmpNode} {info} | {int(mx)}x{int(my)} color: {self.tmpColor}")
 
         if len(sys.argv) <= 3:
             printWarning("read-only mode!")

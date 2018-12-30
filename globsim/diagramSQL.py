@@ -28,8 +28,8 @@ class DiagramSQL(ConfigSQL, dict):
         self.maxdrag = 0.0
         self.terrains = dict()
         rows = self.select("terrain_ct")        
-        for name, color, drag, charge, capacity in rows:
-            self.terrains[color] = name, drag, charge, capacity
+        for name, color, drag, charge, aperture in rows:
+            self.terrains[color] = name, drag, charge, aperture
             if abs(drag) > self.maxdrag:
                 self.maxdrag = abs(drag)
                 
@@ -88,8 +88,8 @@ class DiagramSQL(ConfigSQL, dict):
     def isRiver(self, x, y):
         color = self[x,y][1]
         drag = self.terrains[color][1]
-        capacity = self.terrains[color][3]
-        if bool(capacity) and drag < 0:
+        aperture = self.terrains[color][3]
+        if bool(aperture) and drag < 0:
             return True
         return False
         
@@ -99,8 +99,8 @@ class DiagramSQL(ConfigSQL, dict):
         else: x = nx
         
         color = self[x,y][1]
-        capacity = self.terrains[color][3]
-        return bool(capacity)
+        aperture = self.terrains[color][3]
+        return bool(aperture)
 
     def isSee(self, nx, y=None):
         if y is None:
@@ -108,25 +108,45 @@ class DiagramSQL(ConfigSQL, dict):
         else: x = nx
         
         color = self[x,y][1]
-        capacity = self.terrains[color][3]
-        return not bool(capacity)
+        aperture = self.terrains[color][3]
+        return not bool(aperture)
 
     def calcArea(self, node):
         test = f"node='{node}'"
         rows = self.select("diagram_cm", "x,y", test=test)
         return len(rows) * self.getParam("map_scale") 
     
+    def calcAperture(self, node):
+        test = f"node='{node}'"
+        points = self.select("diagram_cm", "color", test=test)
+        aperture = 0.0
+        for color in points:
+            test = f"color='{color[0]}'"
+            rows = self.select("terrain_ct", "aperture", test=test)
+            aperture += rows[0][0]            
+        return aperture * self.getParam("map_scale") 
+    
+    def calcCharge(self, node):
+        test = f"node='{node}'"
+        points = self.select("diagram_cm", "color", test=test)
+        drag, counter = 0.0, 0
+        for color in points:
+            test = f"color='{color[0]}'"
+            rows = self.select("terrain_ct", "charge", test=test)
+            drag += rows[0][0]
+            counter += 1
+        return drag / counter  
+
     def calcCapacity(self, node):
         test = f"node='{node}'"
-        rows = self.select("diagram_cm", "color", test=test)
+        points = self.select("diagram_cm", "color", test=test)
         capacity = 0.0
-        for color in rows:
+        for color in points:
             test = f"color='{color[0]}'"
-            rows = self.select("terrain_ct", "capacity", test=test)
-            capacity += rows[0][0]
+            rows = self.select("terrain_ct", "aperture,charge", test=test)
+            capacity += rows[0]["aperture"] / rows[0]["charge"]
+        return capacity  * self.getParam("map_scale")
             
-        return capacity * self.getParam("map_scale") 
-    
     def calcMean(self, node):
         test = f"node='{node}'"
         rows = self.select("diagram_cm", "x,y", test=test)
@@ -206,7 +226,8 @@ class DiagramSQL(ConfigSQL, dict):
         rOUT **= (1.0 + cY)
         
         if rO * rE < 0:
-            rOUT += abs(rO - rE) * self.getParam("toll_transship")
+            # rOUT += abs(rE/rO) **  math.copysign(1, rE) * self.getParam("toll_transship")
+            rOUT += abs(rE-rO) * self.getParam("toll_transship")
             
         return rOUT
 
