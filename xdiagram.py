@@ -137,11 +137,17 @@ class XDiagramGTK(Gtk.Window):
         ToolBox.print_warning(f"Key val: {event.keyval}, ",
                              f"Key name: {Gdk.keyval_name(event.keyval)}")
     def onClick(self, box, event):
-        y = int(event.y / self.resize)
-        x = int(event.x / self.resize)
+        yc = int(event.y / self.resize)
+        y = yc + self.zoom["north"]
+
+        xc = int(event.x / self.resize)
+        x = xc + self.zoom["west"]
         xo = (x + self.offset) % self.width
         node = self.diagram[xo,y][1]
-        ToolBox.print_output(f"{x}({xo})x{y} - {node}")
+        ToolBox.print_output(f"{xc}x{yc} -> {xo}x{y} = {node}")
+
+        db_name = self.driver.db_name
+        os.system(f"./node.py -f {db_name} -n {node}")
     
     def refrech(self):
         diagramRGB = []

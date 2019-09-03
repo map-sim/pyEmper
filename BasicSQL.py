@@ -16,7 +16,8 @@ class BasicSQL:
         if not os.path.exists(fname):
             ToolBox.print_error(f"path {fname} not exists!")
             sys.exit(-1)
-
+        self.db_name = fname
+            
         def dict_factory(cur, row):
             gen = enumerate(cur.description)
             out = {c[0]: row[i] for i,c in gen}
@@ -68,9 +69,26 @@ class BasicSQL:
         return dout
 
     ###
+    ### terrain specific
+    ###
+
+    def get_terrain_as_dict(self, color):
+        out = self.execute(f"SELECT * FROM terrain WHERE color='{color}'")
+        assert len(out) == 1, "(e) only 1 terrain is expected"
+        return out[0]
+
+    ###
     ### diagram specific
     ###
 
+    def get_node_names_as_set(self):
+        out = self.execute("SELECT node FROM diagram")
+        assert len(out) > 0, "(e) node number < 1"
+        nodeset = set()
+        for drow in out:
+            nodeset.add(drow["node"])
+        return nodeset
+        
     def get_diagram_as_dict(self):
         out = self.execute("SELECT * FROM diagram")
         assert len(out) > 0, "(e) diagram length < 1"
@@ -84,3 +102,23 @@ class BasicSQL:
             node = drow["node"]
             dout[xykey] = col, node, dc
         return dout
+
+    def get_node_coordinates_as_set(self, node):
+        out = self.execute(f"SELECT x, y FROM diagram WHERE node='{node}'")
+        assert len(out) > 0, "(e) node atom number < 1"
+
+        xyset = set()
+        for drow in out:
+            item = drow["x"], drow["y"]
+            xyset.add(item)
+        return xyset
+
+    def get_node_atoms_as_dict(self, node):
+        out = self.execute(f"SELECT * FROM diagram WHERE node='{node}'")
+        assert len(out) > 0, "(e) node atom number < 1"
+        
+        atoms = {}
+        for drow in out:
+            item = drow["x"], drow["y"]
+            atoms[item] = drow["color"], drow["dx"], drow["dy"]
+        return atoms
