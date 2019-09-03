@@ -65,4 +65,22 @@ class BasicSQL:
             if drow['name'] in self.__ints:                
                 dout[drow['name']] = int(drow['value'])
             else: dout[drow['name']] = drow['value']
-        return dout 
+        return dout
+
+    ###
+    ### diagram specific
+    ###
+
+    def get_diagram_as_dict(self):
+        out = self.execute("SELECT * FROM diagram")
+        assert len(out) > 0, "(e) diagram length < 1"
+        ca = self.get_config_by_name("current_amplitude")
+    
+        dout = {}
+        for drow in out:
+            xykey = drow["x"], drow["y"]
+            dc = drow["dx"]/ca, drow["dy"]/ca
+            col = drow["color"]
+            node = drow["node"]
+            dout[xykey] = col, node, dc
+        return dout

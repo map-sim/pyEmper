@@ -10,6 +10,7 @@
 ###
 
 import optparse, os
+import ToolBox
 
 parser = optparse. OptionParser()
 parser.add_option("-f", "--db-file", dest="dbfile",
@@ -18,6 +19,9 @@ parser.add_option("-f", "--db-file", dest="dbfile",
 parser.add_option("-d", "--delete", dest="delete",
                   action="store_true", default=False,
                   help="delete parameter")
+parser.add_option("-p", "--poor", dest="poor",
+                  action="store_true", default=False,
+                  help="poor mode to print parameter")
 parser.add_option("-n", "--name", dest="name",
                   help="parameter name")
 parser.add_option("-v", "--value", dest="value",
@@ -28,12 +32,10 @@ if opts.delete and opts.value:
     raise TypeError("(e) set and delete")
 
 ###
-### driver creation 
+### main
 ###
 
 import BasicSQL
-import ToolBox
-
 driver = BasicSQL.BasicSQL(opts.dbfile)
 
 if opts.name is not None:
@@ -43,7 +45,8 @@ if opts.name is not None:
         driver.set_config_by_name(opts.name, opts.value)
     else:
         value = driver.get_config_by_name(opts.name)
-        ToolBox.print_output(f"{opts.name}: {value}")
+        if opts.poor: print(value)
+        else: ToolBox.print_output(f"{opts.name}: {value}")
 else:
     dout = driver.get_config_as_dict()
     for name in sorted(dout.keys()):
