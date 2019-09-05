@@ -30,8 +30,8 @@ opts, args = parser.parse_args()
 ### main
 ###
 
-import BasicSQL
-driver = BasicSQL.BasicSQL(opts.dbfile)
+import BusyBoxSQL
+driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
 
 if opts.node is None:
     nodes = driver.get_node_names_as_set()

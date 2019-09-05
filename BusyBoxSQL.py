@@ -9,7 +9,7 @@ import os, sys
 import sqlite3
 import ToolBox
 
-class BasicSQL:
+class BusyBoxSQL:
     __ints = ["map_width", "map_height", "map_project"]
     
     def __init__(self, fname):
@@ -122,3 +122,17 @@ class BasicSQL:
             item = drow["x"], drow["y"]
             atoms[item] = drow["color"], drow["dx"], drow["dy"]
         return atoms
+
+    def set_node_by_coordinates(self, x, y, node):
+        self.execute(f"UPDATE diagram SET node='{node}' WHERE x={x} AND y={y}")
+        self.conn.commit()
+
+        if self.cur.rowcount != 1:
+            ToolBox.print_warning("set atom node != 1")
+
+    def set_color_by_coordinates(self, x, y, color):
+        self.execute(f"UPDATE diagram SET color='{color}' WHERE x={x} AND y={y}")
+        self.conn.commit()
+
+        if self.cur.rowcount != 1:
+            ToolBox.print_warning("set atom color != 1")

@@ -35,8 +35,8 @@ if opts.delete and opts.value:
 ### main
 ###
 
-import BasicSQL
-driver = BasicSQL.BasicSQL(opts.dbfile)
+import BusyBoxSQL
+driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
 
 if opts.name is not None:
     if opts.delete:
