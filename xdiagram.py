@@ -86,6 +86,7 @@ class XDiagramGTK(Gtk.Window):
         
         assert type(driver) == BusyBoxSQL.BusyBoxSQL
         self.driver = driver
+        self.stream = []
 
         self.colorbox = self.driver.get_colors_as_list()
 
@@ -209,6 +210,11 @@ class XDiagramGTK(Gtk.Window):
             self.set_zoom(zoom)
             self.refresh()
 
+        elif Gdk.keyval_name(event.keyval) == "space":
+            db_name = self.driver.db_name
+            strstr = "-".join(self.stream)
+            os.system(f"./node.py -f {db_name} -s {strstr}")
+
     def on_click(self, box, event):
         yc = int(event.y / self.resize)
         y = yc + self.zoom["north"]
@@ -220,11 +226,12 @@ class XDiagramGTK(Gtk.Window):
         node = self.diagram[xo,y][1]
 
         if event.button == 1:
-            ToolBox.print_output(f"{xc}x{yc} -> {xo}x{y} = {node} / {color}")
             self.remembered_color = color
             self.remembered_node = node
             self.remembered_node2 = None
-    
+            self.stream.append(node)
+            ToolBox.print_output(f"{xc}x{yc} -> {xo}x{y} = {node} / {color}")
+            
         elif event.button == 2:
             if self.edit_mode and self.remembered_node and self.remembered_color:
                 ToolBox.print_output(f"{node} / {color} --> {self.remembered_node} / {self.remembered_color}")
@@ -236,21 +243,20 @@ class XDiagramGTK(Gtk.Window):
             os.system(f"./node.py -f {db_name} -n {node}")
 
             if self.remembered_node2 is not None:
-                self.diagram = driver.get_vector_diagram()
-
+                # self.diagram = driver.get_vector_diagram()
                 cost = self.diagram.calc_transit_resistance(self.remembered_node, self.remembered_node2, node)
                 ToolBox.print_output(f"{self.remembered_node} --> {self.remembered_node2} --> {node} = {cost}")
-                self.refresh()
+                # self.refresh()
                 
             elif self.remembered_node is not None:
-                self.diagram = driver.get_vector_diagram()
+                # self.diagram = driver.get_vector_diagram()
                 cost = self.diagram.calc_enter_resistance(self.remembered_node, node)
                 ToolBox.print_output(f"{self.remembered_node} --> {node} = {cost}")
-                self.refresh()
-
+                # self.refresh()
             
             self.remembered_node2 = node
-            
+            self.stream = []
+
     def refresh(self):
         diagramRGB = []
         borderRGB = [0, 0, 0]

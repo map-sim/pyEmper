@@ -44,9 +44,9 @@ class VectorDiagram(dict):
                 if val[1] != node: continue
                 xyset |= set(self.next_atom_generator(*xy))
                 xyset.add(xy)            
-        else:
-            for xy, val in self.items():
-                if val[1] == node: xyset.add(xy)                
+            return xyset
+        for xy, val in self.items():
+            if val[1] == node: xyset.add(xy)                
         return xyset
 
     def get_node_border_coordinates_as_set(self, start, stop):
@@ -58,32 +58,18 @@ class VectorDiagram(dict):
     def check_border(self, x, y):
         width = self.config["map_width"]
         borderset = set()
-        try:
-            if self[x, y][1] != self[x, y+1][1]:
-                borderset.add("S")
-            if self.check_buildable(x, y) != self.check_buildable(x, y+1):
-                borderset.add("s")
-        except KeyError: pass
-        try:
-            if self[x, y][1] != self[x, y-1][1]:
-                borderset.add("N")
-            if self.check_buildable(x, y) != self.check_buildable(x, y-1):
-                borderset.add("n")
-        except KeyError: pass
-        try:
-            xo = (x+1) % width
-            if self[x, y][1] != self[xo, y][1]:
-                borderset.add("W")
-            if self.check_buildable(x, y) != self.check_buildable(xo, y):
-                borderset.add("w")
-        except KeyError: pass
-        try:
-            xo = (x-1) % width
-            if self[x, y][1] != self[xo, y][1]:
-                borderset.add("E")
-            if self.check_buildable(x, y) != self.check_buildable(xo, y):
-                borderset.add("e")
-        except KeyError: pass
+
+        def fake(self, borderset, x, y, x2, y2, C, c):
+            try:
+                if self[x, y][1] != self[x2, y2][1]:
+                    borderset.add(C)
+                if self.check_buildable(x, y) != self.check_buildable(x2, y2):
+                    borderset.add(c)
+            except KeyError: pass
+        fake(self, borderset, x, y, x, y+1, "S", "s")
+        fake(self, borderset, x, y, x, y-1, "N", "n")
+        fake(self, borderset, x, y, (x+1) % width, y, "W", "w")
+        fake(self, borderset, x, y, (x-1) % width, y, "E", "e")
         return borderset
 
     def get_node(self, x, y): return self[x, y][1]
@@ -128,9 +114,12 @@ class VectorDiagram(dict):
         ro, re = self.terrbox[co][0], self.terrbox[ce][0]
         rOUT = abs(re) * self.config["toll_transport"]
 
-        sx = math.copysign(de[0] * (xe - xo), -(xe - xo) * de[0])
+        if xo - xe > 1: xo, xe = 1, 0
+        elif xo - xe < -1: xo, xe = 0, 1
+        sx = math.copysign(de[0] * (xe - xo), (xo - xe) * de[0])
         rOUT *= self.config["toll_current"] ** sx
-        sy = math.copysign(de[1] * (ye - yo), -(ye - yo) * de[1])
+        
+        sy = math.copysign(de[1] * (ye - yo), (yo - ye) * de[1])
         rOUT *= self.config["toll_current"] ** sy
 
         if ro * re < 0:
@@ -174,20 +163,21 @@ class VectorDiagram(dict):
         plazma = self.__plazming(border, stopatoms)        
         assert len(stopatoms) == len(plazma), "(e) node discontinuity!"
 
-        maxp = math.log10(max(plazma.values()))
-        minp = math.log10(min(plazma.values()))
-        for p, v in plazma.items():
-            c, n, d = self[p]
-            s = hex(int(255 * (math.log10(v) - minp) / (maxp - minp)))[2:]
-            if len(s) == 1: s = f"0{s}"
-            self[p] = "00"+2*s , n, d
+        # maxp = math.log10(max(plazma.values()))
+        # minp = math.log10(min(plazma.values()))
+        # for p, v in plazma.items():
+        #     c, n, d = self[p]
+        #     s = hex(int(255 * (math.log10(v) - minp) / (maxp - minp)))[2:]
+        #     if len(s) == 1: s = f"0{s}"
+        #     self[p] = "00"+2*s , n, d
         
         rezistance = 0.0
         for xy, rez in plazma.items():
             if xy in nodeatoms:
                 rezistance += rez
         lrez = rezistance ** self.config["toll_reductor"]
-        return lrez * self.config["map_scale"]
+        drez = lrez ** self.config["toll_distribution"]
+        return drez * self.config["map_scale"]
     
     def calc_transit_resistance(self, start, tranz, stop):
         iborder = self.get_node_border_coordinates_as_set(start, tranz)
@@ -198,17 +188,16 @@ class VectorDiagram(dict):
         plazma = self.__plazming(iborder, tranzatoms)
         assert len(tranzatoms) == len(plazma), "(e) node discontinuity!"
 
-        maxp = math.log10(max(plazma.values()))
-        minp = math.log10(min(plazma.values()))
-        for p, v in plazma.items():
-            c, n, d = self[p]
-            s = hex(int(255 * (math.log10(v) - minp) / (maxp - minp)))[2:]
-            if len(s) == 1: s = f"0{s}"
-            self[p] = s + "00" + s , n, d
+        # maxp = math.log10(max(plazma.values()))
+        # minp = math.log10(min(plazma.values()))
+        # for p, v in plazma.items():
+        #     c, n, d = self[p]
+        #     s = hex(int(255 * (math.log10(v) - minp) / (maxp - minp)))[2:]
+        #     if len(s) == 1: s = f"0{s}"
+        #     self[p] = s + "00" + s , n, d
 
         rezistance = 0.0
         for xy in oborder:
-            rezistance += plazma[xy]
-            
+            rezistance += plazma[xy]            
         lrez = (rezistance / len(oborder)) ** self.config["toll_reductor"]
         return lrez * self.config["map_scale"]

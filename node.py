@@ -26,6 +26,8 @@ parser.add_option("-m", "--margin", dest="margin",
 parser.add_option("-l", "--list", dest="listv",
                   action="store_true", default=False,
                   help="print mode list")
+parser.add_option("-s", "--stream", dest="stream",
+                  help="stream resistance")
 
 opts, args = parser.parse_args()
 
@@ -66,6 +68,26 @@ elif opts.listv:
     nodes = driver.get_node_names_as_set()
     for node in nodes:
         ToolBox.print_output(node)
+
+elif opts.stream:
+    nodes = opts.stream.split("-")
+    assert len(nodes) > 1, "(e) at least 2 provinces (X-Y-Z...) are needed"
+    diagram = driver.get_vector_diagram()
+
+    rin = diagram.calc_enter_resistance(nodes[1], nodes[0])
+    ToolBox.print_output(f"in: {nodes[0]} --> {nodes[1]} = {rin}")
+    total = rin
+
+    for p, t, n in zip(nodes, nodes[1:], nodes[2:]):
+        rt = diagram.calc_transit_resistance(p, t, n)
+        ToolBox.print_output(f"{p} --> {t} --> {n} = {rt}")
+        total += rt
+        
+    rout = diagram.calc_enter_resistance(nodes[-2], nodes[-1])
+    ToolBox.print_output(f"out: {nodes[-2]} --> {nodes[-1]} = {rout}")
+    total += rout
+
+    ToolBox.print_output(f"end-end: {nodes[0]} --> {nodes[-1]} = {total}")
 
 else:
     nodes = driver.get_node_names_as_set()
