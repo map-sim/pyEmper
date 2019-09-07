@@ -8,6 +8,7 @@
 import os, sys
 import sqlite3
 import ToolBox
+import VectorDiagram
 
 class BusyBoxSQL:
     __ints = ["map_width", "map_height", "map_project"]
@@ -72,6 +73,10 @@ class BusyBoxSQL:
     ### terrain specific
     ###
 
+    def get_colors_as_list(self):
+        out = self.execute(f"SELECT color FROM terrain")
+        return [drow["color"] for drow in out]
+
     def get_terrain_as_dict(self, color):
         out = self.execute(f"SELECT * FROM terrain WHERE color='{color}'")
         assert len(out) == 1, "(e) only 1 terrain is expected"
@@ -89,19 +94,14 @@ class BusyBoxSQL:
             nodeset.add(drow["node"])
         return nodeset
         
-    def get_diagram_as_dict(self):
-        out = self.execute("SELECT * FROM diagram")
-        assert len(out) > 0, "(e) diagram length < 1"
-        ca = self.get_config_by_name("current_amplitude")
-    
-        dout = {}
-        for drow in out:
-            xykey = drow["x"], drow["y"]
-            dc = drow["dx"]/ca, drow["dy"]/ca
-            col = drow["color"]
-            node = drow["node"]
-            dout[xykey] = col, node, dc
-        return dout
+    def get_vector_diagram(self):
+        dout = self.execute("SELECT * FROM diagram")
+        assert len(dout) > 0, "(e) diagram length < 1"
+        tout = self.execute("SELECT * FROM terrain")
+        assert len(tout) > 0, "(e) terrains number < 1"
+        cout = self.execute("SELECT * FROM config")
+        assert len(cout) > 0, "(e) config length < 1"
+        return VectorDiagram.VectorDiagram(dout, cout, tout)
 
     def get_node_coordinates_as_set(self, node):
         out = self.execute(f"SELECT x, y FROM diagram WHERE node='{node}'")
@@ -127,12 +127,6 @@ class BusyBoxSQL:
         self.execute(f"UPDATE diagram SET node='{node}' WHERE x={x} AND y={y}")
         self.conn.commit()
 
-        if self.cur.rowcount != 1:
-            ToolBox.print_warning("set atom node != 1")
-
     def set_color_by_coordinates(self, x, y, color):
         self.execute(f"UPDATE diagram SET color='{color}' WHERE x={x} AND y={y}")
         self.conn.commit()
-
-        if self.cur.rowcount != 1:
-            ToolBox.print_warning("set atom color != 1")

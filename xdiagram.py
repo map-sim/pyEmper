@@ -40,6 +40,9 @@ parser.add_option("-d", "--delta", dest="delta",
 parser.add_option("-E", "--edit", dest="edit",
                   action="store_true", default=False,
                   help="edit mode")
+parser.add_option("-c", "--current", dest="current",
+                  action="store_true", default=False,
+                  help="print current instead of terrain")
 
 opts, args = parser.parse_args()
 assert int(opts.east) >= int(opts.west) 
@@ -51,7 +54,7 @@ zoom["east"] = int(opts.east)
 assert int(opts.delta) > 0 
 
 ###
-### main
+### window definition
 ###
 
 import gi, re
@@ -70,22 +73,27 @@ gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf as Gpb
 
 class XDiagramGTK(Gtk.Window):
-    def __init__(self, driver, zoom=None, resize=1, offset=0, delta=20, border=False, edit=False):
+    def __init__(self, driver, zoom=None, resize=1, offset=0, delta=20, border=False):
         Gtk.Window.__init__(self, title="xdiagram")
         self.connect("key-press-event",self.on_press)
         self.connect("delete-event", self.on_exit)
 
-        self.edit_mode = bool(edit)
+        self.edit_mode = False
+        self.current_mode = False        
         self.remembered_node = None
         self.remembered_color = None
+        self.remembered_node2 = None
         
         assert type(driver) == BusyBoxSQL.BusyBoxSQL
         self.driver = driver
-        
+
+        self.colorbox = self.driver.get_colors_as_list()
+
         self.width = driver.get_config_by_name("map_width")
         self.height = driver.get_config_by_name("map_height")
         ToolBox.print_output(f"original map size: {self.width} x {self.height}")
 
+        self.diagram = driver.get_vector_diagram()
         project = driver.get_config_by_name("map_project")
         assert project == 1, "(e) not supported map projection!"
 
@@ -108,7 +116,16 @@ class XDiagramGTK(Gtk.Window):
         self.img = Gtk.Image()
         ebox.add(self.img)
         self.show_all()
-        self.refrech()
+
+    def enable_edit_mode(self):
+        if self.current_mode:
+            raise ValueError("(e) edit mode is not supported for current map")
+        self.edit_mode = True
+
+    def enable_current_mode(self):
+        if self.edit_mode:
+            raise ValueError("(e) edit mode is not supported for current map")
+        self.current_mode = True
 
     def set_zoom(self, zoom):
         self.zoom = {}
@@ -148,13 +165,27 @@ class XDiagramGTK(Gtk.Window):
         ToolBox.print_output(f"Key val: {event.keyval}, ",
                              f"Key name: {Gdk.keyval_name(event.keyval)}")
 
-        if Gdk.keyval_name(event.keyval) == "Left":
+        if Gdk.keyval_name(event.keyval) == "Return":
+            self.diagram = driver.get_vector_diagram()
+            self.refresh()
+
+        elif Gdk.keyval_name(event.keyval) in ["Page_Up", "Page_Down"]:
+            di = 1 if Gdk.keyval_name(event.keyval) == "Page_Up" else -1
+            try:
+                i = self.colorbox.index(self.remembered_color)
+                i = (i + di) % len(self.colorbox)
+            except ValueError: i = 0
+
+            self.remembered_color = self.colorbox[i]
+            ToolBox.print_output(self.colorbox[i])
+            
+        elif Gdk.keyval_name(event.keyval) == "Left":
             self.set_offset(self.offset - self.delta)
-            self.refrech()
+            self.refresh()
 
         elif Gdk.keyval_name(event.keyval) == "Right":
             self.set_offset(self.offset + self.delta)
-            self.refrech()
+            self.refresh()
 
         elif Gdk.keyval_name(event.keyval) == "Down":
             zoom = dict(self.zoom)
@@ -165,7 +196,7 @@ class XDiagramGTK(Gtk.Window):
                 zoom["south"] += self.delta
                 zoom["north"] += self.delta
             self.set_zoom(zoom)
-            self.refrech()
+            self.refresh()
 
         elif Gdk.keyval_name(event.keyval) == "Up":
             zoom = dict(self.zoom)
@@ -176,7 +207,7 @@ class XDiagramGTK(Gtk.Window):
                 zoom["south"] -= self.delta
                 zoom["north"] -= self.delta
             self.set_zoom(zoom)
-            self.refrech()
+            self.refresh()
 
     def on_click(self, box, event):
         yc = int(event.y / self.resize)
@@ -192,57 +223,65 @@ class XDiagramGTK(Gtk.Window):
             ToolBox.print_output(f"{xc}x{yc} -> {xo}x{y} = {node} / {color}")
             self.remembered_color = color
             self.remembered_node = node
-
+            self.remembered_node2 = None
+    
         elif event.button == 2:
             if self.edit_mode and self.remembered_node and self.remembered_color:
                 ToolBox.print_output(f"{node} / {color} --> {self.remembered_node} / {self.remembered_color}")
                 self.driver.set_color_by_coordinates(xo, y, self.remembered_color)
                 self.driver.set_node_by_coordinates(xo, y, self.remembered_node)
 
-        elif event.button == 3:
+        elif event.button == 3 and self.remembered_node2 != node:
             db_name = self.driver.db_name
             os.system(f"./node.py -f {db_name} -n {node}")
-            
-    def refrech(self):
-        self.diagram = driver.get_diagram_as_dict()
 
+            if self.remembered_node2 is not None:
+                self.diagram = driver.get_vector_diagram()
+
+                cost = self.diagram.calc_transit_resistance(self.remembered_node, self.remembered_node2, node)
+                ToolBox.print_output(f"{self.remembered_node} --> {self.remembered_node2} --> {node} = {cost}")
+                self.refresh()
+                
+            elif self.remembered_node is not None:
+                self.diagram = driver.get_vector_diagram()
+                cost = self.diagram.calc_enter_resistance(self.remembered_node, node)
+                ToolBox.print_output(f"{self.remembered_node} --> {node} = {cost}")
+                self.refresh()
+
+            
+            self.remembered_node2 = node
+            
+    def refresh(self):
         diagramRGB = []
         borderRGB = [0, 0, 0]
+        coastRGB = [255] * 3
         for y in range(self.zoom["north"], self.zoom["south"]+1):
             rows = [[] for _ in range(self.resize)]
 
             for x in range(self.zoom["west"], self.zoom["east"]+1):
                 xo = (x + self.offset) % self.width
-                rgb = self.diagram[xo, y][0]
-                rgbt = [
-                    int(rgb[2*n:2*n+2], 16)
-                    for n in range(3)]
 
-                borderset = set()
                 if self.border:
-                    try:
-                        if self.diagram[xo, y][1] != self.diagram[xo, y+1][1]: borderset.add("S")
-                    except KeyError: pass
-                    try:
-                        if self.diagram[xo, y][1] != self.diagram[xo, y-1][1]: borderset.add("N")
-                    except KeyError: pass
-                    try:
-                        xoo = (xo+1) % self.width
-                        if self.diagram[xo, y][1] != self.diagram[xoo, y][1]: borderset.add("W")
-                    except KeyError: pass
-                    try:
-                        xoo = (xo-1) % self.width
-                        if self.diagram[xo, y][1] != self.diagram[xoo, y][1]: borderset.add("E")
-                    except KeyError: pass
+                    borderset = self.diagram.check_border(xo, y)
+                else: borderset = set()
 
+                rgbt = self.diagram.calc_color(xo, y, self.current_mode)
                 for j, row in enumerate(rows):
                     for i in range(self.resize):
                         pen = rgbt
 
-                        if "W" in borderset and i == self.resize-1: pen = borderRGB
-                        elif "S" in borderset and j == self.resize-1: pen = borderRGB
-                        elif "E" in borderset and i == 0: pen = borderRGB
-                        elif "N" in borderset and j == 0: pen = borderRGB
+                        if "W" in borderset and i == self.resize-1:
+                            if "w" in borderset: pen = coastRGB
+                            else: pen = borderRGB
+                        elif "S" in borderset and j == self.resize-1:
+                            if "s" in borderset: pen = coastRGB
+                            else: pen = borderRGB
+                        elif "E" in borderset and i == 0:
+                            if "e" in borderset: pen = coastRGB
+                            else: pen = borderRGB
+                        elif "N" in borderset and j == 0:
+                            if "n" in borderset: pen = coastRGB
+                            else: pen = borderRGB
                         
                         row.extend(pen)
             for row in rows:
@@ -260,7 +299,11 @@ class XDiagramGTK(Gtk.Window):
 
 import BusyBoxSQL
 driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
-xdiagram = XDiagramGTK(driver, zoom, opts.resize, opts.offset, opts.delta, opts.border, opts.edit)
+xdiagram = XDiagramGTK(driver, zoom, opts.resize, opts.offset, opts.delta, opts.border)
+if opts.current: xdiagram.enable_current_mode()
+if opts.edit: xdiagram.enable_edit_mode()
+
+xdiagram.refresh()
 
 try: Gtk.main()
 except KeyboardInterrupt:

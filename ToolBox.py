@@ -7,6 +7,10 @@
 
 max_coordinate = 16384
 
+def unit_generator():
+    for x in [(0,1), (0,-1), (1,0), (-1,0)]:
+        yield x
+
 def print_output(*args):
     print("(o)", *args)
 
