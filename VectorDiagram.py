@@ -15,13 +15,12 @@ class VectorDiagram(dict):
         self.config = {
             prow["name"]: prow["value"]
             for prow in prows}
-        ca = self.config["max_current"]
         
         for drow in drows:
             col = drow["color"]
             node = drow["node"]
-            dx = drow["dx"]/ca
-            dy = drow["dy"]/ca
+            dx = drow["dx"]
+            dy = drow["dy"]
             xykey = drow["x"], drow["y"]
             self[xykey] = col, node, (dx, dy)
             

@@ -9,34 +9,12 @@
 ### opt parsing
 ###
 
-import optparse, os
+import optparse
 import ToolBox
+import Diagram
 
 parser = optparse. OptionParser()
-parser.add_option("-f", "--db-file", dest="dbfile",
-                  metavar="FILE", default="demo.sql",
-                  help="saved simulator state")
-parser.add_option("-n", "--north", dest="north",
-                  default=-ToolBox.max_coordinate,
-                  help="north coordinate")
-parser.add_option("-w", "--west", dest="west",
-                  default=-ToolBox.max_coordinate,
-                  help="west coordinate")
-parser.add_option("-s", "--south", dest="south",
-                  default=ToolBox.max_coordinate,
-                  help="south coordinate")
-parser.add_option("-e", "--east", dest="east",
-                  default=ToolBox.max_coordinate,
-                  help="east coordinate")
-parser.add_option("-r", "--resize", dest="resize",
-                  default=1, help="resize factor")
-parser.add_option("-o", "--offset", dest="offset",
-                  default=0, help="rotation offset")
-parser.add_option("-b", "--border", dest="border",
-                  action="store_true", default=False,
-                  help="print border")
-parser.add_option("-d", "--delta", dest="delta",
-                  default=20, help="delta/hopsize")
+Diagram.add_parser_options(parser)
 parser.add_option("-E", "--edit", dest="edit",
                   action="store_true", default=False,
                   help="edit mode")
@@ -47,17 +25,14 @@ parser.add_option("-c", "--current", dest="current",
 opts, args = parser.parse_args()
 assert int(opts.east) >= int(opts.west) 
 assert int(opts.south) >= int(opts.north) 
-zoom = {"west": int(opts.west)}
-zoom["north"] = int(opts.north)
-zoom["south"] = int(opts.south)
-zoom["east"] = int(opts.east)
+assert int(opts.resize) > 0 
 assert int(opts.delta) > 0 
 
 ###
 ### window definition
 ###
 
-import gi, re
+import gi, os
 import BusyBoxSQL
 
 gi.require_version('Gdk', '3.0')
@@ -72,37 +47,23 @@ from gi.repository import GLib
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf as Gpb
 
-class XDiagramGTK(Gtk.Window):
-    def __init__(self, driver, zoom=None, resize=1, offset=0, delta=20, border=False):
+class XDiagramGTK(Gtk.Window, Diagram.Diagram):
+    def __init__(self, driver):
         Gtk.Window.__init__(self, title="xdiagram")
+        Diagram.Diagram.__init__(self, driver)
+        
         self.connect("key-press-event",self.on_press)
         self.connect("delete-event", self.on_exit)
 
+        self.stream = []
         self.edit_mode = False
         self.current_mode = False        
         self.remembered_node = None
         self.remembered_color = None
         self.remembered_node2 = None
         
-        assert type(driver) == BusyBoxSQL.BusyBoxSQL
-        self.driver = driver
-        self.stream = []
-
         self.colorbox = self.driver.get_colors_as_list()
-
-        self.width = driver.get_config_by_name("map_width")
-        self.height = driver.get_config_by_name("map_height")
-        ToolBox.print_output(f"original map size: {self.width} x {self.height}")
-
-        self.diagram = driver.get_vector_diagram()
-        project = driver.get_config_by_name("map_project")
-        assert project == 1, "(e) not supported map projection!"
-
-        self.set_zoom(zoom)
-        self.delta = int(delta)
-        self.set_resize(resize)
-        self.set_offset(offset)
-        self.set_border(border)
+        self.diagram = self.driver.get_vector_diagram()
 
         fix = Gtk.Fixed()
         self.add(fix)
@@ -128,36 +89,6 @@ class XDiagramGTK(Gtk.Window):
             raise ValueError("(e) edit mode is not supported for current map")
         self.current_mode = True
 
-    def set_zoom(self, zoom):
-        self.zoom = {}
-        self.zoom["west"] = 0
-        self.zoom["north"] = 0
-        self.zoom["east"] = self.width - 1
-        self.zoom["south"] = self.height - 1
-        
-        if zoom:
-            if zoom["west"] > self.zoom["west"]: self.zoom["west"] = zoom["west"]
-            if zoom["east"] < self.zoom["east"]: self.zoom["east"] = zoom["east"]
-            if zoom["north"] > self.zoom["north"]: self.zoom["north"] = zoom["north"]
-            if zoom["south"] < self.zoom["south"]: self.zoom["south"] = zoom["south"]
-
-        self.zoom_width = self.zoom["east"] - self.zoom["west"] + 1
-        self.zoom_height = self.zoom["south"] - self.zoom["north"] + 1
-        ToolBox.print_output(f"map size: {self.zoom_width} x {self.zoom_height}")
-                
-    def set_resize(self, resize):
-        ToolBox.print_output(f"resize: {resize}")
-        assert int(resize) >= 1, "(e) resize"
-        self.resize = int(resize)
-
-    def set_offset(self, offset):
-        ToolBox.print_output(f"offset: {offset}")
-        self.offset = int(offset)
-        
-    def set_border(self, border):
-        ToolBox.print_output(f"border: {border}")
-        self.border = bool(border)
-
     def on_exit(self, win, event):
         del(self.driver)
         Gtk.main_quit()
@@ -166,7 +97,8 @@ class XDiagramGTK(Gtk.Window):
         ToolBox.print_output(f"Key val: {event.keyval}, ",
                              f"Key name: {Gdk.keyval_name(event.keyval)}")
 
-        if Gdk.keyval_name(event.keyval) == "Return":
+        if self.shift_zoom(Gdk.keyval_name(event.keyval)): pass
+        elif Gdk.keyval_name(event.keyval) == "Return":
             self.diagram = driver.get_vector_diagram()
             self.refresh()
 
@@ -180,36 +112,6 @@ class XDiagramGTK(Gtk.Window):
             self.remembered_color = self.colorbox[i]
             ToolBox.print_output(self.colorbox[i])
             
-        elif Gdk.keyval_name(event.keyval) == "Left":
-            self.set_offset(self.offset - self.delta)
-            self.refresh()
-
-        elif Gdk.keyval_name(event.keyval) == "Right":
-            self.set_offset(self.offset + self.delta)
-            self.refresh()
-
-        elif Gdk.keyval_name(event.keyval) == "Down":
-            zoom = dict(self.zoom)
-            if zoom["south"] + self.delta >= self.height:
-                zoom["north"] = self.height - self.zoom_height
-                zoom["south"] = self.height - 1
-            else:
-                zoom["south"] += self.delta
-                zoom["north"] += self.delta
-            self.set_zoom(zoom)
-            self.refresh()
-
-        elif Gdk.keyval_name(event.keyval) == "Up":
-            zoom = dict(self.zoom)
-            if zoom["north"] - self.delta < 0:
-                zoom["south"] = self.zoom_height - 1
-                zoom["north"] = 0
-            else:
-                zoom["south"] -= self.delta
-                zoom["north"] -= self.delta
-            self.set_zoom(zoom)
-            self.refresh()
-
         elif Gdk.keyval_name(event.keyval) == "space":
             db_name = self.driver.db_name
             strstr = "-".join(self.stream)
@@ -305,7 +207,20 @@ class XDiagramGTK(Gtk.Window):
 
 import BusyBoxSQL
 driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
-xdiagram = XDiagramGTK(driver, zoom, opts.resize, opts.offset, opts.delta, opts.border)
+xdiagram = XDiagramGTK(driver)
+
+zoom = {"west": int(opts.west)}
+zoom["north"] = int(opts.north)
+zoom["south"] = int(opts.south)
+zoom["east"] = int(opts.east)
+xdiagram.set_zoom(zoom)
+
+if opts.border:
+    xdiagram.set_border()
+xdiagram.set_resize(opts.resize)
+xdiagram.set_offset(opts.offset)
+xdiagram.set_hopsize(opts.delta)
+
 if opts.current: xdiagram.enable_current_mode()
 if opts.edit: xdiagram.enable_edit_mode()
 
