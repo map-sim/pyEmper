@@ -40,7 +40,20 @@ def add_parser_options(parser):
 ### Diagram definition
 ###
 
+import gi
 import BusyBoxSQL
+
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+
+gi.require_version('Gdk', '3.0')
+from gi.repository import Gdk
+
+gi.require_version('GLib', '2.0')
+from gi.repository import GLib
+
+gi.require_version('GdkPixbuf', '2.0')
+from gi.repository import GdkPixbuf as Gpb
 
 class Diagram:
     def __init__(self, driver):
@@ -53,6 +66,7 @@ class Diagram:
         self.width = driver.get_config_by_name("map_width")
         self.height = driver.get_config_by_name("map_height")
         ToolBox.print_output(f"original map size: {self.width} x {self.height}")
+        self.diagram = self.driver.get_vector_diagram()
 
         self.set_resize(1)
         self.set_zoom(None)
@@ -60,6 +74,20 @@ class Diagram:
         self.border = False
         self.set_hopsize(50)
         assert self.refresh
+    
+        fix = Gtk.Fixed()
+        self.add(fix)
+         
+        ebox = Gtk.EventBox()
+        fix.put(ebox, 0,0)
+         
+        # ebox.connect('scroll-event', self.on_scroll)
+        ebox.connect ('button-press-event', self.on_click)
+        ebox.add_events(Gdk.EventMask.SCROLL_MASK|Gdk.EventMask.SMOOTH_SCROLL_MASK)
+
+        self.img = Gtk.Image()
+        ebox.add(self.img)
+        self.show_all()
 
     def set_zoom(self, zoom):
         self.zoom = {}
@@ -131,3 +159,50 @@ class Diagram:
             self.refresh()
             return True
         else: return False
+
+    def on_click(self, box, event):
+        yc = int(event.y / self.resize)
+        y = yc + self.zoom["north"]
+        xc = int(event.x / self.resize)
+        x = xc + self.zoom["west"]
+        xo = (x + self.offset) % self.width
+        return xo, y
+
+    def sceen_duoator(self, diagramRGB):
+        for y in range(self.zoom["north"], self.zoom["south"]+1):
+            rows = [[] for _ in range(self.resize)]
+            for x in range(self.zoom["west"], self.zoom["east"]+1):
+                xo = (x + self.offset) % self.width
+                if self.border:
+                    borderset = self.diagram.check_border(xo, y)
+                else: borderset = set()
+
+                yield xo, y, rows, borderset        
+
+            for row in rows:
+                diagramRGB.extend(row)
+                
+    def pixel_painter(self, rgbt, rows, bset):
+        for j, row in enumerate(rows):
+            for i in range(self.resize):
+                pen = rgbt
+                if "W" in bset and i == self.resize-1:
+                    if "w" in bset: pen = self.coast_rgb
+                    else: pen = self.border_rgb
+                elif "S" in bset and j == self.resize-1:
+                    if "s" in bset: pen = self.coast_rgb
+                    else: pen = self.border_rgb
+                elif "E" in bset and i == 0:
+                    if "e" in bset: pen = self.coast_rgb
+                    else: pen = self.border_rgb
+                elif "N" in bset and j == 0:
+                    if "n" in bset: pen = self.coast_rgb
+                    else: pen = self.border_rgb                  
+                row.extend(pen)
+
+    def draw_map(self, diagramRGB):
+        tmp = GLib.Bytes.new(diagramRGB)
+        confargs = tmp, Gpb.Colorspace.RGB, False, 8
+        sizeargs = self.zoom_width * self.resize, self.zoom_height * self.resize        
+        pbuf = Gpb.Pixbuf.new_from_bytes(*confargs, *sizeargs, 3 * self.zoom_width * self.resize)        
+        self.img.set_from_pixbuf(pbuf)

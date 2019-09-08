@@ -15,7 +15,8 @@ class VectorDiagram(dict):
         self.config = {
             prow["name"]: prow["value"]
             for prow in prows}
-        
+
+        self.nodes = {}
         for drow in drows:
             col = drow["color"]
             node = drow["node"]
@@ -23,7 +24,9 @@ class VectorDiagram(dict):
             dy = drow["dy"]
             xykey = drow["x"], drow["y"]
             self[xykey] = col, node, (dx, dy)
-            
+            try: self.nodes[node].append(xykey)
+            except KeyError: self.nodes[node] = [xykey]
+    
         self.terrbox = {
             trow["color"]: (trow["drag"], trow["charge"], trow["aperture"])
             for trow in trows}
@@ -80,6 +83,12 @@ class VectorDiagram(dict):
         for nx, ny in self.next_atom_generator(x, y):
             if fc(x, y, nx, ny): return True
         return False
+
+    def check_land(self, node):
+        try:
+            xy = self.nodes[node][0]
+            return self.check_buildable(*xy)
+        except KeyError: raise ValueError("(e) no node")
 
     def check_navigable(self, x, y):
         color = self.get_color(x, y)

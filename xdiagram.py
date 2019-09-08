@@ -41,17 +41,11 @@ from gi.repository import Gdk
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-gi.require_version('GLib', '2.0')
-from gi.repository import GLib
-
-gi.require_version('GdkPixbuf', '2.0')
-from gi.repository import GdkPixbuf as Gpb
-
 class XDiagramGTK(Gtk.Window, Diagram.Diagram):
     def __init__(self, driver):
         Gtk.Window.__init__(self, title="xdiagram")
         Diagram.Diagram.__init__(self, driver)
-        
+        self.colorbox = self.driver.get_colors_as_list()        
         self.connect("key-press-event",self.on_press)
         self.connect("delete-event", self.on_exit)
 
@@ -61,23 +55,9 @@ class XDiagramGTK(Gtk.Window, Diagram.Diagram):
         self.remembered_node = None
         self.remembered_color = None
         self.remembered_node2 = None
-        
-        self.colorbox = self.driver.get_colors_as_list()
-        self.diagram = self.driver.get_vector_diagram()
 
-        fix = Gtk.Fixed()
-        self.add(fix)
-         
-        ebox = Gtk.EventBox()
-        fix.put(ebox, 0,0)
-         
-        # ebox.connect('scroll-event', self.onScroll)
-        ebox.connect ('button-press-event', self.on_click)
-        ebox.add_events(Gdk.EventMask.SCROLL_MASK|Gdk.EventMask.SMOOTH_SCROLL_MASK)
-
-        self.img = Gtk.Image()
-        ebox.add(self.img)
-        self.show_all()
+        self.coast_rgb = [255] * 3
+        self.border_rgb = [0, 0, 0]
 
     def enable_edit_mode(self):
         if self.current_mode:
@@ -118,12 +98,7 @@ class XDiagramGTK(Gtk.Window, Diagram.Diagram):
             os.system(f"./node.py -f {db_name} -s {strstr}")
 
     def on_click(self, box, event):
-        yc = int(event.y / self.resize)
-        y = yc + self.zoom["north"]
-
-        xc = int(event.x / self.resize)
-        x = xc + self.zoom["west"]
-        xo = (x + self.offset) % self.width
+        xo, y = Diagram.Diagram.on_click(self, box, event)
         color = self.diagram[xo,y][0]
         node = self.diagram[xo,y][1]
 
@@ -132,7 +107,7 @@ class XDiagramGTK(Gtk.Window, Diagram.Diagram):
             self.remembered_node = node
             self.remembered_node2 = None
             self.stream.append(node)
-            ToolBox.print_output(f"{xc}x{yc} -> {xo}x{y} = {node} / {color}")
+            ToolBox.print_output(f"{xo}x{y} = {node} / {color}")
             
         elif event.button == 2:
             if self.edit_mode and self.remembered_node and self.remembered_color:
@@ -161,45 +136,10 @@ class XDiagramGTK(Gtk.Window, Diagram.Diagram):
 
     def refresh(self):
         diagramRGB = []
-        borderRGB = [0, 0, 0]
-        coastRGB = [255] * 3
-        for y in range(self.zoom["north"], self.zoom["south"]+1):
-            rows = [[] for _ in range(self.resize)]
-
-            for x in range(self.zoom["west"], self.zoom["east"]+1):
-                xo = (x + self.offset) % self.width
-
-                if self.border:
-                    borderset = self.diagram.check_border(xo, y)
-                else: borderset = set()
-
-                rgbt = self.diagram.calc_color(xo, y, self.current_mode)
-                for j, row in enumerate(rows):
-                    for i in range(self.resize):
-                        pen = rgbt
-
-                        if "W" in borderset and i == self.resize-1:
-                            if "w" in borderset: pen = coastRGB
-                            else: pen = borderRGB
-                        elif "S" in borderset and j == self.resize-1:
-                            if "s" in borderset: pen = coastRGB
-                            else: pen = borderRGB
-                        elif "E" in borderset and i == 0:
-                            if "e" in borderset: pen = coastRGB
-                            else: pen = borderRGB
-                        elif "N" in borderset and j == 0:
-                            if "n" in borderset: pen = coastRGB
-                            else: pen = borderRGB
-                        
-                        row.extend(pen)
-            for row in rows:
-                diagramRGB.extend(row)
-
-        tmp = GLib.Bytes.new(diagramRGB)
-        confargs = tmp, Gpb.Colorspace.RGB, False, 8
-        sizeargs = self.zoom_width * self.resize, self.zoom_height * self.resize        
-        pbuf = Gpb.Pixbuf.new_from_bytes(*confargs, *sizeargs, 3 * self.zoom_width * self.resize)        
-        self.img.set_from_pixbuf(pbuf)
+        for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
+            rgbt = self.diagram.calc_color(xo, y, self.current_mode)
+            self.pixel_painter(rgbt, rows, bset)
+        self.draw_map(diagramRGB)
 
 ###
 ### main
