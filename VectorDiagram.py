@@ -39,6 +39,15 @@ class VectorDiagram(dict):
             nx = (x + dx) % self.config["map_width"]
             yield nx, ny
 
+    def get_next_nodes_as_set(self, node):
+        xyset = self.get_node_coordinates_as_set(node, True)
+        nodeset = set()
+        for xy in xyset:
+            n = self.get_node(*xy)
+            nodeset.add(n)
+        nodeset.remove(node)
+        return nodeset
+
     def get_node_coordinates_as_set(self, node, border=False):
         xyset = set()
         if border:
@@ -51,6 +60,13 @@ class VectorDiagram(dict):
             if val[1] == node: xyset.add(xy)                
         return xyset
 
+    def get_node_center(self, node):
+        xyset = self.get_node_coordinates_as_set(node)
+        xo, yo = 0, 0
+        for x, y in xyset:
+            xo, yo = xo+x, yo+y
+        return xo/len(xyset), yo/len(xyset)
+            
     def get_node_border_coordinates_as_set(self, start, stop):
         stopset = self.get_node_coordinates_as_set(stop, True)
         startset = self.get_node_coordinates_as_set(start)

@@ -130,3 +130,27 @@ class BusyBoxSQL:
     def set_color_by_coordinates(self, x, y, color):
         self.execute(f"UPDATE diagram SET color='{color}' WHERE x={x} AND y={y}")
         self.conn.commit()
+
+    ###
+    ### source specific
+    ###
+    
+    def set_source_by_node(self, source, node, value):
+        self.execute(f"UPDATE source SET {source}={value} WHERE node='{node}'")
+        assert self.cur.rowcount == 1, "(e) source cannot be set"
+
+    def get_source_by_node(self, source, node):
+        out = self.execute(f"SELECT {source} FROM source WHERE node='{node}'")
+        assert len(out) == 1, "(e) outlen != 1"
+        return out[0][source]
+
+    def get_max_source(self, source):
+        out = self.execute(f"SELECT MAX({source}) FROM source")
+        assert len(out) == 1, "(e) outlen != 1"
+        return list(out[0].values())[0]
+
+    def get_source_as_dict(self, source):
+        out = self.execute(f"SELECT node,{source} FROM source")
+        assert len(out) > 0, "(e) outlen <= 0"
+        return {drow['node']: drow[source] for drow in out}
+

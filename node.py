@@ -101,7 +101,7 @@ else:
 
     for xy in diagram.keys():
         if diagram.check_buildable(*xy):
-            buildset.add(diagram.check_node(*xy))
+            buildset.add(diagram.get_node(*xy))
             buildatoms += 1
         if diagram.check_navigable(*xy) or diagram.check_coast(*xy):
             naviatoms += 1

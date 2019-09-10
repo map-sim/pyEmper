@@ -63,8 +63,8 @@ class Diagram:
         project = self.driver.get_config_by_name("map_project")
         assert project == 1, "(e) not supported map projection!"
 
-        self.width = driver.get_config_by_name("map_width")
-        self.height = driver.get_config_by_name("map_height")
+        self.width = self.driver.get_config_by_name("map_width")
+        self.height = self.driver.get_config_by_name("map_height")
         ToolBox.print_output(f"original map size: {self.width} x {self.height}")
         self.diagram = self.driver.get_vector_diagram()
 

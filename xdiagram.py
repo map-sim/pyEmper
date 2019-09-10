@@ -45,6 +45,8 @@ class XDiagramGTK(Gtk.Window, Diagram.Diagram):
     def __init__(self, driver):
         Gtk.Window.__init__(self, title="xdiagram")
         Diagram.Diagram.__init__(self, driver)
+
+        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
         self.colorbox = self.driver.get_colors_as_list()        
         self.connect("key-press-event",self.on_press)
         self.connect("delete-event", self.on_exit)
@@ -79,7 +81,7 @@ class XDiagramGTK(Gtk.Window, Diagram.Diagram):
 
         if self.shift_zoom(Gdk.keyval_name(event.keyval)): pass
         elif Gdk.keyval_name(event.keyval) == "Return":
-            self.diagram = driver.get_vector_diagram()
+            self.diagram = self.driver.get_vector_diagram()
             self.refresh()
 
         elif Gdk.keyval_name(event.keyval) in ["Page_Up", "Page_Down"]:
@@ -120,16 +122,12 @@ class XDiagramGTK(Gtk.Window, Diagram.Diagram):
             os.system(f"./node.py -f {db_name} -n {node}")
 
             if self.remembered_node2 is not None:
-                # self.diagram = driver.get_vector_diagram()
                 cost = self.diagram.calc_transit_resistance(self.remembered_node, self.remembered_node2, node)
                 ToolBox.print_output(f"{self.remembered_node} --> {self.remembered_node2} --> {node} = {cost}")
-                # self.refresh()
                 
             elif self.remembered_node is not None:
-                # self.diagram = driver.get_vector_diagram()
                 cost = self.diagram.calc_enter_resistance(self.remembered_node, node)
                 ToolBox.print_output(f"{self.remembered_node} --> {node} = {cost}")
-                # self.refresh()
             
             self.remembered_node2 = node
             self.stream = []
