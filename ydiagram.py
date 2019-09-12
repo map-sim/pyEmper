@@ -38,6 +38,7 @@ assert int(opts.delta) > 0
 
 import gi, os
 import BusyBoxSQL
+import random
 
 gi.require_version('Gdk', '3.0')
 from gi.repository import Gdk
@@ -54,7 +55,10 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
         self.connect("key-press-event",self.on_press)
         self.connect("delete-event", self.on_exit)
         self.nvalues = {}
-        
+
+        self.coast_rgb = [0] * 3
+        self.border_rgb = [160] * 3
+
     def on_exit(self, win, event):
         del(self.driver)
         Gtk.main_quit()
@@ -80,8 +84,6 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
         self.assigned_painter = inner
         
     def node_pointer(self, nodes):
-        self.coast_rgb = [255] * 3
-        self.border_rgb = [0, 0, 0]
         diagramRGB = []
         for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
             node = self.diagram[xo,y][1]
@@ -102,11 +104,9 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
         self.assigned_painter = inner
         
     def source_presenter(self, source):
-        self.coast_rgb = [0] * 3
-        self.border_rgb = [180] * 3
+        self.nvalues = self.driver.get_source_as_dict(source)
         diagramRGB = []
         
-        self.nvalues = self.driver.get_source_as_dict(source)
         maxv = self.driver.get_max_source(source)
         assert maxv > 0, "(e) no source"
     
@@ -123,11 +123,9 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
         self.assigned_painter = inner
         
     def nation_presenter(self, nation):
-        self.coast_rgb = [0] * 3
-        self.border_rgb = [160] * 3
+        self.nvalues = self.driver.get_population_as_dict(nation)
         diagramRGB = []
         
-        self.nvalues = self.driver.get_population_as_dict(nation)
         maxv = self.driver.get_max_population(nation)
         assert maxv > 0, "(e) no population"
     
@@ -147,11 +145,9 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
         self.assigned_painter = inner
 
     def population_presenter(self):
-        self.coast_rgb = [0] * 3
-        self.border_rgb = [160] * 3
+        self.nvalues = self.driver.get_population_as_dict()
         diagramRGB = []
 
-        self.nvalues = self.driver.get_population_as_dict()
         maxv = self.driver.get_max_population()
         assert maxv > 0, "(e) no population"
 
@@ -166,6 +162,43 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
             self.pixel_painter(rgbt, rows, bset)            
         self.screen = diagramRGB
 
+    def assign_color_nation_presenter(self, cstr):
+        colors = {}        
+        nrgbl = cstr.split("-")
+        for nrgb in nrgbl:
+            n, r,g,b = nrgb.split(":")
+            colors[n] = int(r), int(g), int(b)
+
+        def inner(): self.color_nation_presenter(colors)            
+        self.assigned_painter = inner
+
+    def color_nation_presenter(self, color_nation):
+        self.nvalues = self.driver.get_population_as_dict()
+        bgrgb = [220, 220, 220]
+        diagramRGB = []
+        cache = {}
+        for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
+            node = self.diagram[xo,y][1]
+            try: colors, weights = cache[node]
+            except KeyError:
+                popdict = self.driver.get_population_by_node_as_dict(node)
+                popsum = sum([v for n,v in popdict.items() if n != "node"])
+                colors, weights = [], []
+                for nation, color in color_nation.items():
+                    if popsum == 0: break
+                    frac = float(popdict[nation]) / popsum 
+                    weights.append(frac)
+                    colors.append(color)
+                frac = 1.0 - sum(weights)
+                weights.append(frac)
+                colors.append(bgrgb)
+                cache[node] = colors, weights
+            try: rgbt = random.choices(colors, weights)[0]
+            except IndexError:  rgbt = bgrgb
+            self.pixel_painter(rgbt, rows, bset)            
+        self.screen = diagramRGB
+
+        
     def refresh(self):
         self.assigned_painter()
         self.draw_map(self.screen)
@@ -202,7 +235,10 @@ if opts.point:
     ydiagram.assign_node_pointer(nodes)
 
 elif opts.population:
-    ydiagram.assign_population_presenter()
+    if opts.nation is None:
+        ydiagram.assign_population_presenter()
+    else:
+        ydiagram.assign_color_nation_presenter(opts.nation)
 
 elif opts.source:
     ydiagram.assign_source_presenter(opts.source)

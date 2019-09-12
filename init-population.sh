@@ -97,5 +97,5 @@ function t(){
 }
 
 ./initiator.py -l -w -10:410 -t `t COAST 6`-`t N-RIV 3`-`t G-RIV 3`-`t SWAMP 0.1`-`t PLATE 2`-`t HILL 1`-`t P-FLT 1`-`t H-MNT 0.2`-`t TUNDR 0.06`-`t R-FLT 8`-`t DESRT 0.06`-`t G-MNT 0.04`
-
+./ydiagram.py -r 2 -b -P -N SAS:255:0:0-CEL:0:0:255-GER:0:128:0-LAT:255:128:0-PER:0:180:180-ISM:255:0:255-NOR:0:0:128-TUR:255:255:0-SLO:128:0:0-INK:255:128:128-JAP:0:255:0-SUN:0:80:80-ZUL:128:0:128-HAN:255:60:60-HIN:128:64:0-BUD:64:128:255
 # ./ydiagram.py -r 2 -b -P
