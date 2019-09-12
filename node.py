@@ -53,7 +53,15 @@ if opts.node is not None and not opts.xnode:
             terrains[atom[0]] = terr
         aperture += terrains[atom[0]]["aperture"]
     ToolBox.print_output(f"aperture: {aperture*scale}")
-        
+
+    popdict = driver.get_population_by_node_as_dict(opts.node)
+    pop = sum([v for k,v in popdict.items() if k != "node"])
+    ToolBox.print_output(f"population: {pop}")
+    for k,v in popdict.items():
+        if k == "node": continue
+        if v == 0: continue
+        ToolBox.print_output(f"   + {k}: {v}")
+    
 elif opts.node is not None and opts.xnode:
     xyset = driver.get_node_coordinates_as_set(opts.node)
     m = int(opts.margin)
@@ -115,3 +123,4 @@ else:
     ToolBox.print_output(f"buildable nodes: {len(buildset)} area: {fa} %")
     ToolBox.print_output(f"coast length: {coastatoms} / {ca} %")
     ToolBox.print_output(f"navigable area: {na} %")
+    

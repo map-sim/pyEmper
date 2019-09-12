@@ -38,7 +38,7 @@ class BusyBoxSQL:
     def execute(self, query):        
         self.cur.execute(query)
         return self.cur.fetchall()
-
+    
     ###
     ### config specific
     ###
@@ -135,11 +135,15 @@ class BusyBoxSQL:
     ### source specific
     ###
     
-    def set_source_by_node(self, source, node, value):
+    def set_source_by_node(self, node, source, value):
         self.execute(f"UPDATE source SET {source}={value} WHERE node='{node}'")
         assert self.cur.rowcount == 1, "(e) source cannot be set"
 
-    def get_source_by_node(self, source, node):
+    def clean_source(self, source):
+        self.execute(f"UPDATE source SET {source}=0")
+        assert self.cur.rowcount > 0, "(e) source cannot be set"
+
+    def get_source_by_node(self, node, source):
         out = self.execute(f"SELECT {source} FROM source WHERE node='{node}'")
         assert len(out) == 1, "(e) outlen != 1"
         return out[0][source]
@@ -154,3 +158,57 @@ class BusyBoxSQL:
         assert len(out) > 0, "(e) outlen <= 0"
         return {drow['node']: drow[source] for drow in out}
 
+    ###
+    ### population specific
+    ###
+
+    def get_nation_names_as_set(self):
+        out = self.execute("PRAGMA table_info(population)")
+        cols = set(col["name"] for col in out if col["name"] != "node")
+        return cols
+    
+    def set_population_by_node(self, node, nation, value):
+        self.execute(f"UPDATE population SET {nation}={value} WHERE node='{node}'")
+        assert self.cur.rowcount == 1, "(e) population cannot be set"
+
+    def clean_population(self, nation):
+        self.execute(f"UPDATE population SET {nation}=0")
+        assert self.cur.rowcount > 0, "(e) population cannot be set"
+
+    def get_population_by_node_as_dict(self, node):
+        out = self.execute(f"SELECT * FROM population WHERE node='{node}'")
+        assert len(out) == 1, "(e) outlen != 1"
+        return out[0]
+    
+    def get_population_by_node(self, node, nation=None):
+        if nation:        
+            out = self.execute(f"SELECT {nation} FROM population WHERE node='{node}'")
+            assert len(out) == 1, "(e) outlen != 1"
+            return out[0][nation]
+
+        sumc = "+".join(self.get_nation_names_as_set())
+        out = self.execute(f"SELECT {sumc} FROM population WHERE node='{node}'")
+        assert len(out) > 0, "(e) outlen <= 0"
+        return list(out[0].values())[0]
+
+    def get_max_population(self, nation=None):
+        if nation:        
+            out = self.execute(f"SELECT MAX({nation}) FROM population")
+            assert len(out) == 1, "(e) outlen != 1"
+            return list(out[0].values())[0]
+
+        sumc = "+".join(self.get_nation_names_as_set())
+        out = self.execute(f"SELECT MAX({sumc}) FROM population")
+        assert len(out) == 1, "(e) outlen != 1"
+        return list(out[0].values())[0]
+
+    def get_population_as_dict(self, nation=None):
+        if nation:        
+            out = self.execute(f"SELECT node,{nation} FROM population")
+            assert len(out) > 0, "(e) outlen <= 0"
+            return {drow['node']: drow[nation] for drow in out}
+
+        sumc = "+".join(self.get_nation_names_as_set())
+        out = self.execute(f"SELECT node,{sumc} FROM population")
+        assert len(out) > 0, "(e) outlen <= 0"
+        return {drow['node']: drow[sumc] for drow in out}

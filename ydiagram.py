@@ -20,6 +20,11 @@ parser.add_option("-p", "--point", dest="point",
                   help="point nodes")
 parser.add_option("-S", "--source", dest="source",
                   help="source values")
+parser.add_option("-N", "--nation", dest="nation",
+                  help="nation values")
+parser.add_option("-P", "--population", dest="population",
+                  action="store_true", default=False,
+                  help="print population")
 
 opts, args = parser.parse_args()
 assert int(opts.east) >= int(opts.west) 
@@ -99,8 +104,6 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
     def source_presenter(self, source):
         self.coast_rgb = [0] * 3
         self.border_rgb = [180] * 3
-        # self.coast_rgb = [0, 0, 255]
-        # self.border_rgb = [255, 0, 0]
         diagramRGB = []
         
         self.nvalues = self.driver.get_source_as_dict(source)
@@ -109,16 +112,60 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
     
         for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
             node = self.diagram[xo,y][1]
-            # land = self.diagram.check_land(node)
             nv = self.nvalues[node] / maxv
             bc = int(255 * (1.0 - nv))
-            rc = int(255 * nv)
             rgbt = [bc, bc, 255]
-            # diagramRGB.extend(rgbt)
-            self.pixel_painter(rgbt, rows, bset)
-            
+            self.pixel_painter(rgbt, rows, bset)            
         self.screen = diagramRGB
+
+    def assign_nation_presenter(self, nation):
+        def inner(): self.nation_presenter(nation)            
+        self.assigned_painter = inner
+        
+    def nation_presenter(self, nation):
+        self.coast_rgb = [0] * 3
+        self.border_rgb = [160] * 3
+        diagramRGB = []
+        
+        self.nvalues = self.driver.get_population_as_dict(nation)
+        maxv = self.driver.get_max_population(nation)
+        assert maxv > 0, "(e) no population"
     
+        for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
+            node = self.diagram[xo,y][1]
+            if self.nvalues[node]:
+                nv = self.nvalues[node] / maxv
+                bc = int(255 * (1.0 - nv))
+                gc = int(127 * (1.0 - nv))
+                rgbt = [128+gc, bc, bc]
+            else: rgbt = [220, 220, 220]
+            self.pixel_painter(rgbt, rows, bset)            
+        self.screen = diagramRGB
+        
+    def assign_population_presenter(self):
+        def inner(): self.population_presenter()            
+        self.assigned_painter = inner
+
+    def population_presenter(self):
+        self.coast_rgb = [0] * 3
+        self.border_rgb = [160] * 3
+        diagramRGB = []
+
+        self.nvalues = self.driver.get_population_as_dict()
+        maxv = self.driver.get_max_population()
+        assert maxv > 0, "(e) no population"
+
+        for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
+            node = self.diagram[xo,y][1]
+            if self.nvalues[node]:
+                nv = self.nvalues[node] / maxv
+                bc = int(255 * (1.0 - nv))
+                gc = int(127 * (1.0 - nv))
+                rgbt = [128+gc, 128+gc, bc]
+            else: rgbt = [220, 220, 220]
+            self.pixel_painter(rgbt, rows, bset)            
+        self.screen = diagramRGB
+
     def refresh(self):
         self.assigned_painter()
         self.draw_map(self.screen)
@@ -131,7 +178,11 @@ import BusyBoxSQL
 driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
 
 if opts.point: title = "ydiagram"
+elif opts.population: title = "population"
 elif opts.source: title = opts.source
+elif opts.nation: title = opts.nation
+else: raise ValueError("(e) what")
+
 ydiagram = YDiagramGTK(driver, title)
 
 zoom = {"west": int(opts.west)}
@@ -150,9 +201,15 @@ if opts.point:
     nodes = opts.point.split("-")
     ydiagram.assign_node_pointer(nodes)
 
+elif opts.population:
+    ydiagram.assign_population_presenter()
+
 elif opts.source:
     ydiagram.assign_source_presenter(opts.source)
-    
+
+elif opts.nation:
+    ydiagram.assign_nation_presenter(opts.nation)
+
 else:
     ydiagram.assign_node_pointer("")
 ydiagram.refresh()

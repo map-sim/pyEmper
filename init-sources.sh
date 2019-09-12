@@ -60,8 +60,8 @@ function t(){
 # ./ydiagram.py -r 2 -b -S COAL
 
 # 10
-./initiator.py -c -S OIL -u 400.5:1350.5 -p 0.04 -n 5:0.4  -t `t OCEAN 0`-`t G-MNT 0`-`t NAN 1` -e CGR-MUO-RZW-BHH-UEM-BFP-DTY-XZL-GDV
-./ydiagram.py -r 2 -b -S OIL
+# ./initiator.py -c -S OIL -u 400.5:1350.5 -p 0.04 -n 5:0.4  -t `t OCEAN 0`-`t G-MNT 0`-`t NAN 1` -e CGR-MUO-RZW-BHH-UEM-BFP-DTY-XZL-GDV-COD-SVI
+# ./ydiagram.py -r 2 -b -S OIL
 
 
 

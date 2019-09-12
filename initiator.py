@@ -24,6 +24,10 @@ parser.add_option("-u", "--uniform", dest="uniform",
 parser.add_option("-c", "--clean", dest="clean",
                   action="store_true", default=False,
                   help="clean all values")
+
+parser.add_option("-d", "--delete", dest="delete",
+                  help="delete nodes X-Y-Z")
+
 parser.add_option("-n", "--next", dest="numnext",
                   help="number of next nodes N:factor")
 parser.add_option("-w", "--window", dest="window",
@@ -37,6 +41,14 @@ parser.add_option("-e", "--extend", dest="extend",
 
 parser.add_option("-S", "--source", dest="source",
                   help="source values")
+parser.add_option("-N", "--nation", dest="nation",
+                  help="nation values")
+parser.add_option("-l", "--lnorm", dest="lnorm",
+                  action="store_true", default=False,
+                  help="population linear norm")
+
+parser.add_option("-m", "--migration", dest="migration",
+                  help="number of migration", default=0)
 
 opts, args = parser.parse_args()
 
@@ -49,15 +61,17 @@ import random
 import math
 
 class Initiator:
-    def __init__(self, dbfile, btype):
+    def __init__(self, dbfile, btype, what):
         self.driver = BusyBoxSQL.BusyBoxSQL(dbfile)
         self.diagram = self.driver.get_vector_diagram()
-        
-        nodes = self.driver.get_node_names_as_set()        
-        if btype == "land":
-            nodes = {n for n in nodes if self.diagram.check_land(n)}
-        elif btype == "sea":
-            nodes = {n for n in nodes if not self.diagram.check_land(n)}
+
+        if what in ("source"):
+            nodes = self.driver.get_node_names_as_set()        
+            if btype == "land":
+                nodes = {n for n in nodes if self.diagram.check_land(n)}
+            elif btype == "sea":
+                nodes = {n for n in nodes if not self.diagram.check_land(n)}
+        else: nodes = []
 
         self.btype = btype
         self.nodes = nodes
@@ -67,10 +81,13 @@ class Initiator:
         self.wstart = 0
         self.wstop = 0
         self.tfunc = {}
+        self.gocache = {}
         
     def clean_source(self, source):
-        for node in self.nodes:
-            self.driver.set_source_by_node(opts.source, node, 0)
+        self.driver.clean_source(source)
+
+    def clean_population(self, nation):
+        self.driver.clean_population(nation)
 
     def reduce_nodes_by_pocc(self, pocc):
         if not pocc: return
@@ -104,7 +121,7 @@ class Initiator:
             t, v = tv.split(":")
             self.tfunc[t] = float(v)
 
-    def obtain_value(self, node):
+    def obtain_new_value(self, node):
         if self.tfunc:
             nan = True
             value = 0.0 
@@ -142,12 +159,12 @@ class Initiator:
     def set_source(self, source):
         updated = set()
         for node in self.nodes:
-            v = self.obtain_value(node)
+            v = self.obtain_new_value(node)
             if v == 0: continue
 
-            ov = self.driver.get_source_by_node(source, node)
-            ToolBox.print_output("source:", source, node, v+ov)
-            self.driver.set_source_by_node(source, node, v+ov)
+            ov = self.driver.get_source_by_node(node, source)
+            ToolBox.print_output("source:", node, source, v+ov)
+            self.driver.set_source_by_node(node, source, v+ov)
             updated.add(node)
             
             nnodes = self.diagram.get_next_nodes_as_set(node)
@@ -159,19 +176,81 @@ class Initiator:
             nnodes = random.sample(nnodes, nlength)
 
             for nn in nnodes:
-                ov = self.driver.get_source_by_node(source, nn)
-                ToolBox.print_output("source:", source, nn, self.nfactor*v+ov)
-                self.driver.set_source_by_node(source, nn, self.nfactor*v+ov)
+                ov = self.driver.get_source_by_node(nn, source)
+                ToolBox.print_output("source:", nn, source, self.nfactor*v+ov)
+                self.driver.set_source_by_node(nn, source,self.nfactor*v+ov)
                 updated.add(nn)
 
         return len(updated)
+
+    def set_population(self, nation):
+        updated = set()
+        initval = 10000
+        for node in self.nodes:
+            self.driver.set_population_by_node(node, nation, initval)
+            updated.add(node)
+        return len(updated)
+
+    def migration(self, nation, iterations):
+        allnodes = self.driver.get_node_names_as_set()
+        finalcache = {}
+        for _ in range(iterations):
+            cache = {}
+            for node in allnodes:
+                try: value = finalcache[node]
+                except KeyError:
+                    value = self.driver.get_population_by_node(node, nation)
+                    cache[node] = value 
+                if value == 0: continue
+
+                nnodes = self.diagram.get_next_nodes_as_set(node)
+                for nn in nnodes: 
+                    try: cost = self.gocache[node, nn]
+                    except KeyError:
+                        cost = self.diagram.calc_enter_resistance(node, nn)
+                        self.gocache[node, nn] = math.sqrt(cost)                        
+                        ToolBox.print_output("register new cost:", node, nn, cost)
+
+                    try: cache[nn] += float(value) / cost
+                    except KeyError:
+                        cache[nn] = float(value) / cost
+
+            for node, value in cache.items():
+                try: finalcache[node] += value
+                except KeyError:
+                    finalcache[node] = value
+
+        for node, value in finalcache.items():
+            self.driver.set_population_by_node(node, nation, int(value))
+
+    def population_lnorm(self):
+        popnode = self.driver.get_population_as_dict()
+        nations = self.driver.get_nation_names_as_set()
+        natnode = {nat: self.driver.get_population_as_dict(nat) for nat in nations}
+        for node, pop in popnode.items():
+            capacity = self.obtain_new_value(node)
+            land = self.diagram.check_land(node)
+            for nation in nations:
+                if natnode[nation][node] == 0: continue
+                if land:
+                    value = int(capacity * natnode[nation][node] / pop)
+                    self.driver.set_population_by_node(node, nation, value)
+                else: self.driver.set_population_by_node(node, nation, 0)
+
 ###
 ### main
 ###
 
-init = Initiator(opts.dbfile, opts.btype)
+if opts.source: what = "source"
+elif opts.nation: what = "population"
+elif opts.lnorm: what = "population"
+else: raise ValueError("(e) what?")
+
+init = Initiator(opts.dbfile, opts.btype, what)
 if opts.clean:
+    # ToolBox.print_output("clean!")    
     if opts.source: init.clean_source(opts.source)
+    elif opts.nation: init.clean_population(opts.nation)
 
 init.reduce_nodes_by_pocc(opts.pocc)
 if opts.extend:
@@ -182,6 +261,17 @@ init.set_terrain_function(opts.tfunc)
 init.set_uniform_range(opts.uniform)
 init.set_next_nodes(opts.numnext)
 init.set_window(opts.window)
+        
+if opts.source:
+    ToolBox.print_output("updated nodes (S):", init.set_source(opts.source))
     
-if opts.source: ToolBox.print_output("updated nodes:", init.set_source(opts.source))
-    
+if opts.nation:
+    ToolBox.print_output("updated nodes (N):", init.set_population(opts.nation))
+    init.migration(opts.nation, int(opts.migration))
+    if opts.delete:
+        dnodes = opts.delete.split("-")
+        for node in dnodes:
+            init.driver.set_population_by_node(node, opts.nation, 0)
+
+if opts.lnorm:
+    init.population_lnorm()
