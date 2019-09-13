@@ -200,6 +200,7 @@ class Initiator:
                 try: value = finalcache[node]
                 except KeyError:
                     value = self.driver.get_population_by_node(node, nation)
+                    finalcache[node] = value
                     cache[node] = value 
                 if value == 0: continue
 
@@ -209,19 +210,20 @@ class Initiator:
                     except KeyError:
                         cost = self.diagram.calc_enter_resistance(node, nn)
                         self.gocache[node, nn] = math.sqrt(cost)                        
-                        ToolBox.print_output("register new cost:", node, nn, cost)
+                        ToolBox.print_output(f"migration-{nation} register new cost:", node, nn, cost)
 
                     try: cache[nn] += float(value) / cost
                     except KeyError:
                         cache[nn] = float(value) / cost
 
-            for node, value in cache.items():
-                try: finalcache[node] += value
+            for node, val in cache.items():
+                try: finalcache[node] += val
                 except KeyError:
-                    finalcache[node] = value
+                    finalcache[node] = val
 
         for node, value in finalcache.items():
             self.driver.set_population_by_node(node, nation, int(value))
+        return len(finalcache)
 
     def population_lnorm(self):
         popnode = self.driver.get_population_as_dict()
@@ -266,8 +268,9 @@ if opts.source:
     ToolBox.print_output("updated nodes (S):", init.set_source(opts.source))
     
 if opts.nation:
-    ToolBox.print_output("updated nodes (N):", init.set_population(opts.nation))
-    init.migration(opts.nation, int(opts.migration))
+    init.set_population(opts.nation)
+    no = init.migration(opts.nation, int(opts.migration))
+    ToolBox.print_output("updated nodes (N):", no)
     if opts.delete:
         dnodes = opts.delete.split("-")
         for node in dnodes:

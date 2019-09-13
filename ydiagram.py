@@ -75,9 +75,14 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
     def on_click(self, box, event):
         xo, y = Diagram.Diagram.on_click(self, box, event)
         node = self.diagram[xo,y][1]
-        try: val = self.nvalues[node]
-        except KeyError: val = "-"
-        ToolBox.print_output(f"{xo}x{y} = {node} -> {val}")
+
+        if self.nvalues is None:
+            db_name = self.driver.db_name
+            os.system(f"./node.py -f {db_name} -n {node}")
+        else:
+            try: val = self.nvalues[node]
+            except KeyError: val = "-"
+            ToolBox.print_output(f"{xo}x{y} = {node} -> {val}")
 
     def assign_node_pointer(self, nodes):
         def inner(): self.node_pointer(nodes)            
@@ -173,7 +178,7 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
         self.assigned_painter = inner
 
     def color_nation_presenter(self, color_nation):
-        self.nvalues = self.driver.get_population_as_dict()
+        self.nvalues = None
         bgrgb = [220, 220, 220]
         diagramRGB = []
         cache = {}

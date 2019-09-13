@@ -123,4 +123,16 @@ else:
     ToolBox.print_output(f"buildable nodes: {len(buildset)} area: {fa} %")
     ToolBox.print_output(f"coast length: {coastatoms} / {ca} %")
     ToolBox.print_output(f"navigable area: {na} %")
-    
+
+    total = 0
+    people = {nat: 0 for nat in driver.get_nation_names_as_set()}
+    for nat in people.keys():
+        natdis = driver.get_population_as_dict(nat)
+        tot = sum(natdis.values())
+        people[nat] = tot
+        total += tot
+    ToolBox.print_output(f"total population: {total}")
+    for n, p in people.items():
+        frac = 100 * float(p) / total
+        ToolBox.print_output(f"   {n}: {p} {frac} %")
+        

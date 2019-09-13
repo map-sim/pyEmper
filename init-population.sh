@@ -2,21 +2,21 @@
 
 # 1
 ./initiator.py -c -N CEL -e JTW-BHH-BMO -m 4
-./initiator.py -N CEL -d EII
+./initiator.py -N CEL -d EII-IWI
 # ./ydiagram.py -r 2 -b -N CEL
 
 # 2
 ./initiator.py -c -N SAS -e FZV -m 5
-./initiator.py -N SAS -d RZW
+./initiator.py -N SAS -d RZW-WVI-CCD-LGE
 # ./ydiagram.py -r 2 -b -N SAS
 
 # 3
-./initiator.py -c -N SLO -e FIT-BYG -m 3
+./initiator.py -c -N SLO -e FIT-BYG-DJG -m 3
 # ./ydiagram.py -r 2 -b -N SLO
 
 # 4
 ./initiator.py -c -N GER -e LGE-ZYQ -m 4
-./initiator.py -N GER -d RCL-IPN-BJC-OET-RZW-UAG
+./initiator.py -N GER -d RCL-IPN-BJC-OET-RZW-UAG-FZV
 # ./ydiagram.py -r 2 -b -N GER
 
 # 5
@@ -34,7 +34,8 @@
 # ./ydiagram.py -r 2 -b -N TUR
 
 # 8
-./initiator.py -c -N ISM -e UAG -m 4
+./initiator.py -c -N ISM -e UAG -m 5
+./initiator.py -N ISM -d XKC
 # ./ydiagram.py -r 2 -b -N ISM
 
 # 9
@@ -46,33 +47,36 @@
 
 # 10
 ./initiator.py -c -N INK -e MRL-NPP-LHG -m 5
-./initiator.py -N INK -d ONH-JYN-KRP-DDI
+./initiator.py -N INK -d ONH-JYN-KRP-DDI-HTS-DTY
 # ./ydiagram.py -r 2 -b -N INK -o 200
 
 # 11
-./initiator.py -c -N SUN -e KRP-YTV-SEL -m 4
+./initiator.py -c -N SUN -e KRP-YTV-SEL-YGE-GFN -m 4
+./initiator.py -N SUN -d RKB
 # ./ydiagram.py -r 2 -b -N SUN -o 200
 
 # 12
-./initiator.py -c -N JAP -e JXR-JYN-HTS -m 3
+./initiator.py -c -N JAP -e JXR-HTS-QIN -m 4
+./initiator.py -N JAP -d LHG-GIE-YVR-DDI-LWL
 # ./ydiagram.py -r 2 -b -N JAP -o 200
 
 # 13
-./initiator.py -c -N ZUL -e FFI -m 4
+./initiator.py -c -N ZUL -e FFI-RKB -m 4
 # ./ydiagram.py -r 2 -b -N ZUL -o 200
 
 # 14
-./initiator.py -c -N HAN -e YZP -m 4
-./initiator.py -N HAN -d MMU-NFY-XZM
+./initiator.py -c -N HAN -e YZP -m 5
+./initiator.py -N HAN -d XZM-RKB-NNL-IWZ
 #./ydiagram.py -r 2 -b -N HAN -o 200
 
 # 15
 ./initiator.py -c -N BUD -e QZD-XZL-VFE -m 4
+./initiator.py -N BUD -d VJD
 # ./ydiagram.py -r 2 -b -N BUD -o 200
 
 # 16
-./initiator.py -c -N HIN -e IWZ-MZC -m 4
-# ./ydiagram.py -r 2 -b -N HIN -o 200
+./initiator.py -c -N IND -e IWZ-MZC -m 4
+# ./ydiagram.py -r 2 -b -N IND -o 200
 
 
 function t(){
@@ -97,5 +101,5 @@ function t(){
 }
 
 ./initiator.py -l -w -10:410 -t `t COAST 6`-`t N-RIV 3`-`t G-RIV 3`-`t SWAMP 0.1`-`t PLATE 2`-`t HILL 1`-`t P-FLT 1`-`t H-MNT 0.2`-`t TUNDR 0.06`-`t R-FLT 8`-`t DESRT 0.06`-`t G-MNT 0.04`
-./ydiagram.py -r 2 -b -P -N SAS:255:0:0-CEL:0:0:255-GER:0:128:0-LAT:255:128:0-PER:0:180:180-ISM:255:0:255-NOR:0:0:128-TUR:255:255:0-SLO:128:0:0-INK:255:128:128-JAP:0:255:0-SUN:0:80:80-ZUL:128:0:128-HAN:255:60:60-HIN:128:64:0-BUD:64:128:255
+./ydiagram.py -r 2 -b -P -N SAS:255:0:0-CEL:0:0:255-GER:0:128:0-SLO:255:128:0-PER:0:180:180-ISM:255:0:255-NOR:0:0:128-TUR:255:255:0-LAT:128:0:0-INK:255:128:128-JAP:0:255:0-SUN:0:80:80-ZUL:255:255:255-HAN:255:60:60-IND:128:64:0-BUD:64:128:255
 # ./ydiagram.py -r 2 -b -P
