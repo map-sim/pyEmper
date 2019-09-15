@@ -23,11 +23,13 @@ parser.add_option("-x", "--xnode", dest="xnode",
                   help="print xnode mode")
 parser.add_option("-m", "--margin", dest="margin",
                   help="margin/padding", default=0)
+parser.add_option("-s", "--stream", dest="stream",
+                  help="stream resistance")
 parser.add_option("-l", "--list", dest="listv",
                   action="store_true", default=False,
                   help="print mode list")
-parser.add_option("-s", "--stream", dest="stream",
-                  help="stream resistance")
+parser.add_option("-b", "--btype", dest="btype", default="all",
+                  help="terrain type: sea, land, all")
 
 opts, args = parser.parse_args()
 
@@ -73,7 +75,14 @@ elif opts.node is not None and opts.xnode:
     print(f"-s{s[1]+m} -n{n[1]-m} -w{w[0]-m} -e{e[0]+m}")
 
 elif opts.listv:
-    nodes = driver.get_node_names_as_set()
+    if opts.btype == "all":
+        nodes = driver.get_node_names_as_set()
+    elif opts.btype == "see":
+        diagram = driver.get_vector_diagram()
+        nodes = [n for n in driver.get_node_names_as_set() if not diagram.check_land(n)]
+    elif opts.btype == "land":
+        diagram = driver.get_vector_diagram()
+        nodes = [n for n in driver.get_node_names_as_set() if diagram.check_land(n)]
     for node in nodes:
         ToolBox.print_output(node)
 
