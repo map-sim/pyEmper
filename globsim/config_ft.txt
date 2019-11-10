@@ -1,7 +1,0 @@
-PRAGMA foreign_keys=OFF;
-BEGIN TRANSACTION;
-CREATE TABLE config_ft(name text UNIQUE, value real);
-INSERT INTO config_ft VALUES('map_width',640.0);
-INSERT INTO config_ft VALUES('map_height',400.0);
-INSERT INTO config_ft VALUES('map_project',0);
-COMMIT;
