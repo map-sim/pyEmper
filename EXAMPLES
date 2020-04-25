@@ -1,0 +1,17 @@
+TERRAIN MAP
+
+./xdiagram.py -f demo.sql
+./xdiagram.py -f demo.sql -r 2
+./xdiagram.py -f demo.sql -r 2 -b
+
+NODE ANALYSIS
+
+./node.py
+./node.py -l
+./node.py -p XPX
+./node.py -p XPX -x
+
+ZOOM ON A NODE
+
+./xdiagram.py -f demo.sql -r 2 -b `./node.py -p XPX -x`
+./xdiagram.py -f demo.sql -r 2 -b `./node.py -p XPX -x -m 10`

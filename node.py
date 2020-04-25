@@ -16,8 +16,8 @@ parser = optparse. OptionParser()
 parser.add_option("-f", "--db-file", dest="dbfile",
                   metavar="FILE", default="demo.sql",
                   help="saved simulator state")
-parser.add_option("-n", "--node", dest="node",
-                  help="node name")
+parser.add_option("-p", "--point", dest="node",
+                  help="point nodes")
 parser.add_option("-x", "--xnode", dest="xnode",
                   action="store_true", default=False,
                   help="print xnode mode")
