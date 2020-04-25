@@ -16,7 +16,7 @@ parser = optparse. OptionParser()
 parser.add_option("-f", "--db-file", dest="dbfile",
                   metavar="FILE", default="demo.sql",
                   help="saved simulator state")
-parser.add_option("-p", "--point", dest="node",
+parser.add_option("-p", "--province", dest="province",
                   help="point nodes")
 parser.add_option("-x", "--xnode", dest="xnode",
                   action="store_true", default=False,
@@ -28,7 +28,7 @@ parser.add_option("-s", "--stream", dest="stream",
 parser.add_option("-l", "--list", dest="listv",
                   action="store_true", default=False,
                   help="print mode list")
-parser.add_option("-b", "--btype", dest="btype", default="all",
+parser.add_option("-t", "--type", dest="type", default="all",
                   help="terrain type: sea, land, all")
 
 opts, args = parser.parse_args()
@@ -40,9 +40,9 @@ opts, args = parser.parse_args()
 import BusyBoxSQL
 driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
 
-if opts.node is not None and not opts.xnode:
-    ToolBox.print_output(f"node: {opts.node}")
-    atoms = driver.get_node_atoms_as_dict(opts.node)
+if opts.province is not None and not opts.xnode:
+    ToolBox.print_output(f"node: {opts.province}")
+    atoms = driver.get_node_atoms_as_dict(opts.province)
     ToolBox.print_output(f"atoms: {len(atoms)}")
     scale = driver.get_config_by_name("map_scale")
     ToolBox.print_output(f"area: {len(atoms)*scale}")
@@ -56,7 +56,7 @@ if opts.node is not None and not opts.xnode:
         aperture += terrains[atom[0]]["aperture"]
     ToolBox.print_output(f"aperture: {aperture*scale}")
 
-    popdict = driver.get_population_by_node_as_dict(opts.node)
+    popdict = driver.get_population_by_node_as_dict(opts.province)
     pop = sum([v for k,v in popdict.items() if k != "node"])
     ToolBox.print_output(f"population: {pop}")
     for k,v in popdict.items():
@@ -64,8 +64,8 @@ if opts.node is not None and not opts.xnode:
         if v == 0: continue
         ToolBox.print_output(f"   + {k}: {v}")
     
-elif opts.node is not None and opts.xnode:
-    xyset = driver.get_node_coordinates_as_set(opts.node)
+elif opts.province is not None and opts.xnode:
+    xyset = driver.get_node_coordinates_as_set(opts.province)
     m = int(opts.margin)
 
     w = min(xyset, key=lambda x: x[0])
@@ -75,14 +75,15 @@ elif opts.node is not None and opts.xnode:
     print(f"-s{s[1]+m} -n{n[1]-m} -w{w[0]-m} -e{e[0]+m}")
 
 elif opts.listv:
-    if opts.btype == "all":
+    if opts.type == "all":
         nodes = driver.get_node_names_as_set()
-    elif opts.btype == "see":
+    elif opts.type == "see":
         diagram = driver.get_vector_diagram()
         nodes = [n for n in driver.get_node_names_as_set() if not diagram.check_land(n)]
-    elif opts.btype == "land":
+    elif opts.type == "land":
         diagram = driver.get_vector_diagram()
         nodes = [n for n in driver.get_node_names_as_set() if diagram.check_land(n)]
+    else: raise ValueError(f"unkown type: {opts.type}. You can list: see, land, or all.")
     for node in nodes:
         ToolBox.print_output(node)
 
@@ -106,7 +107,7 @@ elif opts.stream:
 
     ToolBox.print_output(f"end-end: {nodes[0]} --> {nodes[-1]} = {total}")
 
-else:
+else:  # summary
     nodes = driver.get_node_names_as_set()
     diagram = driver.get_vector_diagram()
     totalatoms = len(diagram)

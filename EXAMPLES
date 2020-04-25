@@ -1,17 +1,42 @@
+NODE ANALYSIS
+
+./node.py -f demo.sql
+./node.py -f demo.sql -l
+./node.py -f demo.sql -l -t see
+
+./node.py -f demo.sql -p XRA
+./node.py -f demo.sql -p XRA -x
+
+./node.py -f demo.sql -s ULC-DUK-XYZ
+./node.py -f demo.sql -s XYZ-DUK-ULC
+
 TERRAIN MAP
 
 ./xdiagram.py -f demo.sql
 ./xdiagram.py -f demo.sql -r 2
 ./xdiagram.py -f demo.sql -r 2 -b
 
-NODE ANALYSIS
+PARAM MAP - NATION
 
-./node.py
-./node.py -l
-./node.py -p XPX
-./node.py -p XPX -x
+./ydiagram.py -f demo.sql -N PER -b
+./ydiagram.py -f demo.sql -N PER -b -r 4 `./node.py -f demo.sql -p UUG -x -m 80`
 
-ZOOM ON A NODE
+PARAM MAP - PROVINCE
 
-./xdiagram.py -f demo.sql -r 2 -b `./node.py -p XPX -x`
-./xdiagram.py -f demo.sql -r 2 -b `./node.py -p XPX -x -m 10`
+./ydiagram.py -b -p DUK
+./ydiagram.py -b -p ULC-DUK-XYZ-DUQ-RCL
+ 
+ZOOM ON A PROVINCE
+
+./xdiagram.py -f demo.sql -r 2 -b `./node.py -f demo.sql -p XRA -x`
+./xdiagram.py -f demo.sql -r 5 -b `./node.py -f demo.sql -p XRA -x -m 10`
+
+
+DATABASE SCHEMA
+
+sqlite> .schema
+
+CREATE TABLE terrain(name text UNIQUE, color text UNIQUE, drag real, charge real, aperture real);
+CREATE TABLE config(name text UNIQUE, value real);
+CREATE TABLE diagram (x int, y int, node text, color text, dx real, dy real);
+CREATE TABLE population(node text UNIQUE, SLO int, GER int, SAS int, NOR int, BUD int, ISM int, HAN int, ZUL int, IND int, TUR int, LAT int, JAP int, INK int, SUN int, CEL int, PER int);

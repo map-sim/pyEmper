@@ -16,7 +16,7 @@ import Diagram
 parser = optparse. OptionParser()
 Diagram.add_parser_options(parser)
 
-parser.add_option("-p", "--point", dest="point",
+parser.add_option("-p", "--province", dest="province",
                   help="point nodes")
 parser.add_option("-S", "--source", dest="source",
                   help="source values")
@@ -215,10 +215,9 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
 import BusyBoxSQL
 driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
 
-if opts.point: title = "ydiagram"
-elif opts.population: title = "population"
-elif opts.source: title = opts.source
-elif opts.nation: title = opts.nation
+if opts.province: title = "ydiagram - province"
+elif opts.population: title = "ydiagram - population"
+elif opts.nation: title = f"ydiagram - nation - {opts.nation}"
 else: raise ValueError("(e) what")
 
 ydiagram = YDiagramGTK(driver, title)
@@ -235,8 +234,8 @@ ydiagram.set_resize(opts.resize)
 ydiagram.set_offset(opts.offset)
 ydiagram.set_hopsize(opts.delta)
 
-if opts.point:
-    nodes = opts.point.split("-")
+if opts.province:
+    nodes = opts.province.split("-")
     ydiagram.assign_node_pointer(nodes)
 
 elif opts.population:
@@ -244,9 +243,6 @@ elif opts.population:
         ydiagram.assign_population_presenter()
     else:
         ydiagram.assign_color_nation_presenter(opts.nation)
-
-elif opts.source:
-    ydiagram.assign_source_presenter(opts.source)
 
 elif opts.nation:
     ydiagram.assign_nation_presenter(opts.nation)
