@@ -18,8 +18,8 @@ Diagram.add_parser_options(parser)
 
 parser.add_option("-p", "--province", dest="province",
                   help="point nodes")
-parser.add_option("-S", "--source", dest="source",
-                  help="source values")
+#parser.add_option("-S", "--source", dest="source",
+#                  help="source values")
 parser.add_option("-N", "--nation", dest="nation",
                   help="nation values")
 parser.add_option("-P", "--population", dest="population",
@@ -78,7 +78,7 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
 
         if self.nvalues is None:
             db_name = self.driver.db_name
-            os.system(f"./node.py -f {db_name} -n {node}")
+            os.system(f"./node.py -f {db_name} -p {node}")
         else:
             try: val = self.nvalues[node]
             except KeyError: val = "-"
@@ -104,24 +104,24 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
             self.pixel_painter(rgbt, rows, bset)
         self.screen = diagramRGB
 
-    def assign_source_presenter(self, source):
-        def inner(): self.source_presenter(source)            
-        self.assigned_painter = inner
+    # def assign_source_presenter(self, source):
+    #     def inner(): self.source_presenter(source)            
+    #     self.assigned_painter = inner
         
-    def source_presenter(self, source):
-        self.nvalues = self.driver.get_source_as_dict(source)
-        diagramRGB = []
-        
-        maxv = self.driver.get_max_source(source)
-        assert maxv > 0, "(e) no source"
-    
-        for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
-            node = self.diagram[xo,y][1]
-            nv = self.nvalues[node] / maxv
-            bc = int(255 * (1.0 - nv))
-            rgbt = [bc, bc, 255]
-            self.pixel_painter(rgbt, rows, bset)            
-        self.screen = diagramRGB
+    # def source_presenter(self, source):
+    #     self.nvalues = self.driver.get_source_as_dict(source)
+    #     diagramRGB = []
+    #     
+    #     maxv = self.driver.get_max_source(source)
+    #     assert maxv > 0, "(e) no source"
+    # 
+    #     for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
+    #         node = self.diagram[xo,y][1]
+    #         nv = self.nvalues[node] / maxv
+    #         bc = int(255 * (1.0 - nv))
+    #         rgbt = [bc, bc, 255]
+    #         self.pixel_painter(rgbt, rows, bset)            
+    #     self.screen = diagramRGB
 
     def assign_nation_presenter(self, nation):
         def inner(): self.nation_presenter(nation)            
@@ -191,7 +191,7 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
                 colors, weights = [], []
                 for nation, color in color_nation.items():
                     if popsum == 0: break
-                    frac = float(popdict[nation]) / popsum 
+                    frac = (float(popdict[nation]) / popsum) ** 0.5 
                     weights.append(frac)
                     colors.append(color)
                 frac = 1.0 - sum(weights)

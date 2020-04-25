@@ -119,7 +119,7 @@ class XDiagramGTK(Gtk.Window, Diagram.Diagram):
 
         elif event.button == 3 and self.remembered_node2 != node:
             db_name = self.driver.db_name
-            os.system(f"./node.py -f {db_name} -n {node}")
+            os.system(f"./node.py -f {db_name} -p {node}")
 
             if self.remembered_node2 is not None:
                 cost = self.diagram.calc_transit_resistance(self.remembered_node, self.remembered_node2, node)

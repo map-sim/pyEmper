@@ -31,12 +31,12 @@ ZOOM ON A PROVINCE
 ./xdiagram.py -f demo.sql -r 2 -b `./node.py -f demo.sql -p XRA -x`
 ./xdiagram.py -f demo.sql -r 5 -b `./node.py -f demo.sql -p XRA -x -m 10`
 
-
 DATABASE SCHEMA
 
 sqlite> .schema
 
-CREATE TABLE terrain(name text UNIQUE, color text UNIQUE, drag real, charge real, aperture real);
 CREATE TABLE config(name text UNIQUE, value real);
 CREATE TABLE diagram (x int, y int, node text, color text, dx real, dy real);
+CREATE TABLE terrain(name text UNIQUE, color text UNIQUE, drag real, charge real, aperture real);
+CREATE TABLE distribution(node text UNIQUE, resourcing real, housing real, industry real, warehousing real, transport real, fortress real);
 CREATE TABLE population(node text UNIQUE, SLO int, GER int, SAS int, NOR int, BUD int, ISM int, HAN int, ZUL int, IND int, TUR int, LAT int, JAP int, INK int, SUN int, CEL int, PER int);

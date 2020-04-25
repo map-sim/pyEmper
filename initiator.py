@@ -39,8 +39,9 @@ parser.add_option("-t", "--terrain", dest="tfunc",
 parser.add_option("-e", "--extend", dest="extend",
                   help="add nodes X-Y-Z")
 
-parser.add_option("-S", "--source", dest="source",
-                  help="source values")
+# parser.add_option("-D", "--distribution", dest="distribution",
+#                   help="distribution values")
+
 parser.add_option("-N", "--nation", dest="nation",
                   help="nation values")
 parser.add_option("-l", "--lnorm", dest="lnorm",
@@ -64,14 +65,7 @@ class Initiator:
     def __init__(self, dbfile, btype, what):
         self.driver = BusyBoxSQL.BusyBoxSQL(dbfile)
         self.diagram = self.driver.get_vector_diagram()
-
-        if what in ("source"):
-            nodes = self.driver.get_node_names_as_set()        
-            if btype == "land":
-                nodes = {n for n in nodes if self.diagram.check_land(n)}
-            elif btype == "sea":
-                nodes = {n for n in nodes if not self.diagram.check_land(n)}
-        else: nodes = []
+        nodes = []
 
         self.btype = btype
         self.nodes = nodes
@@ -83,8 +77,8 @@ class Initiator:
         self.tfunc = {}
         self.gocache = {}
         
-    def clean_source(self, source):
-        self.driver.clean_source(source)
+    # def clean_source(self, source):
+    #    self.driver.clean_source(source)
 
     def clean_population(self, nation):
         self.driver.clean_population(nation)
@@ -243,16 +237,16 @@ class Initiator:
 ### main
 ###
 
-if opts.source: what = "source"
-elif opts.nation: what = "population"
+if opts.nation: what = "population"
 elif opts.lnorm: what = "population"
 else: raise ValueError("(e) what?")
 
+## if opts.distribution: what = "distribution"
+
 init = Initiator(opts.dbfile, opts.btype, what)
 if opts.clean:
-    # ToolBox.print_output("clean!")    
-    if opts.source: init.clean_source(opts.source)
-    elif opts.nation: init.clean_population(opts.nation)
+    if opts.nation: init.clean_population(opts.nation)
+    # if opts.distribution: init.clean_distribution(opts.distribution)
 
 init.reduce_nodes_by_pocc(opts.pocc)
 if opts.extend:
@@ -264,8 +258,8 @@ init.set_uniform_range(opts.uniform)
 init.set_next_nodes(opts.numnext)
 init.set_window(opts.window)
         
-if opts.source:
-    ToolBox.print_output("updated nodes (S):", init.set_source(opts.source))
+# if opts.distribution:
+#     ToolBox.print_output("updated nodes (D):", init.set_distrobution(opts.distribution))
     
 if opts.nation:
     init.set_population(opts.nation)
