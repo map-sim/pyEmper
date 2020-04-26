@@ -241,8 +241,7 @@ if opts.province:
 elif opts.population:
     if opts.nation is None:
         ydiagram.assign_population_presenter()
-    else:
-        ydiagram.assign_color_nation_presenter(opts.nation)
+    else: ydiagram.assign_color_nation_presenter(opts.nation)
 
 elif opts.nation:
     ydiagram.assign_nation_presenter(opts.nation)

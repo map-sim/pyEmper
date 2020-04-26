@@ -30,7 +30,6 @@ parser.add_option("-l", "--list", dest="listv",
                   help="print mode list")
 parser.add_option("-t", "--type", dest="type", default="all",
                   help="terrain type: sea, land, all")
-
 opts, args = parser.parse_args()
 
 ###
@@ -143,6 +142,6 @@ else:  # summary
         total += tot
     ToolBox.print_output(f"total population: {total}")
     for n, p in people.items():
-        frac = 100 * float(p) / total
+        frac = round(100 * float(p) / total, 3)
         ToolBox.print_output(f"   {n}: {p} {frac} %")
         

@@ -212,3 +212,31 @@ class BusyBoxSQL:
         out = self.execute(f"SELECT node,{sumc} FROM population")
         assert len(out) > 0, "(e) outlen <= 0"
         return {drow['node']: drow[sumc] for drow in out}
+
+    ###
+    ### control specific
+    ###
+
+    def set_capital_node(self, control, node):
+        self.execute(f"UPDATE control SET capital='{node}' WHERE name='{control}'")
+        assert self.cur.rowcount == 1, "(e) capital cannot be set"
+
+    def get_controls_as_dict(self, *keys):
+        columns = f",".join(keys)
+        rows = self.execute(f"SELECT name,{columns} FROM control")
+        output = dict()
+        for row in rows:
+            output[row["name"]] = [row[key] for key in keys]
+        return output
+
+    def get_opinion_as_dict(self, control):
+        out = self.execute(f"SELECT * FROM opinion WHERE control='{control}'")
+        del out[0]["control"]
+        return out[0]
+        
+    def set_opinion_by_control(self, control, nation, value):
+        self.execute(f"UPDATE opinion SET {nation}={value} WHERE control='{control}'")
+        if self.cur.rowcount == 0:
+            self.execute(f"INSERT INTO opinion (control, '{nation}') VALUES ('{control}', {value})")
+        assert self.cur.rowcount == 1, "(e) column cannot be set"
+     
