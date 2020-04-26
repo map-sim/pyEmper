@@ -36,7 +36,7 @@ opts, args = parser.parse_args()
 ### main
 ###
 
-import BusyBoxSQL
+import BusyBoxSQL, math
 driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
 
 if opts.province is not None and not opts.xnode:
@@ -45,7 +45,7 @@ if opts.province is not None and not opts.xnode:
     ToolBox.print_output(f"atoms: {len(atoms)}")
     scale = driver.get_config_by_name("map_scale")
     ToolBox.print_output(f"area: {len(atoms)*scale}")
-    
+
     terrains = {}
     aperture = 0.0
     for atom in atoms.values():
@@ -54,7 +54,7 @@ if opts.province is not None and not opts.xnode:
             terrains[atom[0]] = terr
         aperture += terrains[atom[0]]["aperture"]
     ToolBox.print_output(f"aperture: {aperture*scale}")
-
+    
     popdict = driver.get_population_by_node_as_dict(opts.province)
     pop = sum([v for k,v in popdict.items() if k != "node"])
     ToolBox.print_output(f"population: {pop}")
@@ -62,6 +62,15 @@ if opts.province is not None and not opts.xnode:
         if k == "node": continue
         if v == 0: continue
         ToolBox.print_output(f"   + {k}: {v}")
+
+    prod = driver.calc_production(opts.province)    
+    ToolBox.print_output(f"production: {prod}")
+        
+    # p = driver.get_config_by_name("production_factor")
+    # r, f = driver.get_distribution_as_list(opts.province, "resourcing", "industry")
+    # production = p * math.sqrt(pop) * r * ((f + 1.0) / (f + aperture))
+    # ToolBox.print_output(f"production: {production}")
+
     
 elif opts.province is not None and opts.xnode:
     xyset = driver.get_node_coordinates_as_set(opts.province)

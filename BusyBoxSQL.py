@@ -6,6 +6,8 @@
 # application: GLOBSIM
 
 import os, sys
+import math
+
 import sqlite3
 import ToolBox
 import VectorDiagram
@@ -158,6 +160,13 @@ class BusyBoxSQL:
         assert len(out) > 0, "(e) outlen <= 0"
         return {drow['node']: drow[column] for drow in out}
 
+    def get_distribution_as_list(self, node, *keys):
+        columns = f",".join(keys)
+        where = f"WHERE node='{node}'"
+        rows = self.execute(f"SELECT {columns} FROM distribution {where}")
+        assert len(rows) == 1, "(e) outlen != 1"
+        return [rows[0][key] for key in keys] 
+    
     ###
     ### population specific
     ###
@@ -240,3 +249,16 @@ class BusyBoxSQL:
             self.execute(f"INSERT INTO opinion (control, '{nation}') VALUES ('{control}', {value})")
         assert self.cur.rowcount == 1, "(e) column cannot be set"
      
+    ###
+    ### extra
+    ###
+
+    def calc_production(self, node):
+        pop = self.get_population_by_node(node)        
+        pf = self.get_config_by_name("production_factor")
+        try:
+            r, f = self.get_distribution_as_list(node, "resourcing", "industry")
+            production = pf * math.sqrt(pop) * r * (f + 1.0)
+            return production
+        except AssertionError:
+            return 0.0
