@@ -82,10 +82,18 @@ elif opts.listv:
     elif opts.type == "land":
         diagram = driver.get_vector_diagram()
         nodes = [n for n in driver.get_node_names_as_set() if diagram.check_land(n)]
-    else: raise ValueError(f"unkown type: {opts.type}. You can list: see, land, or all.")
-    for node in nodes:
-        ToolBox.print_output(node)
-
+    elif opts.type == "capital":
+        dout = driver.get_controls_as_dict("capital")
+        if opts.xnode:
+            nodes = "-".join([cap[0] for cap in dout.values()])
+        else:
+            nodes = [f"{cap[0]} -> {ctrl}" for ctrl, cap in dout.items()]        
+    else: raise ValueError(f"Unkown type: {opts.type}. Available: see, land, capital, or all.")
+    if not opts.xnode:
+        for node in nodes:
+            ToolBox.print_output(node)
+    else: print(nodes)
+            
 elif opts.stream:
     nodes = opts.stream.split("-")
     assert len(nodes) > 1, "(e) at least 2 provinces (X-Y-Z...) are needed"

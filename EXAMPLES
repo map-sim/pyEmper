@@ -25,6 +25,7 @@ PARAM MAP - PROVINCE
 
 ./ydiagram.py -b -p DUK
 ./ydiagram.py -b -p ULC-DUK-XYZ-DUQ-RCL
+./ydiagram.py -b -p `./node.py -l -t capital -x`
  
 ZOOM ON A PROVINCE
 
