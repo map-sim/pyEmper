@@ -18,8 +18,8 @@ Diagram.add_parser_options(parser)
 
 parser.add_option("-p", "--province", dest="province",
                   help="point nodes")
-#parser.add_option("-S", "--source", dest="source",
-#                  help="source values")
+parser.add_option("-D", "--Distribution", dest="distribution",
+                  help="distribution values")
 parser.add_option("-N", "--nation", dest="nation",
                   help="nation values")
 parser.add_option("-P", "--population", dest="population",
@@ -191,7 +191,7 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
                 colors, weights = [], []
                 for nation, color in color_nation.items():
                     if popsum == 0: break
-                    frac = (float(popdict[nation]) / popsum) ** 0.5 
+                    frac = float(popdict[nation]) / popsum 
                     weights.append(frac)
                     colors.append(color)
                 frac = 1.0 - sum(weights)

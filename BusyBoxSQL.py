@@ -132,31 +132,31 @@ class BusyBoxSQL:
         self.conn.commit()
 
     ###
-    ### source specific
+    ### distribution specific
     ###
     
-    # def set_source_by_node(self, node, source, value):
-    #     self.execute(f"UPDATE source SET {source}={value} WHERE node='{node}'")
-    #     assert self.cur.rowcount == 1, "(e) source cannot be set"
-    # 
-    # def clean_source(self, source):
-    #     self.execute(f"UPDATE source SET {source}=0")
-    #     assert self.cur.rowcount > 0, "(e) source cannot be set"
-    # 
-    # def get_source_by_node(self, node, source):
-    #     out = self.execute(f"SELECT {source} FROM source WHERE node='{node}'")
-    #     assert len(out) == 1, "(e) outlen != 1"
-    #     return out[0][source]
-    # 
-    # def get_max_source(self, source):
-    #     out = self.execute(f"SELECT MAX({source}) FROM source")
-    #     assert len(out) == 1, "(e) outlen != 1"
-    #     return list(out[0].values())[0]
-    # 
-    # def get_source_as_dict(self, source):
-    #     out = self.execute(f"SELECT node,{source} FROM source")
-    #     assert len(out) > 0, "(e) outlen <= 0"
-    #     return {drow['node']: drow[source] for drow in out}
+    def set_distribution_by_node(self, node, column, value):
+         self.execute(f"UPDATE distribution SET {column}={value} WHERE node='{node}'")
+         assert self.cur.rowcount == 1, "(e) column cannot be set"
+     
+    def clean_distribution(self, column):
+        self.execute(f"UPDATE distribution SET {column}=0")
+        assert self.cur.rowcount > 0, "(e) column cannot be set"
+     
+    def get_distribution_by_node(self, node, column):
+        out = self.execute(f"SELECT {column} FROM distribution WHERE node='{node}'")
+        assert len(out) == 1, "(e) outlen != 1"
+        return out[0][column]
+    
+    def get_max_distribution(self, column):
+        out = self.execute(f"SELECT MAX({column}) FROM distribution")
+        assert len(out) == 1, "(e) outlen != 1"
+        return list(out[0].values())[0]
+
+    def get_distribution_as_dict(self, column):
+        out = self.execute(f"SELECT node,{column} FROM distribution")
+        assert len(out) > 0, "(e) outlen <= 0"
+        return {drow['node']: drow[column] for drow in out}
 
     ###
     ### population specific

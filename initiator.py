@@ -39,9 +39,8 @@ parser.add_option("-t", "--terrain", dest="tfunc",
 parser.add_option("-e", "--extend", dest="extend",
                   help="add nodes X-Y-Z")
 
-# parser.add_option("-D", "--distribution", dest="distribution",
-#                   help="distribution values")
-
+parser.add_option("-D", "--distribution", dest="distribution",
+                  help="distribution values")
 parser.add_option("-N", "--nation", dest="nation",
                   help="nation values")
 parser.add_option("-l", "--lnorm", dest="lnorm",
@@ -77,8 +76,8 @@ class Initiator:
         self.tfunc = {}
         self.gocache = {}
         
-    # def clean_source(self, source):
-    #    self.driver.clean_source(source)
+    def clean_distribution(self, column):
+        self.driver.clean_distribution(column)
 
     def clean_population(self, nation):
         self.driver.clean_population(nation)
@@ -150,33 +149,6 @@ class Initiator:
             value *= math.sin(math.pi * yt)
         return value
 
-    def set_source(self, source):
-        updated = set()
-        for node in self.nodes:
-            v = self.obtain_new_value(node)
-            if v == 0: continue
-
-            ov = self.driver.get_source_by_node(node, source)
-            ToolBox.print_output("source:", node, source, v+ov)
-            self.driver.set_source_by_node(node, source, v+ov)
-            updated.add(node)
-            
-            nnodes = self.diagram.get_next_nodes_as_set(node)
-            if self.btype == "land":
-                nnodes = {n for n in nnodes if self.diagram.check_land(n)}
-            elif self.btype == "sea":
-                nnodes = {n for n in nnodes if not self.diagram.check_land(n)}
-            nlength = self.nlength if self.nlength <= len(nnodes) else len(nnodes)
-            nnodes = random.sample(nnodes, nlength)
-
-            for nn in nnodes:
-                ov = self.driver.get_source_by_node(nn, source)
-                ToolBox.print_output("source:", nn, source, self.nfactor*v+ov)
-                self.driver.set_source_by_node(nn, source,self.nfactor*v+ov)
-                updated.add(nn)
-
-        return len(updated)
-
     def set_population(self, nation):
         updated = set()
         initval = 10000
@@ -233,20 +205,30 @@ class Initiator:
                     self.driver.set_population_by_node(node, nation, value)
                 else: self.driver.set_population_by_node(node, nation, 0)
 
+    def set_distribution(self, column):        
+        diagram = self.driver.get_vector_diagram()
+        all_nodes = self.driver.get_node_names_as_set()
+        nodes = [n for n in all_nodes if diagram.check_land(n)]
+
+        for node in nodes: # land nodes only
+            value = self.obtain_new_value(node)
+            ToolBox.print_output("distribution:", node, column, value)
+            self.driver.set_distribution_by_node(node, column, value)
+        return len(nodes)
 ###
 ### main
 ###
 
 if opts.nation: what = "population"
 elif opts.lnorm: what = "population"
+elif opts.distribution: what = "distribution"
 else: raise ValueError("(e) what?")
 
-## if opts.distribution: what = "distribution"
 
 init = Initiator(opts.dbfile, opts.btype, what)
 if opts.clean:
     if opts.nation: init.clean_population(opts.nation)
-    # if opts.distribution: init.clean_distribution(opts.distribution)
+    if opts.distribution: init.clean_distribution(opts.distribution)
 
 init.reduce_nodes_by_pocc(opts.pocc)
 if opts.extend:
@@ -257,9 +239,9 @@ init.set_terrain_function(opts.tfunc)
 init.set_uniform_range(opts.uniform)
 init.set_next_nodes(opts.numnext)
 init.set_window(opts.window)
-        
-# if opts.distribution:
-#     ToolBox.print_output("updated nodes (D):", init.set_distrobution(opts.distribution))
+
+if opts.distribution:
+    ToolBox.print_output("updated nodes (D):", init.set_distribution(opts.distribution))
     
 if opts.nation:
     init.set_population(opts.nation)
