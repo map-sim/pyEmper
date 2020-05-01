@@ -1,5 +1,28 @@
 #! /bin/bash
 
+function t(){
+    case $1 in
+	OCEAN) echo 0000CC:$2;;
+	C-SEA) echo 0044FF:$2;;
+	ICE-S) echo 0077FF:$2;;
+	G-RIV) echo 771188:$2;;
+	N-RIV) echo BB22FF:$2;;
+	R-FLT) echo 33BB33:$2;;
+	P-FLT) echo 55DD88:$2;;
+	DESRT) echo FFEE99:$2;;
+	TUNDR) echo AAAA99:$2;;
+	SWAMP) echo 448844:$2;;
+	PLATE) echo FFCC11:$2;;
+	H-MNT) echo 884400:$2;;
+	G-MNT) echo 440022:$2;;
+	HILL)  echo FF4400:$2;;
+	COAST) echo COAST:$2;;
+	NAN) echo NAN:$2;;
+    esac
+}
+
+./initiator.py -D capasity -w -10:410 -t `t COAST 6`-`t N-RIV 3`-`t G-RIV 3`-`t SWAMP 0.1`-`t PLATE 1.5`-`t HILL 0.9`-`t P-FLT 0.3`-`t H-MNT 0.1`-`t TUNDR 0.03`-`t R-FLT 8`-`t DESRT 0.03`-`t G-MNT 0.02`
+
 # 1
 ./initiator.py -c -N CEL -e JTW-BHH-BMO -m 4
 ./initiator.py -N CEL -d EII-IWI
@@ -75,29 +98,5 @@
 ./initiator.py -c -N IND -e IWZ-MZC -m 4
 # ./ydiagram.py -r 2 -b -N IND -o 200
 
-function t(){
-    case $1 in
-	OCEAN) echo 0000CC:$2;;
-	C-SEA) echo 0044FF:$2;;
-	ICE-S) echo 0077FF:$2;;
-	G-RIV) echo 771188:$2;;
-	N-RIV) echo BB22FF:$2;;
-	R-FLT) echo 33BB33:$2;;
-	P-FLT) echo 55DD88:$2;;
-	DESRT) echo FFEE99:$2;;
-	TUNDR) echo AAAA99:$2;;
-	SWAMP) echo 448844:$2;;
-	PLATE) echo FFCC11:$2;;
-	H-MNT) echo 884400:$2;;
-	G-MNT) echo 440022:$2;;
-	HILL)  echo FF4400:$2;;
-	COAST) echo COAST:$2;;
-	NAN) echo NAN:$2;;
-    esac
-}
-
-
-./initiator.py -D capasity -w -10:410 -t `t COAST 6`-`t N-RIV 3`-`t G-RIV 3`-`t SWAMP 0.1`-`t PLATE 2`-`t HILL 1`-`t P-FLT 1`-`t H-MNT 0.2`-`t TUNDR 0.06`-`t R-FLT 8`-`t DESRT 0.06`-`t G-MNT 0.04`
-./initiator.py -l -w -10:410 -t `t COAST 6`-`t N-RIV 3`-`t G-RIV 3`-`t SWAMP 0.1`-`t PLATE 2`-`t HILL 1`-`t P-FLT 1`-`t H-MNT 0.2`-`t TUNDR 0.06`-`t R-FLT 8`-`t DESRT 0.06`-`t G-MNT 0.04`
-./ydiagram.py -r 2 -b -P -N SAS:255:0:0-CEL:0:0:255-GER:0:128:0-SLO:255:128:0-PER:0:180:180-ISM:255:0:255-NOR:0:0:128-TUR:255:255:0-LAT:128:0:0-INK:255:128:128-JAP:0:255:0-SUN:0:80:80-ZUL:255:255:255-HAN:255:60:60-IND:128:64:0-BUD:64:128:255
-# ./ydiagram.py -r 2 -b -P
+./initiator.py -l # -w -10:410 -t `t COAST 6`-`t N-RIV 3`-`t G-RIV 3`-`t SWAMP 0.1`-`t PLATE 1.5`-`t HILL 0.9`-`t P-FLT 0.3`-`t H-MNT 0.1`-`t TUNDR 0.03`-`t R-FLT 8`-`t DESRT 0.03`-`t G-MNT 0.02`
+./show-nations.sh

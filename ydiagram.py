@@ -104,24 +104,25 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
             self.pixel_painter(rgbt, rows, bset)
         self.screen = diagramRGB
 
-    # def assign_source_presenter(self, source):
-    #     def inner(): self.source_presenter(source)            
-    #     self.assigned_painter = inner
+    def assign_distribution_presenter(self, distribution):
+        def inner(): self.distribution_presenter(distribution)            
+        self.assigned_painter = inner
         
-    # def source_presenter(self, source):
-    #     self.nvalues = self.driver.get_source_as_dict(source)
-    #     diagramRGB = []
-    #     
-    #     maxv = self.driver.get_max_source(source)
-    #     assert maxv > 0, "(e) no source"
-    # 
-    #     for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
-    #         node = self.diagram[xo,y][1]
-    #         nv = self.nvalues[node] / maxv
-    #         bc = int(255 * (1.0 - nv))
-    #         rgbt = [bc, bc, 255]
-    #         self.pixel_painter(rgbt, rows, bset)            
-    #     self.screen = diagramRGB
+    def distribution_presenter(self, distribution):
+        self.nvalues = self.driver.get_distribution_as_dict(distribution)
+        diagramRGB = []
+     
+        maxv = self.driver.get_max_distribution(distribution)
+        assert maxv > 0, "(e) no distribution"
+    
+        for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
+            node = self.diagram[xo,y][1]
+            try: nv = self.nvalues[node] / maxv
+            except KeyError: nv = 0.0
+            bc = int(255 * (1.0 - nv))
+            rgbt = [bc, bc, 255]
+            self.pixel_painter(rgbt, rows, bset)            
+        self.screen = diagramRGB
 
     def assign_nation_presenter(self, nation):
         def inner(): self.nation_presenter(nation)            
@@ -215,9 +216,14 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
 import BusyBoxSQL
 driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
 
-if opts.province: title = "ydiagram - province"
-elif opts.population: title = "ydiagram - population"
-elif opts.nation: title = f"ydiagram - nation - {opts.nation}"
+if opts.province:
+    title = "ydiagram - province"
+elif opts.population:
+    title = "ydiagram - population"
+elif opts.nation:
+    title = f"ydiagram - nation - {opts.nation}"
+elif opts.distribution:
+    title = f"ydiagram - distribution - {opts.distribution}"
 else: raise ValueError("(e) what")
 
 ydiagram = YDiagramGTK(driver, title)
@@ -245,6 +251,9 @@ elif opts.population:
 
 elif opts.nation:
     ydiagram.assign_nation_presenter(opts.nation)
+
+elif opts.distribution:
+    ydiagram.assign_distribution_presenter(opts.distribution)
 
 else:
     ydiagram.assign_node_pointer("")

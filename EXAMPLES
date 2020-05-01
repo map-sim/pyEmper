@@ -18,6 +18,7 @@ TERRAIN MAP
 
 PARAM MAP - NATION
 
+./ydiagram.py -f demo.sql -P
 ./ydiagram.py -f demo.sql -N PER -b
 ./ydiagram.py -f demo.sql -N PER -b -r 4 `./node.py -f demo.sql -p UUG -x -m 80`
 

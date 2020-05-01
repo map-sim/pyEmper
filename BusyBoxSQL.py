@@ -147,9 +147,10 @@ class BusyBoxSQL:
      
     def get_distribution_by_node(self, node, column):
         out = self.execute(f"SELECT {column} FROM distribution WHERE node='{node}'")
-        assert len(out) == 1, "(e) outlen != 1"
-        return out[0][column]
-    
+        assert len(out) == 1 or len(out) == 0, "(e) outlen != 1"
+        if len(out) == 1: return out[0][column]
+        else: return 0
+
     def get_max_distribution(self, column):
         out = self.execute(f"SELECT MAX({column}) FROM distribution")
         assert len(out) == 1, "(e) outlen != 1"
@@ -229,7 +230,16 @@ class BusyBoxSQL:
     def set_capital_node(self, control, node):
         self.execute(f"UPDATE control SET capital='{node}' WHERE name='{control}'")
         assert self.cur.rowcount == 1, "(e) capital cannot be set"
+    def get_capital_node(self, control):
+        rows = self.execute(f"SELECT capital FROM control WHERE name='{control}'")
+        assert self.cur.rowcount == 1, "(e) capital cannot be taken"
+        return rows[0]["capital"]
 
+    def check_control_capital(self, node):
+        rows = self.execute(f"SELECT name, capital FROM control")
+        controls = {row["name"] for row in rows if node == row["capital"]}
+        return controls
+        
     def get_controls_as_dict(self, *keys):
         columns = f",".join(keys)
         rows = self.execute(f"SELECT name,{columns} FROM control")
@@ -248,7 +258,16 @@ class BusyBoxSQL:
         if self.cur.rowcount == 0:
             self.execute(f"INSERT INTO opinion (control, '{nation}') VALUES ('{control}', {value})")
         assert self.cur.rowcount == 1, "(e) column cannot be set"
-     
+    
+    ###
+    ### force
+    ###
+        
+    def get_force_by_node_as_dict(self, node):
+        rows = self.execute(f"SELECT control, value FROM force WHERE node='{node}'")
+        output = {row["control"]: row["value"] for row in rows}
+        return output
+    
     ###
     ### extra
     ###
@@ -262,3 +281,44 @@ class BusyBoxSQL:
             return production
         except AssertionError:
             return 0.0
+
+    def calc_control(self, node):
+        nationset = self.get_nation_names_as_set()
+        population = self.get_population_by_node(node)
+
+        natdict = {}
+        ntmp = self.get_population_by_node_as_dict(node)
+        for n in nationset:
+            if ntmp[n] > 0: natdict[n] = ntmp[n] / population
+
+        forcedict = self.get_force_by_node_as_dict(node)
+        capitalset = self.check_control_capital(node)
+        
+        opinion_im = 0.4
+        force_im = 0.6
+
+        all_force = 0.0
+        controls = set(capitalset)
+        for c, f in  forcedict.items():
+            controls.add(c)            
+            all_force += f
+
+        output = {}
+        total_opinion = 0.0
+        for c in controls:
+            tmp = 0.0
+            opinion = self.get_opinion_as_dict(c)
+            for n, p in natdict.items():
+                val = p * opinion[n]
+                total_opinion += val
+                tmp +=  val
+            output[c] = tmp  
+
+        for c in controls:
+            output[c] *= opinion_im
+            output[c] /= total_opinion
+            if c in forcedict.keys():
+                fin = forcedict[c] / all_force
+            else: fin = 0.0
+            output[c] += force_im * fin 
+        return output

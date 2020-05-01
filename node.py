@@ -61,17 +61,19 @@ if opts.province is not None and not opts.xnode:
     for k,v in popdict.items():
         if k == "node": continue
         if v == 0: continue
-        ToolBox.print_output(f"   + {k}: {v}")
+        ToolBox.print_output(f"\t+ {k}: {v}")
 
     prod = driver.calc_production(opts.province)    
     ToolBox.print_output(f"production: {prod}")
-        
-    # p = driver.get_config_by_name("production_factor")
-    # r, f = driver.get_distribution_as_list(opts.province, "resourcing", "industry")
-    # production = p * math.sqrt(pop) * r * ((f + 1.0) / (f + aperture))
-    # ToolBox.print_output(f"production: {production}")
 
-    
+    control = driver.calc_control(opts.province)
+    ToolBox.print_output(f"control:")
+    totalc = 1.0
+    for c, i in control.items():
+        ToolBox.print_output(f"\t+ {c}: {i}")
+        totalc -= i
+    ToolBox.print_output(f"\t- no-control: {totalc}")
+        
 elif opts.province is not None and opts.xnode:
     xyset = driver.get_node_coordinates_as_set(opts.province)
     m = int(opts.margin)
@@ -85,7 +87,7 @@ elif opts.province is not None and opts.xnode:
 elif opts.listv:
     if opts.type == "all":
         nodes = driver.get_node_names_as_set()
-    elif opts.type == "see":
+    elif opts.type == "sea":
         diagram = driver.get_vector_diagram()
         nodes = [n for n in driver.get_node_names_as_set() if not diagram.check_land(n)]
     elif opts.type == "land":
@@ -97,7 +99,7 @@ elif opts.listv:
             nodes = "-".join([cap[0] for cap in dout.values()])
         else:
             nodes = [f"{cap[0]} -> {ctrl}" for ctrl, cap in dout.items()]        
-    else: raise ValueError(f"Unkown type: {opts.type}. Available: see, land, capital, or all.")
+    else: raise ValueError(f"Unkown type: {opts.type}. Available: sea, land, capital, or all.")
     if not opts.xnode:
         for node in nodes:
             ToolBox.print_output(node)

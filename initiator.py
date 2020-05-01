@@ -21,6 +21,12 @@ parser.add_option("-p", "--pocc", dest="pocc",
                   help="occurence probability")
 parser.add_option("-u", "--uniform", dest="uniform",
                   help="uniform distribution Vmin:Vmax")
+parser.add_option("-2", "--square", dest="square",
+                  action="store_true", default=False,
+                  help="squared values")
+parser.add_option("-3", "--qubic", dest="qubic",
+                  action="store_true", default=False,
+                  help="squared values")
 parser.add_option("-c", "--clean", dest="clean",
                   action="store_true", default=False,
                   help="clean all values")
@@ -73,6 +79,7 @@ class Initiator:
         self.nlength = 0
         self.wstart = 0
         self.wstop = 0
+        self.power = 1.0
         self.tfunc = {}
         self.gocache = {}
         
@@ -87,12 +94,13 @@ class Initiator:
         toget = int(float(opts.pocc) * len(self.nodes))
         self.nodes = random.sample(self.nodes, toget)
 
-    def set_uniform_range(self, ustr):
+    def set_uniform_range(self, ustr, power=1.0):
         if not ustr: return
         umin, umax = ustr.split(":")
         umin, umax = float(umin), float(umax)
         assert umin < umax, "(e) min, max"
         self.urange = umin, umax
+        self.power = float(power)
         
     def set_next_nodes(self, nstr):
         if not nstr: return
@@ -133,12 +141,12 @@ class Initiator:
             if nan:
                 try: value = self.tfunc["NAN"]
                 except KeyError: pass
-        else: value = 1.0
+        else: value = 0.0
         
         if self.urange:
             v = random.random()
             v *= self.urange[1] - self.urange[0]
-            value *= v + self.urange[0]
+            value += v + self.urange[0]
 
         if self.wstart != self.wstop:
             x, y = self.diagram.get_node_center(node)
@@ -147,7 +155,7 @@ class Initiator:
             width = self.wstop - self.wstart
             yt = float(y - self.wstart) / width
             value *= math.sin(math.pi * yt)
-        return value
+        return value ** self.power
 
     def set_population(self, nation):
         updated = set()
@@ -196,7 +204,7 @@ class Initiator:
         nations = self.driver.get_nation_names_as_set()
         natnode = {nat: self.driver.get_population_as_dict(nat) for nat in nations}
         for node, pop in popnode.items():
-            capacity = self.obtain_new_value(node)
+            capacity = self.driver.get_distribution_by_node(node, "capasity")# self.obtain_new_value(node)
             land = self.diagram.check_land(node)
             for nation in nations:
                 if natnode[nation][node] == 0: continue
@@ -233,10 +241,16 @@ if opts.clean:
 init.reduce_nodes_by_pocc(opts.pocc)
 if opts.extend:
     nodes = opts.extend.split("-")
-    init.nodes.extend(nodes)
-    
+    init.nodes.extend(nodes)    
+
+power = 1.0
+if opts.square:
+    power = 2.0
+if opts.qubic:
+    power = 3.0
+
 init.set_terrain_function(opts.tfunc)
-init.set_uniform_range(opts.uniform)
+init.set_uniform_range(opts.uniform, power)
 init.set_next_nodes(opts.numnext)
 init.set_window(opts.window)
 
