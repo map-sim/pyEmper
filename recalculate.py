@@ -31,4 +31,7 @@ sea_nodes = [n for n in driver.get_node_names_as_set() if not diagram.check_land
 
 for node in land_nodes:
     control = driver.calc_control(node)
-    print(node, control)
+    prod = driver.calc_production(node)    
+    print(node, prod, [(c, round(v, 3)) for c, v in control.items() ])
+
+    

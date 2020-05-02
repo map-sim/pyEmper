@@ -29,6 +29,7 @@ class BusyBoxSQL:
         self.conn = sqlite3.connect(fname)
         self.conn.row_factory = dict_factory
         self.cur = self.conn.cursor()
+        self.vdiag = self.get_vector_diagram()
 
     def __del__(self):
         try:
@@ -232,14 +233,18 @@ class BusyBoxSQL:
         assert self.cur.rowcount == 1, "(e) capital cannot be set"
     def get_capital_node(self, control):
         rows = self.execute(f"SELECT capital FROM control WHERE name='{control}'")
-        assert self.cur.rowcount == 1, "(e) capital cannot be taken"
+        assert len(rows) == 1, "(e) capital cannot be taken"
         return rows[0]["capital"]
 
     def check_control_capital(self, node):
         rows = self.execute(f"SELECT name, capital FROM control")
         controls = {row["name"] for row in rows if node == row["capital"]}
         return controls
-        
+
+    def get_controls_as_set(self):
+        rows = self.execute(f"SELECT name FROM control")
+        return {row["name"] for row in rows}
+
     def get_controls_as_dict(self, *keys):
         columns = f",".join(keys)
         rows = self.execute(f"SELECT name,{columns} FROM control")
@@ -282,9 +287,10 @@ class BusyBoxSQL:
         except AssertionError:
             return 0.0
 
-    def calc_control(self, node):
+    def calc_control(self, node):        
         nationset = self.get_nation_names_as_set()
         population = self.get_population_by_node(node)
+        next_nodes = self.vdiag.get_next_nodes_as_set(node)
 
         natdict = {}
         ntmp = self.get_population_by_node_as_dict(node)
@@ -293,32 +299,50 @@ class BusyBoxSQL:
 
         forcedict = self.get_force_by_node_as_dict(node)
         capitalset = self.check_control_capital(node)
-        
-        opinion_im = 0.4
-        force_im = 0.6
+        controlset = self.get_controls_as_set()
+
+        treshold_im = 0.01
+        op_capital_im = 0.6
+        op_nation_im = 0.4
+        op_next_im = 0.5
+        force_im = 0.4
 
         all_force = 0.0
-        controls = set(capitalset)
         for c, f in  forcedict.items():
-            controls.add(c)            
             all_force += f
 
         output = {}
         total_opinion = 0.0
-        for c in controls:
-            tmp = 0.0
-            opinion = self.get_opinion_as_dict(c)
+        for c in controlset:
+            out = 0.0
+            opinion = self.get_opinion_as_dict(c)                
             for n, p in natdict.items():
-                val = p * opinion[n]
-                total_opinion += val
-                tmp +=  val
-            output[c] = tmp  
+                if opinion[n] <= 0.0: continue
+                out += p * opinion[n]
 
-        for c in controls:
-            output[c] *= opinion_im
+            total_opinion += out
+            if out: output[c] = out
+
+        for c in controlset:
+            if c not in output.keys(): continue
+            capital = self.get_capital_node(c)
+            if c in capitalset:
+                output[c] *= op_capital_im
+            elif capital in next_nodes:                
+                output[c] *= op_next_im
+            elif c in output.keys():
+                output[c] *= op_nation_im
+            else: continue            
             output[c] /= total_opinion
-            if c in forcedict.keys():
-                fin = forcedict[c] / all_force
-            else: fin = 0.0
-            output[c] += force_im * fin 
+
+        for c in forcedict.keys():
+            fin = forcedict[c] / all_force            
+            try: output[c] += force_im * fin
+            except KeyError:
+                output[c] = force_im * fin
+        output = {
+            c: output[c]
+            for c in output.keys()
+            if output[c] >= treshold_im
+        }
         return output

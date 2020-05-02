@@ -70,9 +70,11 @@ if opts.province is not None and not opts.xnode:
     ToolBox.print_output(f"control:")
     totalc = 1.0
     for c, i in control.items():
-        ToolBox.print_output(f"\t+ {c}: {i}")
+        im = round(i, 3)
+        ToolBox.print_output(f"\t+ {c}: {im}")
         totalc -= i
-    ToolBox.print_output(f"\t- no-control: {totalc}")
+    t = round(totalc, 3)
+    ToolBox.print_output(f"\t- no-control: {t}")
         
 elif opts.province is not None and opts.xnode:
     xyset = driver.get_node_coordinates_as_set(opts.province)

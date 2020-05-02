@@ -20,6 +20,8 @@ parser.add_option("-p", "--province", dest="province",
                   help="point nodes")
 parser.add_option("-D", "--Distribution", dest="distribution",
                   help="distribution values")
+parser.add_option("-C", "--Control", dest="control",
+                  help="control values")
 parser.add_option("-N", "--nation", dest="nation",
                   help="nation values")
 parser.add_option("-P", "--population", dest="population",
@@ -104,6 +106,35 @@ class YDiagramGTK(Gtk.Window, Diagram.Diagram):
             self.pixel_painter(rgbt, rows, bset)
         self.screen = diagramRGB
 
+    def assign_control_presenter(self, control):
+        def inner(): self.control_presenter(control)            
+        self.assigned_painter = inner
+
+    def control_presenter(self, control):
+        controlmap = {}
+        for node in self.driver.get_node_names_as_set():
+            if not self.diagram.check_land(node): continue
+
+            controldict = self.driver.calc_control(node)
+            try: self.nvalues[node] = controldict[control]
+            except KeyError: self.nvalues[node] = 0
+
+        diagramRGB = []
+        for xo, y, rows, bset in self.sceen_duoator(diagramRGB):
+            node = self.diagram[xo,y][1]
+            try:
+                nv = self.nvalues[node]
+                if nv == 0:
+                    rgbt = [188, 188, 188]
+                else:
+                    bc = int(255 * (1.0 - nv))
+                    rgbt = [bc, bc, 255]                
+            except KeyError:
+                rgbt = [128, 128, 128]
+
+            self.pixel_painter(rgbt, rows, bset)            
+        self.screen = diagramRGB
+            
     def assign_distribution_presenter(self, distribution):
         def inner(): self.distribution_presenter(distribution)            
         self.assigned_painter = inner
@@ -218,6 +249,8 @@ driver = BusyBoxSQL.BusyBoxSQL(opts.dbfile)
 
 if opts.province:
     title = "ydiagram - province"
+elif opts.control:
+    title = "ydiagram - control"
 elif opts.population:
     title = "ydiagram - population"
 elif opts.nation:
@@ -251,6 +284,9 @@ elif opts.population:
 
 elif opts.nation:
     ydiagram.assign_nation_presenter(opts.nation)
+
+elif opts.control:
+    ydiagram.assign_control_presenter(opts.control)
 
 elif opts.distribution:
     ydiagram.assign_distribution_presenter(opts.distribution)

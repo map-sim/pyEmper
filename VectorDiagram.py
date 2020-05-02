@@ -14,7 +14,8 @@ class VectorDiagram(dict):
         dict.__init__(self)
         self.config = {
             prow["name"]: prow["value"]
-            for prow in prows}
+            for prow in prows
+        }
 
         self.nodes = {}
         for drow in drows:
@@ -29,7 +30,8 @@ class VectorDiagram(dict):
     
         self.terrbox = {
             trow["color"]: (trow["drag"], trow["charge"], trow["aperture"])
-            for trow in trows}
+            for trow in trows
+        }
 
     def next_atom_generator(self, x, y):
         for dx, dy in ToolBox.unit_generator():
@@ -60,13 +62,24 @@ class VectorDiagram(dict):
             if val[1] == node: xyset.add(xy)                
         return xyset
 
+    __node_center_cache = {}
     def get_node_center(self, node):
+        try: return self.__node_center_cache[node]
+        except KeyError: pass
+
         xyset = self.get_node_coordinates_as_set(node)
         xo, yo = 0, 0
         for x, y in xyset:
             xo, yo = xo+x, yo+y
-        return xo/len(xyset), yo/len(xyset)
-            
+        self.__node_center_cache[node] = xo/len(xyset), yo/len(xyset)
+        return self.__node_center_cache[node]
+
+    def calc_node_distance2(self, n1, n2):
+        if n1 == n2: return 0.0
+        x1, y1 = self.get_node_center(n1)
+        x2, y2 = self.get_node_center(n2)
+        return (x1 - x2) ** 2 + (y1 -y2) ** 2
+        
     def get_node_border_coordinates_as_set(self, start, stop):
         stopset = self.get_node_coordinates_as_set(stop, True)
         startset = self.get_node_coordinates_as_set(start)
